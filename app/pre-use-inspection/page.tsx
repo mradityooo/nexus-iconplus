@@ -301,9 +301,7 @@ export default function PreUseInspectionPage() {
                   return (
                     <label
                       key={item.id}
-                      className={`flex cursor-pointer items-start gap-2.5 rounded-md px-0 py-2 transition ${
-                        isChecked ? "bg-white/50" : "hover:bg-white/30"
-                      }`}
+                      className="flex cursor-pointer items-start gap-2.5 rounded-md px-0 py-2"
                     >
                       <input
                         type="checkbox"
