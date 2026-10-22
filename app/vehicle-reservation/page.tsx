@@ -131,25 +131,19 @@ export default function VehicleReservationPage() {
             </Link>
 
             <div className="flex min-w-0 items-center gap-2.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white">
-                <span className="text-sm font-extrabold">N</span>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-extrabold tracking-tight text-slate-900">
-                  NEXUS
-                </p>
-                <p className="truncate text-[9px] text-slate-500">
-                  Employees Operations Portal
-                </p>
-              </div>
-            </div>
+            <img
+              src="/nexus.png"
+              alt="NEXUS"
+              className="h-10 w-auto object-contain"
+            />
+          </div>
             </div>
 
           <div className="flex items-center gap-4">
             <button
               type="button"
               aria-label="Notifications"
-              className="text-slate-600 transition hover:text-red-600"
+              className="text-slate-1000 transition hover:text-red-600"
             >
               <Bell size={21} strokeWidth={1.8} />
             </button>
@@ -157,7 +151,7 @@ export default function VehicleReservationPage() {
             <Link
               href="/"
               aria-label="Logout"
-              className="text-slate-600 transition hover:text-red-600"
+              className="text-slate-1000 transition hover:text-red-600"
             >
               <LogOut size={21} strokeWidth={1.8} />
             </Link>
@@ -175,7 +169,7 @@ export default function VehicleReservationPage() {
               Vehicle Reservation
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[0] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
               Reserve an operational vehicle
             </p>
           </section>
@@ -321,7 +315,7 @@ export default function VehicleReservationPage() {
 
               <button
                 type="submit"
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 text-xs font-bold text-white transition hover:bg-slate-800 active:scale-[0.99]"
+                className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
               >
                 <Search size={14} />
                 Find Available Vehicle

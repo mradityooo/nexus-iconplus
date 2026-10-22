@@ -81,18 +81,11 @@ export default function HomePage() {
         {/* Header */}
         <header className="flex items-center justify-between px-5 pb-5 pt-5">
           <div className="flex min-w-0 items-center gap-2.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-red-600 text-xl font-extrabold text-white shadow-sm shadow-red-200">
-              N
-            </div>
-
-            <div className="min-w-0">
-              <h1 className="text-[19px] font-extrabold leading-5 tracking-[-0.6px]">
-                NEXUS
-              </h1>
-              <p className="mt-1 text-[10px] font-medium tracking-[0.05px] text-slate-500">
-                Employees Operations Portal
-              </p>
-            </div>
+            <img
+              src="/nexus.png"
+              alt="NEXUS"
+              className="h-10 w-auto object-contain"
+            />
           </div>
 
           <div className="flex shrink-0 items-center gap-1.9">
@@ -125,7 +118,7 @@ export default function HomePage() {
               <span className="ml-1.5 inline-block text-[23px]"></span>
             </h2>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[0] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
               Manage your operational requirements and business travel.
             </p>
           </section>
@@ -144,7 +137,9 @@ export default function HomePage() {
                           ? "/pre-use-inspection"
                             : service.name === "Claim Fuel"
                             ? "/fuel-claim"
-                          : "#"
+                              : service.name === "Reimbursement"
+                              ? "/reimbursement"
+                            : "#"
                     }
                     className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]"
                   >

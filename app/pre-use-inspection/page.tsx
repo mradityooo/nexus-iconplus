@@ -148,32 +148,26 @@ export default function PreUseInspectionPage() {
             </Link>
 
             <div className="flex min-w-0 items-center gap-2.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white">
-                <span className="text-sm font-extrabold">N</span>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-extrabold tracking-tight text-slate-900">
-                  NEXUS
-                </p>
-                <p className="truncate text-[9px] text-slate-500">
-                  Employees Operations Portal
-                </p>
-              </div>
-            </div>
+            <img
+              src="/nexus.png"
+              alt="NEXUS"
+              className="h-10 w-auto object-contain"
+            />
+          </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
             <button
               type="button"
               aria-label="Notifications"
-              className="text-slate-600 hover:text-red-600"
+              className="text-slate-1000 hover:text-red-600"
             >
               <Bell size={21} />
             </button>
             <Link
               href="/"
               aria-label="Logout"
-              className="text-slate-600 hover:text-red-600"
+              className="text-slate-1000 hover:text-red-600"
             >
               <LogOut size={21} />
             </Link>
@@ -189,7 +183,7 @@ export default function PreUseInspectionPage() {
             <h1 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
               Pre-Use Inspection
             </h1>
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[0] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
               Complete the vehicle checklist before starting your trip.
             </p>
           </section>
@@ -405,10 +399,10 @@ export default function PreUseInspectionPage() {
 
               {result === "not-fit" && (
                 <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
-                  <p className="text-[10px] font-bold text-red-700">
+                  <p className="text-[11px] font-bold text-red-700">
                     Vehicle requires attention
                   </p>
-                  <p className="mt-1 text-[10px] leading-4 text-red-600">
+                  <p className="mt-1 text-[10px] leading-3 text-red-600">
                     Jelaskan masalah kendaraan pada catatan agar dapat
                     ditindaklanjuti sebelum digunakan.
                   </p>
@@ -447,11 +441,10 @@ export default function PreUseInspectionPage() {
             <section>
               <label
                 htmlFor="inspectionPhoto"
-                className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-200 bg-[#DCDCDC] px-3 py-2.5 text-[10px] font-bold text-slate-800 transition hover:bg-slate-200"
+                className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
               >
                 <Upload size={15} />
                 {photo ? "Change Photo" : "Attach Photo (Optional)"}
-                <Camera size={14} />
               </label>
 
               <input
@@ -488,7 +481,7 @@ export default function PreUseInspectionPage() {
                       setPhoto(null);
                       setPhotoPreview("");
                     }}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-600"
+                   className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
                   >
                     <X size={15} />
                   </button>
@@ -511,8 +504,8 @@ export default function PreUseInspectionPage() {
 
             {/* Submit */}
             <button
-              type="submit"
-              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 active:scale-[0.99]"
+              type="submit" 
+              className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
             >
               Submit Inspection
               <ChevronRight size={15} />
