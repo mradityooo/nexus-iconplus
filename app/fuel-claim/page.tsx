@@ -121,7 +121,7 @@ export default function FuelClaimPage() {
             <Link
               href="/"
               aria-label="Back to Home"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-1000 text-slate-1000 hover:bg-slate-50"
             >
               <ArrowLeft size={17} />
             </Link>

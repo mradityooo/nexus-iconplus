@@ -507,7 +507,7 @@ export default function ReimbursementPage() {
                     setView("claims");
                     setMessage("");
                   }}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-1000 text-xs font-bold text-slate-1000 transition hover:bg-slate-50"
                 >
                   <ChevronLeft size={15} />
                   Back
