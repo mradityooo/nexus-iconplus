@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Bell,
@@ -68,6 +69,7 @@ const activities = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   return (
     <main
         className="min-h-screen bg-cover bg-center bg-no-repeat"
@@ -97,7 +99,9 @@ export default function HomePage() {
             </button>
 
             <button
+            type="button"
               aria-label="Logout"
+              onClick={() => router.push('/login')}
               className="flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 active:scale-95"
             >
               <LogOut className="h-[20px] w-[20px]" strokeWidth={1.8} />
