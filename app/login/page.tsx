@@ -43,17 +43,70 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-5 py-10 font-sans text-slate-800">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#F4FBFF] via-white to-[#EAF7FF] px-5 py-10 font-sans text-slate-800">
       {/* Dekorasi lingkaran sesuai wireframe */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-32 -left-28 h-72 w-72 rounded-full bg-[#DCEFF8] sm:h-96 sm:w-96"
-      />
+  aria-hidden="true"
+  className="pointer-events-none absolute -left-40 -top-40 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-[#B8E8FF] via-[#DDF5FF] to-white/0 opacity-90"
+/>
 
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-40 -left-16 h-64 w-64 rounded-full border-[22px] border-[#B8E3F5]/60 sm:h-80 sm:w-80"
-      />
+{/* Garis lengkung kiri atas */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute -left-48 -top-48 h-[550px] w-[550px] rounded-full border-2 border-[#9BDFFF]/70"
+/>
+
+{/* Bentuk diagonal kanan atas */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute -right-20 top-20 h-24 w-64 rotate-[-45deg] rounded-full bg-gradient-to-r from-[#DFF5FF] to-[#9DE3FF]/80"
+/>
+
+{/* Lingkaran kecil kanan */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute right-8 top-[25%] h-14 w-14 rounded-full bg-[#B7E9FF]/70 blur-[1px]"
+/>
+
+{/* Lingkaran gradasi kiri bawah */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute -bottom-40 -left-36 h-[420px] w-[420px] rounded-full bg-gradient-to-tr from-[#39C5F0] via-[#A5E7FF] to-[#EAF9FF] opacity-80"
+/>
+
+{/* Outline lingkaran kiri bawah */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute -bottom-48 -left-44 h-[540px] w-[540px] rounded-full border-2 border-[#8DDCFF]/80"
+/>
+
+{/* Lengkungan kanan bawah */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute -bottom-28 -right-40 h-[400px] w-[400px] rounded-full border-[32px] border-[#DDF4FF]/70"
+/>
+
+{/* Pola titik kiri atas */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute left-6 top-20 h-20 w-24 opacity-70"
+  style={{
+    backgroundImage:
+      "radial-gradient(circle, #69CFFF 3px, transparent 3.5px)",
+    backgroundSize: "20px 20px",
+  }}
+/>
+
+{/* Pola titik kanan bawah */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute bottom-8 right-6 h-20 w-24 opacity-70"
+  style={{
+    backgroundImage:
+      "radial-gradient(circle, #69CFFF 3px, transparent 3.5px)",
+    backgroundSize: "20px 20px",
+  }}
+/>
 
       <section className="relative z-10 w-full max-w-[360px]">
         {/* Logo NEXUS */}
@@ -81,7 +134,6 @@ export default function LoginPage() {
         </div>
 
         {/* Tab Login / Sign In */}
-        
         <div className="mb-6 grid grid-cols-2 rounded-full bg-[#DEDEDE] p-1">
           <button
             type="button"
@@ -251,7 +303,7 @@ export default function LoginPage() {
                 onClick={() =>
                   setError("Fitur Forgot Password belum tersedia.")
                 }
-                className="text-xs font-semibold text-[#0087C9] hover:underline"
+                className="text-xs font-semibold text-slate-600 hover:underline"
               >
                 Forgot Password?
               </button>
@@ -271,7 +323,7 @@ export default function LoginPage() {
           {/* Tombol utama */}
           <button
             type="submit"
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0095DA] px-4 text-sm font-semibold text-white shadow-md shadow-[#0095DA]/20 transition hover:bg-[#007AB8] active:scale-[0.99]"
+            className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
           >
             {mode === "login" ? "Login" : "Create Account"}
             <ArrowRight className="h-4 w-4" />

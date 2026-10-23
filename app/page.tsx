@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 import Link from "next/link";
 import {
   Bell,
@@ -16,30 +16,64 @@ import {
   CircleHelp,
   FileText,
   ChevronRight,
+  CalendarClock,
+  PlaneLanding,
+  Plane,
+  PlaneTakeoff,
+  NotebookPen,
+  HandCoins,
+  Laptop,
+  Laptop2,
+  LaptopMinimal,
+  Laptop2Icon,
 } from "lucide-react";
+
+
 
 const services = [
   {
     name: "Vehicle Reservation",
-    icon: CarFront,
-    iconStyle: "bg-slate-100 text-slate-700",
+    icon: "/vehicle.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
     name: "Pre-Use Inspection",
-    icon: ClipboardCheck,
-    iconStyle: "bg-slate-100 text-slate-700",
+    icon: "/note.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
+  },
+  {
+    name: "Leave & Attendance",
+    icon: "/clock.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
     name: "Claim Fuel",
-    icon: Fuel,
-    iconStyle: "bg-slate-100 text-slate-700",
+    icon: "/fuel.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
     name: "Reimbursement",
-    icon: ReceiptText,
-    iconStyle: "bg-slate-100 text-slate-700",
+    icon: "/claim.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
+  },
+  {
+    name: "Travel",
+    icon: "/plane.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
+  },
+  {
+    name: "Request",
+    icon: "/request.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
+  },
+  {
+    name: "Work From Anywhere",
+    icon: "/laptop.png",
+    iconStyle: "from-sky-100/80 to-sky-100/40",
   },
 ];
+
+
 
 const workspace = [
   { name: "My Request", icon: ClipboardList },
@@ -72,7 +106,7 @@ export default function HomePage() {
   const router = useRouter();
   return (
     <main
-        className="min-h-screen bg-cover bg-center bg-no-repeat"
+        className="min-h-screen bg-white"
         style={{
           backgroundImage: "url('/background.png')",
           backgroundAttachment: "scroll",
@@ -129,39 +163,47 @@ export default function HomePage() {
 
           <section>
             <div className="grid grid-cols-4 gap-2.5">
-              {services.map((service) => {
-                const Icon = service.icon;
-                return (
-                  <Link
-                    key={service.name}
-                    href={
-                      service.name === "Vehicle Reservation"
-                        ? "/vehicle-reservation"
-                          : service.name === "Pre-Use Inspection"
-                          ? "/pre-use-inspection"
-                            : service.name === "Claim Fuel"
-                            ? "/fuel-claim"
-                              : service.name === "Reimbursement"
-                              ? "/reimbursement"
+              
+            {services.map((service) => {
+              return (
+                <Link
+                  key={service.name}
+                  href={
+                    service.name === "Vehicle Reservation"
+                      ? "/vehicle-reservation"
+                      : service.name === "Pre-Use Inspection"
+                        ? "/pre-use-inspection"
+                        : service.name === "Claim Fuel"
+                          ? "/fuel-claim"
+                          : service.name === "Reimbursement"
+                            ? "/reimbursement"
                             : "#"
-                    }
-                    className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]"
+                  }
+                  className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]"
+                >
+                  <div
+                       className={`flex aspect-square w-full items-center justify-center rounded-1 border border-white/80 bg-gradient-to-br from-slate-200/80 to-slate-200/50 backdrop-blur-xl`}
                   >
-                    <div
-                      className={`flex aspect-square w-full items-center justify-center rounded-[2px] transition group-hover:brightness-[0.98] ${service.iconStyle}`}
-                    >
-                      <Icon
-                        className="h-[35px] w-[35px]"
-                        strokeWidth={1.8}
-                      />
-                    </div>
+                    
+                  <img
+                    src={service.icon}
+                    alt={service.name}
+                    className="h-[42px] w-[42px] object-contain brightness-0 saturate-100"
+                    style={{
+                      filter:
+                        "brightness(0) saturate(100%) invert(43%) sepia(94%) saturate(1700%) hue-rotate(165deg) brightness(95%) contrast(102%)",
+                    }}
+                  />
 
-                    <span className="mt-2.5 min-h-[30px] w-full text-[10px] font-semibold leading-[1] tracking-[-0.15px] text-slate-700">
-                      {service.name}
-                    </span>
-                  </Link>
-                );
-              })}
+                  </div>
+
+                  <span className="mt-2.5 min-h-[30px] w-full text-[10px] font-semibold leading-[1] tracking-[-0.15px] text-slate-700">
+                    {service.name}
+                  </span>
+                </Link>
+              );
+            })}
+
             </div>
           </section>
 
@@ -182,7 +224,7 @@ export default function HomePage() {
                     key={item.name}
                     className="flex min-w-0 flex-col items-center text-center active:scale-95"
                   >
-                    <div className="flex h-[50px] w-[50px] max-w-full items-center justify-center rounded-full border border-slate-100 bg-[#F5F7FA] text-slate-600 transition hover:bg-slate-100">
+                    <div className="flex h-[50px] w-[50px] max-w-full items-center justify-center rounded-full border border-white/80 bg-gradient-to-br from-slate-200/80 to-slate-200/50 backdrop-blur-xl">
                       <Icon
                         className="h-[21px] w-[21px]"
                         strokeWidth={1.7}
