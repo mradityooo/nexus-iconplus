@@ -43,70 +43,9 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#F4FBFF] via-white to-[#EAF7FF] px-5 py-10 font-sans text-slate-800">
-      {/* Dekorasi lingkaran sesuai wireframe */}
-      <div
-  aria-hidden="true"
-  className="pointer-events-none absolute -left-40 -top-40 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-[#B8E8FF] via-[#DDF5FF] to-white/0 opacity-90"
-/>
+    
+    <main className="nexus-login-background relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10 font-sans text-slate-800">
 
-{/* Garis lengkung kiri atas */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute -left-48 -top-48 h-[550px] w-[550px] rounded-full border-2 border-[#9BDFFF]/70"
-/>
-
-{/* Bentuk diagonal kanan atas */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute -right-20 top-20 h-24 w-64 rotate-[-45deg] rounded-full bg-gradient-to-r from-[#DFF5FF] to-[#9DE3FF]/80"
-/>
-
-{/* Lingkaran kecil kanan */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute right-8 top-[25%] h-14 w-14 rounded-full bg-[#B7E9FF]/70 blur-[1px]"
-/>
-
-{/* Lingkaran gradasi kiri bawah */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute -bottom-40 -left-36 h-[420px] w-[420px] rounded-full bg-gradient-to-tr from-[#39C5F0] via-[#A5E7FF] to-[#EAF9FF] opacity-80"
-/>
-
-{/* Outline lingkaran kiri bawah */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute -bottom-48 -left-44 h-[540px] w-[540px] rounded-full border-2 border-[#8DDCFF]/80"
-/>
-
-{/* Lengkungan kanan bawah */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute -bottom-28 -right-40 h-[400px] w-[400px] rounded-full border-[32px] border-[#DDF4FF]/70"
-/>
-
-{/* Pola titik kiri atas */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute left-6 top-20 h-20 w-24 opacity-70"
-  style={{
-    backgroundImage:
-      "radial-gradient(circle, #69CFFF 3px, transparent 3.5px)",
-    backgroundSize: "20px 20px",
-  }}
-/>
-
-{/* Pola titik kanan bawah */}
-<div
-  aria-hidden="true"
-  className="pointer-events-none absolute bottom-8 right-6 h-20 w-24 opacity-70"
-  style={{
-    backgroundImage:
-      "radial-gradient(circle, #69CFFF 3px, transparent 3.5px)",
-    backgroundSize: "20px 20px",
-  }}
-/>
 
       <section className="relative z-10 w-full max-w-[360px]">
         {/* Logo NEXUS */}
