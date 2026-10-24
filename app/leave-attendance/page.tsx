@@ -37,36 +37,7 @@ type AttendanceRecord = {
   status: "Present" | "Late" | "Absent";
 };
 
-const initialAttendance: AttendanceRecord[] = [
-  {
-    date: "24 Oct 2026",
-    day: "Saturday",
-    checkIn: "08:02",
-    checkOut: "17:03",
-    status: "Present",
-  },
-  {
-    date: "23 Oct 2026",
-    day: "Friday",
-    checkIn: "08:15",
-    checkOut: "17:05",
-    status: "Late",
-  },
-  {
-    date: "22 Oct 2026",
-    day: "Thursday",
-    checkIn: "07:55",
-    checkOut: "17:00",
-    status: "Present",
-  },
-  {
-    date: "21 Oct 2026",
-    day: "Wednesday",
-    checkIn: "08:00",
-    checkOut: "17:02",
-    status: "Present",
-  },
-];
+const initialAttendance: AttendanceRecord[] = [];
 
 const inputClass =
   "h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100";
@@ -201,6 +172,48 @@ export default function LeaveAttendancePage() {
     setShowCheckIn(true);
     setMessage("Check-in recorded in this prototype.");
   }
+
+  
+function checkOut() {
+  const now = new Date();
+
+  const todayLabel = now.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  const record = attendance.find(
+    (item) => item.date === todayLabel
+  );
+
+  if (!record) {
+    setMessage("Please check in first.");
+    return;
+  }
+
+  if (record.checkOut !== "--:--") {
+    setMessage("You have already checked out.");
+    return;
+  }
+
+  const time = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  setAttendance((current) =>
+    current.map((item) =>
+      item.date === todayLabel
+        ? { ...item, checkOut: time }
+        : item
+    )
+  );
+
+  setMessage("Check-out recorded successfully.");
+}
+
 
   function cancelLeave(id: number) {
     setLeaveRequests((current) =>
@@ -433,6 +446,20 @@ export default function LeaveAttendancePage() {
                   <UserCheck size={17} />
                   {todayRecord ? "Already Checked In" : "Check In"}
                 </button>
+
+                
+<button
+  type="button"
+  onClick={checkOut}
+  disabled={!todayRecord || todayRecord.checkOut !== "--:--"}
+  className="mt-3 flex min-h-11 w-full items-center justify-center rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+>
+  <Clock3 size={17} />
+  {todayRecord?.checkOut !== "--:--" && todayRecord
+    ? "Already Checked Out"
+    : "Check Out"}
+</button>
+
 
                 {showCheckIn && (
                   <p className="mt-2 text-center text-[10px] text-slate-500">
