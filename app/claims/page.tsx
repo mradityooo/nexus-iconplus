@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -29,6 +29,10 @@ type Claim = {
   reference: string;
   description: string;
   amount: number;
+  fuelType?: string;
+  liters?: number;
+  pricePerLiter?: number;
+  stationLocation?: string;
 };
 
 const categories = [
@@ -49,12 +53,19 @@ export default function ReimbursementPage() {
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
+  const [stationLocation, setStationLocation] = useState("");
+  const [fuelType, setFuelType] =useState("");
+  const [liters, setLiters] = useState("");
+  const [pricePerLiter, setPricePerLiter] = useState("");
   const [notes, setNotes] = useState("");
   const [claims, setClaims] = useState<Claim[]>([]);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const total = claims.reduce((sum, claim) => sum + claim.amount, 0);
+  const fuelTotal =
+    (Number(liters) || 0) * (Number(pricePerLiter) || 0);
+  
 
   const inputClass =
     "h-10 w-full rounded-md border border-slate-200 bg-white px-2.5 text-xs text-slate-800 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100";
@@ -64,22 +75,33 @@ export default function ReimbursementPage() {
   function addClaim(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    setClaims((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        category,
-        date,
-        reference,
-        description: description.trim(),
-        amount: Number(amount),
-      },
-    ]);
+       setClaims((current) => [
+          ...current,
+          {
+            id: Date.now(),
+            category,
+            date,
+            reference,
+            description: description.trim(),
+            amount: category === "Fuel" ? fuelTotal : Number(amount),
+            stationLocation:
+              category === "Fuel" ? stationLocation.trim() : undefined,
+            fuelType: category === "Fuel" ? fuelType : undefined,
+            liters: category === "Fuel" ? Number(liters) : undefined,
+            pricePerLiter:
+              category === "Fuel" ? Number(pricePerLiter) : undefined,
+            
+          },
+        ]);
 
     setDate("");
     setReference("");
     setDescription("");
     setAmount("");
+    setFuelType("");
+    setLiters("");
+    setPricePerLiter("");
+    setStationLocation("");
     setMessage("Claim berhasil ditambahkan.");
     setView("claims");
   }
@@ -285,22 +307,102 @@ export default function ReimbursementPage() {
                     />
                   </div>
 
-                  <div>
-                    <label className={labelClass} htmlFor="amount">
-                      Amount (IDR) <span className="text-red-600">*</span>
-                    </label>
-                    <input
-                      id="amount"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder="Enter amount"
-                      className={inputClass}
-                      required
-                    />
-                  </div>
+                  
+{category === "Fuel" && (
+  <>
+          <div>
+            <label className={labelClass} htmlFor="fuelType">
+              Jenis BBM <span className="text-red-600">*</span>
+            </label>
+            <select
+              id="fuelType"
+              value={fuelType}
+              onChange={(e) => setFuelType(e.target.value)}
+              className={inputClass}
+              required
+            >
+              <option value="">Pilih jenis BBM</option>
+              <option value="Pertalite">Pertalite</option>
+              <option value="Pertamax">Pertamax</option>
+            </select>
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="liters">
+              Jumlah BBM (Liter) <span className="text-red-600">*</span>
+            </label>
+            <input
+              id="liters"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={liters}
+              onChange={(e) => setLiters(e.target.value)}
+              placeholder="Masukkan jumlah liter"
+              className={inputClass}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pricePerLiter">
+              Harga per Liter (IDR) <span className="text-red-600">*</span>
+            </label>
+            <input
+              id="pricePerLiter"
+              type="number"
+              min="1"
+              step="1"
+              value={pricePerLiter}
+              onChange={(e) => setPricePerLiter(e.target.value)}
+              placeholder="Masukkan harga per liter"
+              className={inputClass}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="stationLocation">
+              Lokasi SPBU <span className="text-red-600">*</span>
+            </label>
+            <input
+              id="stationLocation"
+              value={stationLocation}
+              onChange={(e) => setStationLocation(e.target.value)}
+              placeholder="Nama atau lokasi SPBU"
+              className={inputClass}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Total Biaya BBM</label>
+            <div className={`${inputClass} flex items-center font-semibold`}>
+              {formatRupiah(fuelTotal)}
+            </div>
+          </div>
+            </>
+          )}
+
+          {category !== "Fuel" && (
+            <div>
+              <label className={labelClass} htmlFor="amount">
+                Amount (IDR) <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="amount"
+                type="number"
+                min="1"
+                step="1"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount"
+                className={inputClass}
+                required
+              />
+            </div>
+          )}
+
 
                   <button
                     type="submit"
