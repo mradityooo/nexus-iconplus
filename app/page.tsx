@@ -1,5 +1,6 @@
 "use client";
 
+import "./globals.css";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
@@ -73,8 +74,6 @@ const services = [
   },
 ];
 
-
-
 const workspace = [
   { name: "My Request", icon: ClipboardList },
   { name: "My Schedule", icon: CalendarDays },
@@ -106,13 +105,8 @@ export default function HomePage() {
   const router = useRouter();
   return (
     <main
-        className="min-h-screen bg-white"
-        style={{
-          backgroundImage: "url('/background.png')",
-          backgroundAttachment: "scroll",
-        }}
-      >
-      <div className="mx-auto min-h-dvh w-full max-w-[480px] overflow-hidden bg-white pb-8 sm:shadow-sm">
+        className="nexus-home-background min-h-screen">
+      <div className="relative mx-auto min-h-dvh w-full max-w-[480px] overflow-hidden bg-transparent pb-8 sm:shadow-sm">
 
         {/* Header */}
         <header className="flex items-center justify-between px-5 pb-5 pt-5">
@@ -156,7 +150,7 @@ export default function HomePage() {
               <span className="ml-1.5 inline-block text-[23px]"></span>
             </h2>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-">
               Manage your operational requirements and business travel.
             </p>
           </section>
@@ -178,16 +172,14 @@ export default function HomePage() {
                             : service.name === "Claims"
                             ? "/claims"
                               : service.name === "Career Planing"
-? "/career-planing"
-: service.name === "Leave & Attendance"
-? "/leave-attendance"
-: "#"
+                              ? "/career-planing"
+                                : service.name === "Leave & Attendance"
+                                ? "/leave-attendance"
+                                  : "#"
                   }
-                  className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]"
-                >
-                  <div
-                       className={`flex aspect-square w-full items-center justify-center rounded-1 border border-white/80 bg-gradient-to-br from-slate-200/80 to-slate-200/50 backdrop-blur-xl`}
-                  >
+                  className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]">
+                 
+                  <div className={`flex aspect-square w-full items-center justify-center rounded-sm border border-white/0 bg-gradient-to-br from-slate-200/80 to-slate-200/50 backdrop-blur-xl`}>
                     
                   <img
                     src={service.icon}
@@ -195,7 +187,7 @@ export default function HomePage() {
                     className="h-[42px] w-[42px] object-contain brightness-0 saturate-100"
                     style={{
                       filter:
-                        "brightness(0) saturate(100%) invert(43%) sepia(94%) saturate(1700%) hue-rotate(165deg) brightness(95%) contrast(102%)",
+                        "brightness(0) saturate(100%) invert(40%) sepia(94%) saturate(1700%) hue-rotate(165deg) brightness(95%) contrast(102%)",
                     }}
                   />
 

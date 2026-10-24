@@ -146,4 +146,43 @@
   button {
     -webkit-tap-highlight-color: transparent;
   }
-}
+ 
+  /* NEXUS Home Background */
+  .nexus-home-background {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    background:
+      radial-gradient(
+        ellipse 110% 65% at 50% -5%,
+        rgba(20, 112, 245, 0.98) 0%,
+        rgba(55, 139, 250, 0.88) 28%,
+        rgba(119, 176, 255, 0.62) 52%,
+        rgba(194, 220, 255, 0.35) 72%,
+        rgba(255, 255, 255, 0) 100%
+      ),
+      linear-gradient(
+        180deg,
+        #d9e9ff 0%,
+        #eff6ff 43%,
+        #ffffff 75%,
+        #ffffff 100%
+      );
+  }
+
+  .nexus-home-background::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: repeating-radial-gradient(
+      ellipse 115% 65% at 50% -5%,
+      transparent 0px,
+      transparent 24px,
+      rgba(255, 255, 255, 0.055) 25px,
+      transparent 29px
+    );
+    opacity: 0.7;
+  }
+  }
