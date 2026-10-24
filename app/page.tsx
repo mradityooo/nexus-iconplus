@@ -41,9 +41,9 @@ const services = [
     icon: "/note.png",
     iconStyle: "from-sky-100/80 to-sky-100/40",
   },
-  {
-    name: "Leave & Attendance",
-    icon: "/clock.png",
+   {
+    name: "Travel",
+    icon: "/plane.png",
     iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
@@ -57,8 +57,8 @@ const services = [
     iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
-    name: "Travel",
-    icon: "/plane.png",
+    name: "Leave & Attendance",
+    icon: "/clock.png",
     iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
@@ -171,12 +171,15 @@ export default function HomePage() {
                   href={
                     service.name === "Vehicle Reservation"
                       ? "/vehicle-reservation"
-                      : service.name === "Pre-Use Inspection"
+                        : service.name === "Pre-Use Inspection"
                         ? "/pre-use-inspection"
-                        : service.name === "Claims"
-                          ? "/claims"
-                          : service.name === "Reimbursement"
-                            ? "/reimbursement"
+                          : service.name === "Travel"
+                          ? "/travel"
+                            : service.name === "Claims"
+                            ? "/claims"
+                              : service.name === "Career Planing"
+                              ? "/career-planing"
+                              
                             : "#"
                   }
                   className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]"
