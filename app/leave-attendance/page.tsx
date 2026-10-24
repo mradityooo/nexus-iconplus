@@ -276,9 +276,10 @@ export default function LeaveAttendancePage() {
           </section>
 
           {/* Highlight */}
-          <section className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 p-5 text-white">
+          <section className="relative mb-6 overflow-hidden rounded-xl bg-gradient-to-br from-sky-600 to-blue-800 p-5 text-white">
             <div className="relative z-10 max-w-[260px]">
-              <p className="text-xs font-medium text-slate-300">
+
+              <p className="text-xs font-medium text-sky-100">
                 Employee Self-Service
               </p>
 
@@ -286,7 +287,7 @@ export default function LeaveAttendancePage() {
                 Your time matters.
               </h2>
 
-              <p className="mt-1 text-[11px] leading-5 text-slate-300">
+              <p className="mt-0 text-[11px] leading-5 text-sky-100">
                 Keep track of your work attendance and planned time off.
               </p>
             </div>
