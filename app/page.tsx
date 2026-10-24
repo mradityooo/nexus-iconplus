@@ -47,13 +47,13 @@ const services = [
     iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
-    name: "Claim Fuel",
-    icon: "/fuel.png",
+    name: "Claims",
+    icon: "/claim.png",
     iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
-    name: "Reimbursement",
-    icon: "/claim.png",
+    name: "Career Planing",
+    icon: "/career.png",
     iconStyle: "from-sky-100/80 to-sky-100/40",
   },
   {
@@ -173,8 +173,8 @@ export default function HomePage() {
                       ? "/vehicle-reservation"
                       : service.name === "Pre-Use Inspection"
                         ? "/pre-use-inspection"
-                        : service.name === "Claim Fuel"
-                          ? "/fuel-claim"
+                        : service.name === "Claims"
+                          ? "/claims"
                           : service.name === "Reimbursement"
                             ? "/reimbursement"
                             : "#"
