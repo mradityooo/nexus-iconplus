@@ -178,9 +178,10 @@ export default function HomePage() {
                             : service.name === "Claims"
                             ? "/claims"
                               : service.name === "Career Planing"
-                              ? "/career-planing"
-                              
-                            : "#"
+? "/career-planing"
+: service.name === "Leave & Attendance"
+? "/leave-attendance"
+: "#"
                   }
                   className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]"
                 >
