@@ -175,6 +175,8 @@ export default function HomePage() {
                               ? "/career-planing"
                                 : service.name === "Leave & Attendance"
                                 ? "/leave-attendance"
+                                  : service.name === "Work From Anywhere"
+                                  ? "/work-from-anywhere"
                                   : "#"
                   }
                   className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]">

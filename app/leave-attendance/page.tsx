@@ -270,7 +270,7 @@ export default function LeaveAttendancePage() {
               Leave & Attendance
             </h1>
 
-            <p className="mt-1.5 text-xs leading-5 text-slate-500">
+            <p className="mt-1 text-xs leading-5 text-black">
               Manage your attendance and leave requests in one place.
             </p>
           </section>

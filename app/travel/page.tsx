@@ -173,7 +173,7 @@ export default function TravelPage() {
                 Travel
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
                 Plan and manage your business trips in one place.
             </p>
          </section>

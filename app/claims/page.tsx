@@ -177,7 +177,7 @@ export default function ReimbursementPage() {
               Claims
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-3 text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-3 text-black">
               Submit a claim for eligible operational and business travel expenses.
             </p>
           </section>

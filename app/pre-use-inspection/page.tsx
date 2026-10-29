@@ -183,7 +183,7 @@ export default function PreUseInspectionPage() {
             <h1 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
               Pre-Use Inspection
             </h1>
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
               Complete the vehicle checklist before starting your trip.
             </p>
           </section>

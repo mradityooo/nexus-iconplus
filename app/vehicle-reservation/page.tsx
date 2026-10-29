@@ -169,7 +169,7 @@ export default function VehicleReservationPage() {
                 Vehicle Reservation
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
                Reserve an operational vehicle
             </p>
          </section>

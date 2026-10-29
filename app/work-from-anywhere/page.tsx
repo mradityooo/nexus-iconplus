@@ -180,7 +180,7 @@ export default function WorkFromAnywherePage() {
               Work From Anywhere
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
               Manage your remote work schedule and WFA requests.
             </p>
           </section>
