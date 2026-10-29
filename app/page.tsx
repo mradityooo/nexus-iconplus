@@ -4,32 +4,20 @@ import "./globals.css";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { useState } from "react";
 import {
   Bell,
   LogOut,
   CarFront,
-  ClipboardCheck,
   Fuel,
-  ReceiptText,
   ClipboardList,
   CalendarDays,
   History,
   CircleHelp,
   FileText,
-  ChevronRight,
-  CalendarClock,
-  PlaneLanding,
-  Plane,
-  PlaneTakeoff,
-  NotebookPen,
-  HandCoins,
-  Laptop,
-  Laptop2,
-  LaptopMinimal,
-  Laptop2Icon,
+  UserRound,
+  ChevronDown,
 } from "lucide-react";
-
-
 
 const services = [
   {
@@ -102,6 +90,7 @@ const activities = [
 ];
 
 export default function HomePage() {
+  const [language, setLanguage] = useState<"id" | "en">("id");
   const router = useRouter();
   return (
     <main
@@ -118,23 +107,56 @@ export default function HomePage() {
             />
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.9">
-            <button
-              aria-label="Notifications"
-              className="flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 active:scale-95"
-            >
-              <Bell className="h-[21px] w-[21px]" strokeWidth={1.8} />
-            </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <section className="rounded-full bg-[#DEDEDE] p-1">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                aria-label="Bahasa Indonesia"
+                aria-pressed={language === "id"}
+                onClick={() => setLanguage("id")}
+                className={`flex h-5 items-center justify-center rounded-full transition-all duration-200 ${
+                  language === "id"
+                    ? "bg-white shadow-sm"
+                    : "hover:bg-white/40"
+                }`}
+              >
+                <img
+                  src="/id.svg"
+                  alt="Indonesia"
+                  className="h-5 w-5 rounded-full object-cover"
+                />
+              </button>
 
-            <button
+              <button
+                type="button"
+                aria-label="English"
+                aria-pressed={language === "en"}
+                onClick={() => setLanguage("en")}
+                className={`flex h-5 items-center justify-center rounded-full transition-all duration-200 ${
+                  language === "en"
+                    ? "bg-white shadow-sm"
+                    : "hover:bg-white/40"
+                }`}
+              >
+                <img
+                  src="/gb.svg"
+                  alt="English"
+                  className="h-5 w-5 rounded-full object-cover"
+                />
+              </button>
+            </div>
+          </section>
+
+          {/* Profile */}
+          <button
             type="button"
-              aria-label="Logout"
-              onClick={() => router.push('/login')}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 active:scale-95"
-            >
-              <LogOut className="h-[20px] w-[20px]" strokeWidth={1.8} />
-            </button>
-          </div>
+            aria-label="Open profile"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 active:scale-95"
+          >
+            <UserRound size={22} strokeWidth={1.8} />
+          </button>
+        </div>
         </header>
 
         <div className="space-y-8 px-5">

@@ -155,23 +155,6 @@ export default function PreUseInspectionPage() {
             />
           </div>
           </div>
-
-          <div className="flex shrink-0 items-center gap-3">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-1000 hover:text-red-600"
-            >
-              <Bell size={21} />
-            </button>
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-1000 hover:text-red-600"
-            >
-              <LogOut size={21} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">

@@ -239,24 +239,6 @@ export default function LeaveAttendancePage() {
               className="h-10 w-auto object-contain"
             />
           </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-900 hover:text-slate-600"
-            >
-              <Bell size={21} />
-            </button>
-
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-900 hover:text-slate-600"
-            >
-              <LogOut size={21} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">

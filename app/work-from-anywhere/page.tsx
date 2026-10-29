@@ -149,24 +149,6 @@ export default function WorkFromAnywherePage() {
               className="h-10 w-auto object-contain"
             />
           </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-800 transition hover:text-[#0095DA]"
-            >
-              <Bell size={21} strokeWidth={1.8} />
-            </button>
-
-            <Link
-              href="/login"
-              aria-label="Logout"
-              className="text-slate-800 transition hover:text-[#0095DA]"
-            >
-              <LogOut size={21} strokeWidth={1.8} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">

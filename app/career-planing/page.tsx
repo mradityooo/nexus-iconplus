@@ -124,24 +124,6 @@ export default function ReimbursementPage() {
             />
           </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <Bell size={21} strokeWidth={1.8} />
-            </button>
-
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <LogOut size={21} strokeWidth={1.8} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">
