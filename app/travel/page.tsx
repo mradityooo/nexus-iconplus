@@ -201,21 +201,21 @@ export default function TravelPage() {
 
           {/* Stats */}
           <section className="mb-6 grid grid-cols-3 gap-2">
-            <div className="rounded-3 border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-slate-500">Total Requests</p>
-              <p className="mt-1 text-xl font-bold text-slate-900">
+              <p className="mt-1 text-xl font-bold text-black">
                 {requests.length}
               </p>
             </div>
-            <div className="rounded-3 border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-slate-500">Draft</p>
-              <p className="mt-1 text-xl font-bold text-amber-600">
+              <p className="mt-1 text-xl font-bold text-black">
                 {requests.filter((item) => item.status === "Draft").length}
               </p>
             </div>
-            <div className="rounded-3 border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-slate-500">Est. Cost</p>
-              <p className="mt-1 truncate text-sm font-bold text-sky-700">
+              <p className="mt-1 truncate text-sm font-bold text-black">
                 {formatRupiah(totalCost)}
               </p>
             </div>
