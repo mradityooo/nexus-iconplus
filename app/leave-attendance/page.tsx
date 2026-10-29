@@ -303,7 +303,7 @@ export default function LeaveAttendancePage() {
           <section className="mb-5 rounded-2xl border border-slate-100 bg-white p-4">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500">Annual Leave Balance</p>
+                <p className="text-xs text-black">Annual Leave Balance</p>
                 <p className="mt-1 text-2xl font-bold text-slate-950">
                   {leaveBalance}{" "}
                   <span className="text-sm font-medium text-slate-500">
@@ -334,21 +334,21 @@ export default function LeaveAttendancePage() {
           {/* Stats */}
           <section className="mb-6 grid grid-cols-3 gap-2">
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Present</p>
+              <p className="text-[10px] text-black">Present</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {presentCount}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Pending</p>
+              <p className="text-[10px] text-black">Pending</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {pendingCount}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Approved</p>
+              <p className="text-[10px] text-black">Approved</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {approvedCount}
               </p>
