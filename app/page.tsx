@@ -1,34 +1,24 @@
 "use client";
 
+import "./globals.css";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "./context/LanguageContext";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { useState } from "react";
 import {
   Bell,
   LogOut,
   CarFront,
-  ClipboardCheck,
   Fuel,
-  ReceiptText,
   ClipboardList,
   CalendarDays,
   History,
   CircleHelp,
   FileText,
-  ChevronRight,
-  CalendarClock,
-  PlaneLanding,
-  Plane,
-  PlaneTakeoff,
-  NotebookPen,
-  HandCoins,
-  Laptop,
-  Laptop2,
-  LaptopMinimal,
-  Laptop2Icon,
+  UserRound,
+  ChevronDown,
 } from "lucide-react";
-
-
 
 const services = [
   {
@@ -73,8 +63,6 @@ const services = [
   },
 ];
 
-
-
 const workspace = [
   { name: "My Request", icon: ClipboardList },
   { name: "My Schedule", icon: CalendarDays },
@@ -103,16 +91,12 @@ const activities = [
 ];
 
 export default function HomePage() {
+  const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
   return (
     <main
-        className="min-h-screen bg-white"
-        style={{
-          backgroundImage: "url('/background.png')",
-          backgroundAttachment: "scroll",
-        }}
-      >
-      <div className="mx-auto min-h-dvh w-full max-w-[480px] overflow-hidden bg-white pb-8 sm:shadow-sm">
+        className=" min-h-screen">
+      <div className="relative mx-auto min-h-dvh w-full max-w-[480px] overflow-hidden bg-transparent pb-8 sm:shadow-sm">
 
         {/* Header */}
         <header className="flex items-center justify-between px-5 pb-5 pt-5">
@@ -124,23 +108,56 @@ export default function HomePage() {
             />
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.9">
-            <button
-              aria-label="Notifications"
-              className="flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 active:scale-95"
-            >
-              <Bell className="h-[21px] w-[21px]" strokeWidth={1.8} />
-            </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <section className="rounded-full bg-[#DEDEDE] p-1">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                aria-label="Bahasa Indonesia"
+                aria-pressed={language === "id"}
+                onClick={() => setLanguage("id")}
+                className={`flex h-5 items-center justify-center rounded-full transition-all duration-200 ${
+                  language === "id"
+                    ? "bg-white shadow-sm"
+                    : "hover:bg-white/40"
+                }`}
+              >
+                <img
+                  src="/id.svg"
+                  alt="Indonesia"
+                  className="h-5 w-5 rounded-full object-cover"
+                />
+              </button>
 
-            <button
+              <button
+                type="button"
+                aria-label="English"
+                aria-pressed={language === "en"}
+                onClick={() => setLanguage("en")}
+                className={`flex h-5 items-center justify-center rounded-full transition-all duration-200 ${
+                  language === "en"
+                    ? "bg-white shadow-sm"
+                    : "hover:bg-white/40"
+                }`}
+              >
+                <img
+                  src="/gb.svg"
+                  alt="English"
+                  className="h-5 w-5 rounded-full object-cover"
+                />
+              </button>
+            </div>
+          </section>
+
+          {/* Profile */}
+          <button
             type="button"
-              aria-label="Logout"
-              onClick={() => router.push('/login')}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 active:scale-95"
-            >
-              <LogOut className="h-[20px] w-[20px]" strokeWidth={1.8} />
-            </button>
-          </div>
+            aria-label="Open profile"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 active:scale-95"
+          >
+            <UserRound size={22} strokeWidth={1.8} />
+          </button>
+        </div>
         </header>
 
         <div className="space-y-8 px-5">
@@ -148,23 +165,23 @@ export default function HomePage() {
           {/* Greeting */}
           <section className="pt-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0px] text-red-600">
-              Employee Portal
+              {t.employeePortal}
             </p>
 
             <h2 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
-              Good Morning, Radit
+              {t.greeting}, Radit
               <span className="ml-1.5 inline-block text-[23px]"></span>
             </h2>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
-              Manage your operational requirements and business travel.
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-">
+              {t.homeDescription}
             </p>
           </section>
 
           <section>
             <div className="grid grid-cols-4 gap-2.5">
               
-            {services.map((service) => {
+            {services.map((service, index) => {
               return (
                 <Link
                   key={service.name}
@@ -178,16 +195,18 @@ export default function HomePage() {
                             : service.name === "Claims"
                             ? "/claims"
                               : service.name === "Career Planing"
-? "/career-planing"
-: service.name === "Leave & Attendance"
-? "/leave-attendance"
-: "#"
+                              ? "/career-planing"
+                                : service.name === "Leave & Attendance"
+                                ? "/leave-attendance"
+                                  : service.name === "Work From Anywhere"
+                                  ? "/work-from-anywhere"
+                                    : service.name === "Request"
+                                    ? "/request"
+                                  : "#"
                   }
-                  className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]"
-                >
-                  <div
-                       className={`flex aspect-square w-full items-center justify-center rounded-1 border border-white/80 bg-gradient-to-br from-slate-200/80 to-slate-200/50 backdrop-blur-xl`}
-                  >
+                  className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]">
+                 
+                  <div className={`flex aspect-square w-full items-center justify-center rounded-sm border border-white/0 bg-gradient-to-br from-slate-200/80 to-slate-200/50 backdrop-blur-xl`}>
                     
                   <img
                     src={service.icon}
@@ -195,14 +214,14 @@ export default function HomePage() {
                     className="h-[42px] w-[42px] object-contain brightness-0 saturate-100"
                     style={{
                       filter:
-                        "brightness(0) saturate(100%) invert(43%) sepia(94%) saturate(1700%) hue-rotate(165deg) brightness(95%) contrast(102%)",
+                        "brightness(0) saturate(100%) invert(40%) sepia(94%) saturate(1700%) hue-rotate(165deg) brightness(95%) contrast(102%)",
                     }}
                   />
 
                   </div>
 
-                  <span className="mt-2.5 min-h-[30px] w-full text-[10px] font-semibold leading-[1] tracking-[-0.15px] text-slate-700">
-                    {service.name}
+                  <span className="mt-2.5 min-h-[30px] w-full text-[10px] font-semibold leading-[1] tracking-[-0.15px] text-black">
+                    {t.services[index]}
                   </span>
                 </Link>
               );
@@ -212,15 +231,15 @@ export default function HomePage() {
           </section>
 
           {/* My Workspace */}
-          <section>
-            <div className="mb-4 flex items-center justify-between">
+          <section className="-mt-4">
+              <div className="mb-3 border-b border-slate-300 pb-2">
               <h3 className="text-[17px] font-bold tracking-[-0.35px]">
-                My Workspace
+                {t.workspace}
               </h3>
             </div>
 
             <div className="grid grid-cols-5 gap-1">
-              {workspace.map((item) => {
+              {workspace.map((item, index) => {
                 const Icon = item.icon;
 
                 return (
@@ -235,8 +254,8 @@ export default function HomePage() {
                       />
                     </div>
 
-                    <span className="mt-2.5 w-full text-[10px] font-medium leading-[1.45] tracking-[-0.2px] text-slate-600">
-                      {item.name}
+                    <span className="mt-2.5 w-full text-[10px] font-medium leading-[1.45] tracking-[-0.2px] text-black">
+                      {t.workspaceItems[index]}
                     </span>
                   </button>
                 );
@@ -244,63 +263,34 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Recent Activity */}
-          <section>
-            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-[17px] font-bold tracking-[-0.35px]">
-                  Recent Activity
-                </h3>
-                <p className="mt-1.5 max-w-[310px] text-[12px] leading-[0] text-slate-500">
-                  Your latest updates
-                </p>
+          
+        {/* News */}
+          <section className="-mt-4">
+            <div className="mb-3 border-b border-slate-300 pb-2">
+              <h3 className="text-[17px] font-bold tracking-[-0.35px] text-slate-900">
+                {t.news}
+              </h3>
+            </div>
+
+            <Link
+              href="/news"
+              className="group block overflow-hidden rounded-md bg-slate-100 transition active:scale-[0.99]"
+            >
+              <div className="relative aspect-[16/7] w-full overflow-hidden bg-gradient-to-br from-sky-100 via-slate-100 to-blue-100">
+                {/* <img
+                  src="/news-banner.jpg"
+                  alt="NEXUS News"
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                /> */}
               </div>
-
-              <button className="flex items-center gap-0.5 rounded-lg py-2 pl-2 text-[12px] font-semibold text-red-600 active:opacity-70">
-                View All
-                <ChevronRight className="h-4 w-4" />
-              </button>
+              <div className="bg-cyan-50/80 px-3 py-3">
+              <h4 className="text-[12px] font-medium leading-relaxed text-black-1000 transition group-hover:text-blue-800">
+                {t.newsPlaceholder}
+              </h4>
             </div>
-
-            <div className="space-y-1">
-              {activities.map((activity) => {
-                const Icon = activity.icon;
-
-                return (
-                  <button
-                    key={activity.name}
-                    className="flex w-full items-center gap-3 rounded-2xl px-1 py-1 text-left transition hover:bg-slate-50 active:bg-slate-100"
-                  >
-                    <div
-                      className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[1px] ${activity.iconStyle}`}
-                    >
-                      <Icon
-                        className="h-[22px] w-[22px]"
-                        strokeWidth={1.8}
-                      />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-semibold tracking-[-0.15px] text-slate-800">
-                        {activity.name}
-                      </p>
-
-                      <p className="mt-0 truncate text-[11px] leading-4 text-slate-500">
-                        {activity.detail}
-                      </p>
-                    </div>
-
-                    <div className="flex shrink-0 flex-col items-center gap-1.5">
-                      <span
-                        className={`h-[13px] w-[13px] rounded-full ring-4 ring-slate-50 ${activity.statusColor}`}
-                      />
-                      <span className="sr-only">{activity.status}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            </Link>
           </section>
+
 
         </div>
       </div>

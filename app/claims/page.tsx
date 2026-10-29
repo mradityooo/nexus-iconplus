@@ -146,24 +146,6 @@ export default function ReimbursementPage() {
             />
           </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <Bell size={21} strokeWidth={1.8} />
-            </button>
-
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <LogOut size={21} strokeWidth={1.8} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">
@@ -174,10 +156,10 @@ export default function ReimbursementPage() {
             </p>
 
             <h1 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
-              Reimbursement
+              Claims
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-3 text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-3 text-black">
               Submit a claim for eligible operational and business travel expenses.
             </p>
           </section>
@@ -240,7 +222,7 @@ export default function ReimbursementPage() {
                         <span
                           className={`flex h-11 w-11 items-center justify-center rounded-full border transition ${
                             active
-                              ? "border-red-600 bg-red-50 text-red-600"
+                              ? "border-blue-600 bg-red-50 text-blue-600"
                               : "border-slate-200 bg-white text-slate-500"
                           }`}
                         >

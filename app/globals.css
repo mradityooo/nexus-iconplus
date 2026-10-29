@@ -146,4 +146,66 @@
   button {
     -webkit-tap-highlight-color: transparent;
   }
-}
+  
+  .nexus-home-background {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    background: #ffffff;
+  }
+
+  .nexus-home-background::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+
+    /* Cahaya biru besar di bagian atas */
+    width: 440px;
+    height: 360px;
+    top: -175px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 91, 187, 0.95) 0%,
+      rgba(0, 119, 220, 0.78) 22%,
+      rgba(0, 156, 218, 0.48) 45%,
+      rgba(80, 190, 245, 0.22) 65%,
+      rgba(180, 225, 255, 0.08) 82%,
+      transparent 100%
+    );
+
+    filter: blur(50px);
+  }
+
+  /* NEXUS Login — PLN Icon Plus Vector Background */
+  .nexus-login-background {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+
+    background-color: #eaf8ff;
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.02) 48%,
+        rgba(234, 248, 255, 0.08) 100%
+      ),
+      url("/background.png");
+
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  /* Matikan dekorasi CSS dari background lama */
+  .nexus-login-background::before,
+  .nexus-login-background::after {
+    content: none;
+  }
+  }
