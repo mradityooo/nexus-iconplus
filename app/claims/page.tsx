@@ -174,7 +174,7 @@ export default function ReimbursementPage() {
             </p>
 
             <h1 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
-              Reimbursement
+              Claims
             </h1>
 
             <p className="mt-1.5 max-w-[310px] text-[12px] leading-3 text-slate-500">
@@ -240,7 +240,7 @@ export default function ReimbursementPage() {
                         <span
                           className={`flex h-11 w-11 items-center justify-center rounded-full border transition ${
                             active
-                              ? "border-red-600 bg-red-50 text-red-600"
+                              ? "border-blue-600 bg-red-50 text-blue-600"
                               : "border-slate-200 bg-white text-slate-500"
                           }`}
                         >

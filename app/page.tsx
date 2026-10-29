@@ -105,7 +105,7 @@ export default function HomePage() {
   const router = useRouter();
   return (
     <main
-        className="nexus-home-background min-h-screen">
+        className=" min-h-screen">
       <div className="relative mx-auto min-h-dvh w-full max-w-[480px] overflow-hidden bg-transparent pb-8 sm:shadow-sm">
 
         {/* Header */}
@@ -204,8 +204,8 @@ export default function HomePage() {
           </section>
 
           {/* My Workspace */}
-          <section>
-            <div className="mb-4 flex items-center justify-between">
+          <section className="-mt-4">
+              <div className="mb-3 border-b border-slate-300 pb-2">
               <h3 className="text-[17px] font-bold tracking-[-0.35px]">
                 My Workspace
               </h3>
@@ -236,63 +236,34 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Recent Activity */}
-          <section>
-            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-[17px] font-bold tracking-[-0.35px]">
-                  Recent Activity
-                </h3>
-                <p className="mt-1.5 max-w-[310px] text-[12px] leading-[0] text-slate-500">
-                  Your latest updates
-                </p>
+          
+        {/* News */}
+          <section className="-mt-4">
+            <div className="mb-3 border-b border-slate-300 pb-2">
+              <h3 className="text-[17px] font-bold tracking-[-0.35px] text-slate-900">
+                News
+              </h3>
+            </div>
+
+            <Link
+              href="/news"
+              className="group block overflow-hidden rounded-md bg-slate-100 transition active:scale-[0.99]"
+            >
+              <div className="relative aspect-[16/7] w-full overflow-hidden bg-gradient-to-br from-sky-100 via-slate-100 to-blue-100">
+                {/* <img
+                  src="/news-banner.jpg"
+                  alt="NEXUS News"
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                /> */}
               </div>
-
-              <button className="flex items-center gap-0.5 rounded-lg py-2 pl-2 text-[12px] font-semibold text-red-600 active:opacity-70">
-                View All
-                <ChevronRight className="h-4 w-4" />
-              </button>
+              <div className="bg-cyan-50/80 px-3 py-3">
+              <h4 className="text-[12px] font-medium leading-relaxed text-black-1000 transition group-hover:text-blue-800">
+                Judul berita akan ditampilkan di sini
+              </h4>
             </div>
-
-            <div className="space-y-1">
-              {activities.map((activity) => {
-                const Icon = activity.icon;
-
-                return (
-                  <button
-                    key={activity.name}
-                    className="flex w-full items-center gap-3 rounded-2xl px-1 py-1 text-left transition hover:bg-slate-50 active:bg-slate-100"
-                  >
-                    <div
-                      className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[1px] ${activity.iconStyle}`}
-                    >
-                      <Icon
-                        className="h-[22px] w-[22px]"
-                        strokeWidth={1.8}
-                      />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-semibold tracking-[-0.15px] text-slate-800">
-                        {activity.name}
-                      </p>
-
-                      <p className="mt-0 truncate text-[11px] leading-4 text-slate-500">
-                        {activity.detail}
-                      </p>
-                    </div>
-
-                    <div className="flex shrink-0 flex-col items-center gap-1.5">
-                      <span
-                        className={`h-[13px] w-[13px] rounded-full ring-4 ring-slate-50 ${activity.statusColor}`}
-                      />
-                      <span className="sr-only">{activity.status}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            </Link>
           </section>
+
 
         </div>
       </div>

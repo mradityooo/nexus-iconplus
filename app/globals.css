@@ -146,43 +146,86 @@
   button {
     -webkit-tap-highlight-color: transparent;
   }
- 
-  /* NEXUS Home Background */
+  
   .nexus-home-background {
     position: relative;
     isolation: isolate;
     min-height: 100vh;
-    background:
-      radial-gradient(
-        ellipse 110% 65% at 50% -5%,
-        rgba(20, 112, 245, 0.98) 0%,
-        rgba(55, 139, 250, 0.88) 28%,
-        rgba(119, 176, 255, 0.62) 52%,
-        rgba(194, 220, 255, 0.35) 72%,
-        rgba(255, 255, 255, 0) 100%
-      ),
-      linear-gradient(
-        180deg,
-        #d9e9ff 0%,
-        #eff6ff 43%,
-        #ffffff 75%,
-        #ffffff 100%
-      );
+    background: #ffffff;
   }
 
   .nexus-home-background::before {
     content: "";
     position: absolute;
-    inset: 0;
     z-index: -1;
     pointer-events: none;
-    background: repeating-radial-gradient(
-      ellipse 115% 65% at 50% -5%,
-      transparent 0px,
-      transparent 24px,
-      rgba(255, 255, 255, 0.055) 25px,
-      transparent 29px
+
+    /* Cahaya biru besar di bagian atas */
+    width: 440px;
+    height: 360px;
+    top: -175px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 91, 187, 0.95) 0%,
+      rgba(0, 119, 220, 0.78) 22%,
+      rgba(0, 156, 218, 0.48) 45%,
+      rgba(80, 190, 245, 0.22) 65%,
+      rgba(180, 225, 255, 0.08) 82%,
+      transparent 100%
     );
-    opacity: 0.7;
+
+    filter: blur(50px);
   }
+
+  /* NEXUS Login - Cyan Blue Glow */
+
+/* NEXUS Login - PLN Color Glow */
+.nexus-login-background {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.nexus-login-background::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+
+  /* Gradient dibuat kecil dan terpusat */
+  width: 310px;
+  height: 300px;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  background:
+    radial-gradient(
+      ellipse at 35% 35%,
+      rgba(255, 205, 0, 0.78) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse at 28% 62%,
+      rgba(237, 28, 36, 0.78) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 72% 40%,
+      rgba(0, 102, 204, 0.88) 0%,
+      rgba(0, 149, 218, 0.55) 38%,
+      transparent 70%
+    );
+
+  filter: blur(38px);
+  opacity: 0.9;
+}
+
+
+
+
   }
