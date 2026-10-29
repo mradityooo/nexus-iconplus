@@ -2,6 +2,7 @@
 
 import "./globals.css";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "./context/LanguageContext";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -90,7 +91,7 @@ const activities = [
 ];
 
 export default function HomePage() {
-  const [language, setLanguage] = useState<"id" | "en">("id");
+  const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
   return (
     <main
@@ -164,23 +165,23 @@ export default function HomePage() {
           {/* Greeting */}
           <section className="pt-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0px] text-red-600">
-              Employee Portal
+              {t.employeePortal}
             </p>
 
             <h2 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
-              Good Morning, Radit
+              {t.greeting}, Radit
               <span className="ml-1.5 inline-block text-[23px]"></span>
             </h2>
 
             <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-">
-              Manage your operational requirements and business travel.
+              {t.homeDescription}
             </p>
           </section>
 
           <section>
             <div className="grid grid-cols-4 gap-2.5">
               
-            {services.map((service) => {
+            {services.map((service, index) => {
               return (
                 <Link
                   key={service.name}
@@ -199,6 +200,8 @@ export default function HomePage() {
                                 ? "/leave-attendance"
                                   : service.name === "Work From Anywhere"
                                   ? "/work-from-anywhere"
+                                    : service.name === "Request"
+                                    ? "/request"
                                   : "#"
                   }
                   className="group flex min-w-0 flex-col items-center text-center active:scale-[0.97]">
@@ -217,8 +220,8 @@ export default function HomePage() {
 
                   </div>
 
-                  <span className="mt-2.5 min-h-[30px] w-full text-[10px] font-semibold leading-[1] tracking-[-0.15px] text-slate-700">
-                    {service.name}
+                  <span className="mt-2.5 min-h-[30px] w-full text-[10px] font-semibold leading-[1] tracking-[-0.15px] text-black">
+                    {t.services[index]}
                   </span>
                 </Link>
               );
@@ -231,12 +234,12 @@ export default function HomePage() {
           <section className="-mt-4">
               <div className="mb-3 border-b border-slate-300 pb-2">
               <h3 className="text-[17px] font-bold tracking-[-0.35px]">
-                My Workspace
+                {t.workspace}
               </h3>
             </div>
 
             <div className="grid grid-cols-5 gap-1">
-              {workspace.map((item) => {
+              {workspace.map((item, index) => {
                 const Icon = item.icon;
 
                 return (
@@ -251,8 +254,8 @@ export default function HomePage() {
                       />
                     </div>
 
-                    <span className="mt-2.5 w-full text-[10px] font-medium leading-[1.45] tracking-[-0.2px] text-slate-600">
-                      {item.name}
+                    <span className="mt-2.5 w-full text-[10px] font-medium leading-[1.45] tracking-[-0.2px] text-black">
+                      {t.workspaceItems[index]}
                     </span>
                   </button>
                 );
@@ -265,7 +268,7 @@ export default function HomePage() {
           <section className="-mt-4">
             <div className="mb-3 border-b border-slate-300 pb-2">
               <h3 className="text-[17px] font-bold tracking-[-0.35px] text-slate-900">
-                News
+                {t.news}
               </h3>
             </div>
 
@@ -282,7 +285,7 @@ export default function HomePage() {
               </div>
               <div className="bg-cyan-50/80 px-3 py-3">
               <h4 className="text-[12px] font-medium leading-relaxed text-black-1000 transition group-hover:text-blue-800">
-                Judul berita akan ditampilkan di sini
+                {t.newsPlaceholder}
               </h4>
             </div>
             </Link>

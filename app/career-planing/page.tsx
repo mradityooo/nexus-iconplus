@@ -209,7 +209,7 @@ export default function CareerPlanningPage() {
                     .getElementById("career-search")
                     ?.scrollIntoView({ behavior: "smooth" })
                 }
-                className="mt-4 flex h-9 items-center justify-center gap-2 rounded-md bg-white px-3 text-xs font-bold text-blue-800 transition hover:bg-blue-50"
+                className="mt-4 flex h-9 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-blue-800 transition hover:bg-blue-50"
               >
                 Explore Opportunities
                 <ArrowRight size={14} />
