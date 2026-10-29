@@ -44,10 +44,8 @@ export default function LoginPage() {
 
   return (
     
-    <main className="nexus-login-background relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10 font-sans text-slate-800">
-
-
-      <section className="relative z-10 w-full max-w-[360px]">
+        <main className="nexus-login-background relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-6 font-sans text-slate-800">
+          <section className="relative z-10 w-full max-w-[360px] rounded-xl border border-white/70 bg-white/80 px-5 py-6 shadow-xl shadow-sky-900/10 backdrop-blur- sm:px-7">
         {/* Logo NEXUS */}
         <div className="mb-8 flex justify-center">
           <img
@@ -127,7 +125,7 @@ export default function LoginPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
+                  className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
                 />
               </div>
             </div>
@@ -153,7 +151,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
               />
             </div>
           </div>
@@ -183,7 +181,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 minLength={8}
                 required
-                className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-12 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-12 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
               />
 
               <button
@@ -227,7 +225,7 @@ export default function LoginPage() {
                   }
                   minLength={8}
                   required
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
+                  className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
                 />
               </div>
             </div>
@@ -269,7 +267,7 @@ export default function LoginPage() {
         </form>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-[11px] leading-5 text-slate-400">
+        <p className="mt-8 text-center text-[11px] leading-5 text-black-1000">
           NEXUS · Employees Operations Portal
           <br />
           PLN Icon Plus
