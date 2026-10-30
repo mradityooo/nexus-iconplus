@@ -113,7 +113,12 @@ export default function CareerPlanningPage() {
         .toLowerCase();
 
       return (
-        searchableText.includes(keyword) &&
+        (!keyword ||
+  (keyword.length <= 2
+    ? searchableText
+        .split(/[^a-z0-9]+/)
+        .some((word) => word.startsWith(keyword))
+    : searchableText.includes(keyword))) &&
         (department === "All Departments" ||
           job.department === department) &&
         (location === "All Locations" || job.location === location)
