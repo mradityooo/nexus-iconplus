@@ -252,24 +252,6 @@ function checkOut() {
               className="h-10 w-auto object-contain"
             />
           </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-900 hover:text-slate-600"
-            >
-              <Bell size={21} />
-            </button>
-
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-900 hover:text-slate-600"
-            >
-              <LogOut size={21} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">
@@ -283,7 +265,7 @@ function checkOut() {
               Leave & Attendance
             </h1>
 
-            <p className="mt-1.5 text-xs leading-5 text-slate-500">
+            <p className="mt-1 text-xs leading-5 text-black">
               Manage your attendance and leave requests in one place.
             </p>
           </section>
@@ -316,7 +298,7 @@ function checkOut() {
           <section className="mb-5 rounded-2xl border border-slate-100 bg-white p-4">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500">Annual Leave Balance</p>
+                <p className="text-xs text-black">Annual Leave Balance</p>
                 <p className="mt-1 text-2xl font-bold text-slate-950">
                   {leaveBalance}{" "}
                   <span className="text-sm font-medium text-slate-500">
@@ -347,21 +329,21 @@ function checkOut() {
           {/* Stats */}
           <section className="mb-6 grid grid-cols-3 gap-2">
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Present</p>
+              <p className="text-[10px] text-black">Present</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {presentCount}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Pending</p>
+              <p className="text-[10px] text-black">Pending</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {pendingCount}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Approved</p>
+              <p className="text-[10px] text-black">Approved</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {approvedCount}
               </p>

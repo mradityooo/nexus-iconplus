@@ -138,41 +138,23 @@ export default function VehicleReservationPage() {
             />
           </div>
             </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <Bell size={21} strokeWidth={1.8} />
-            </button>
-
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <LogOut size={21} strokeWidth={1.8} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">
           {/* Page title */}
           <section className="mb-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0px] text-red-600">
-              Operational Services
+                Operational Services
             </p>
 
             <h1 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
-              Vehicle Reservation
+                Vehicle Reservation
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
-              Reserve an operational vehicle
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
+               Reserve an operational vehicle
             </p>
-          </section>
+         </section>
 
           {/* Driver toggle */}
           <section className="mb-3 rounded-full bg-[#DEDEDE] p-1">

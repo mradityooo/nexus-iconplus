@@ -155,23 +155,6 @@ export default function PreUseInspectionPage() {
             />
           </div>
           </div>
-
-          <div className="flex shrink-0 items-center gap-3">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-1000 hover:text-red-600"
-            >
-              <Bell size={21} />
-            </button>
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-1000 hover:text-red-600"
-            >
-              <LogOut size={21} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">
@@ -183,7 +166,7 @@ export default function PreUseInspectionPage() {
             <h1 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
               Pre-Use Inspection
             </h1>
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
               Complete the vehicle checklist before starting your trip.
             </p>
           </section>

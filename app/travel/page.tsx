@@ -142,24 +142,6 @@ export default function TravelPage() {
             />
           </div>
             </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <Bell size={21} strokeWidth={1.8} />
-            </button>
-
-            <Link
-              href="/"
-              aria-label="Logout"
-              className="text-slate-1000 transition hover:text-red-600"
-            >
-              <LogOut size={21} strokeWidth={1.8} />
-            </Link>
-          </div>
         </header>
 
         <div className="px-5 pb-8 pt-2">
@@ -173,7 +155,7 @@ export default function TravelPage() {
                 Travel
             </h1>
 
-            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-500">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
                 Plan and manage your business trips in one place.
             </p>
          </section>
@@ -201,59 +183,64 @@ export default function TravelPage() {
 
           {/* Stats */}
           <section className="mb-6 grid grid-cols-3 gap-2">
-            <div className="rounded-3 border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-slate-500">Total Requests</p>
-              <p className="mt-1 text-xl font-bold text-slate-900">
+              <p className="mt-1 text-xl font-bold text-black">
                 {requests.length}
               </p>
             </div>
-            <div className="rounded-3 border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-slate-500">Draft</p>
-              <p className="mt-1 text-xl font-bold text-amber-600">
+              <p className="mt-1 text-xl font-bold text-black">
                 {requests.filter((item) => item.status === "Draft").length}
               </p>
             </div>
-            <div className="rounded-3 border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-slate-500">Est. Cost</p>
-              <p className="mt-1 truncate text-sm font-bold text-sky-700">
+              <p className="mt-1 truncate text-sm font-bold text-black">
                 {formatRupiah(totalCost)}
               </p>
             </div>
           </section>
 
           {/* Navigation */}
-          <div className="mb-3 rounded-full bg-[#DEDEDE] p-1">
-            {[
-              { id: "form", label: "New Travel" },
-              { id: "list", label: "My Travel" },
-              { id: "summary", label: "Summary" },
-            ].map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  if (item.id === "summary") {
-                    if (requests.length === 0) {
-                      setMessage("Buat pengajuan perjalanan terlebih dahulu.");
-                      return;
+            <section className="mb-3 rounded-full bg-[#DEDEDE] p-1">
+            <div className="grid grid-cols-3 gap-1">
+                {[
+                { id: "form", label: "New Travel" },
+                { id: "list", label: "My Travel" },
+                { id: "summary", label: "Summary" },
+                ].map((item) => (
+                <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                    if (item.id === "summary") {
+                        if (requests.length === 0) {
+                        setMessage(
+                            "Buat pengajuan perjalanan terlebih dahulu."
+                        );
+                        return;
+                        }
+
+                        setMessage("");
+                        setView("summary");
+                    } else {
+                        setView(item.id as "form" | "list");
+                        setMessage("");
                     }
-                    setMessage("");
-                    setView("summary");
-                  } else {
-                    setView(item.id as "form" | "list");
-                    setMessage("");
-                  }
-                }}
-                className={`h-9 rounded-full text-[11px] font-bold transition ${
-                  view === item.id
-                    ? "bg-white text-sky-700 shadow-sm"
-                    : "text-slate-500 hover:bg-white/60"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+                    }}
+                    className={`flex h-9 min-w-0 items-center justify-center rounded-full px-1 text-[10px] font-bold transition-all duration-200 ${
+                    view === item.id
+                        ? "bg-white text-black shadow-sm"
+                        : "text-slate-600 hover:bg-white/40"
+                    }`}
+                >
+                    <span className="truncate">{item.label}</span>
+                </button>
+                ))}
+            </div>
+            </section>
 
           {message && (
             <div className="mb-4 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs text-sky-800">
@@ -565,13 +552,13 @@ export default function TravelPage() {
                 </div>
 
                 <div className="mb-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-slate-50 p-3">
+                  <div className="rounded-3 bg-slate-50 p-3">
                     <p className="text-xs text-slate-500">Total Requests</p>
                     <p className="mt-1 text-xl font-bold text-slate-900">
                       {requests.length}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-sky-50 p-3">
+                  <div className="rounded-3 bg-sky-50 p-3">
                     <p className="text-xs text-sky-700">Total Est. Cost</p>
                     <p className="mt-1 text-sm font-bold text-sky-800">
                       {formatRupiah(totalCost)}
