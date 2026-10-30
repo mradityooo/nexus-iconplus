@@ -159,32 +159,9 @@ export default function MySchedulePage() {
               My Schedule
             </h1>
 
-            <p className="mt-1 text-xs leading-5 text-black">
+            <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-">
               Kelola dan pantau jadwal kendaraan serta perjalanan dinas Anda.
             </p>
-          </section>
-
-          {/* Banner */}
-          <section className="relative mb-5 overflow-hidden rounded-xl bg-gradient-to-br from-sky-600 to-blue-800 p-5 text-white">
-            <div className="relative z-10 max-w-[260px]">
-              <p className="text-xs font-medium text-sky-100">
-                Employee Schedule
-              </p>
-
-              <h2 className="mt-1 text-xl font-bold">
-                Your Schedule, Organized.
-              </h2>
-
-              <p className="mt-1 text-[11px] leading-5 text-sky-100">
-                Semua jadwal operasional dan perjalanan dinas dalam satu tempat.
-              </p>
-            </div>
-
-            <CalendarCheck
-              size={100}
-              strokeWidth={0.8}
-              className="absolute -bottom-5 -right-3 rotate-[-12deg] text-white/15"
-            />
           </section>
 
           {/* Statistics */}
@@ -237,7 +214,7 @@ export default function MySchedulePage() {
                     : "text-slate-600"
                 }`}
               >
-                Mendatang ({upcoming.length})
+                Mendatang
               </button>
 
               <button
@@ -252,7 +229,7 @@ export default function MySchedulePage() {
                     : "text-slate-600"
                 }`}
               >
-                Selesai ({completed.length})
+                Selesai 
               </button>
             </div>
           </section>
