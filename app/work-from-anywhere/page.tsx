@@ -327,7 +327,15 @@ export default function WorkFromAnywherePage() {
                       type="date"
                       value={startDate}
                       min={today}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={(e) => {
+  const newStartDate = e.target.value;
+
+  setStartDate(newStartDate);
+
+  if (endDate && newStartDate && endDate < newStartDate) {
+    setEndDate("");
+  }
+}}
                       className={inputClass}
                       required
                     />
