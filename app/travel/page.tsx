@@ -170,7 +170,7 @@ export default function TravelPage() {
               <h2 className="mt-1 text-xl font-bold">
                 Your next trip starts here
               </h2>
-              <p className="mt-0 text-[11px] leading-5 text-sky-100">
+              <p className="mt-2 max-w-[270px] text-[11px] leading-4 text-blue-50">
                 Submit your travel plan and track your request status.
               </p>
             </div>

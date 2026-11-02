@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import Image from "next/image";
 import {
   ArrowLeft,
@@ -14,11 +14,14 @@ import {
   KeyRound,
   Mail,
   MapPin,
+  LogOut,
   Phone,
   ShieldCheck,
   UserRound,
   X,
 } from "lucide-react";
+
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 type ProfileData = {
@@ -32,15 +35,15 @@ type ProfileData = {
   joinDate: string;
 };
 
-const initialProfile: ProfileData = {
-  name: "Muhammad Radityo",
-  employeeId: "NEX-2026-001",
-  email: "radityo@example.com",
-  phone: "081234567890",
-  department: "Information Technology",
-  position: "IT Staff",
-  location: "Jakarta",
-  joinDate: "02 March 2026",
+const emptyProfile: ProfileData = {
+  name: "",
+  employeeId: "",
+  email: "",
+  phone: "",
+  department: "",
+  position: "",
+  location: "",
+  joinDate: "",
 };
 
 
@@ -81,8 +84,11 @@ export default function ProfilePage() {
   const [language] = useState<"id">("id");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [profile, setProfile] = useState<ProfileData>(initialProfile);
-  const [draft, setDraft] = useState<ProfileData>(initialProfile);
+  const [profile, setProfile] = useState<ProfileData>(emptyProfile);
+  const [draft, setDraft] = useState<ProfileData>(emptyProfile);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
   const [editing, setEditing] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
@@ -92,6 +98,37 @@ export default function ProfilePage() {
     next: "",
     confirm: "",
   });
+
+  useEffect(() => {
+  async function loadProfile() {
+    try {
+      setProfileLoading(true);
+
+      const response = await fetch("/api/profile");
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal mengambil profil.");
+      }
+
+      setProfile(data);
+      setDraft(data);
+    } catch (error) {
+      console.error("Load profile error:", error);
+
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengambil data profil."
+      );
+    } finally {
+      setProfileLoading(false);
+    }
+  }
+
+  loadProfile();
+}, []);
 
   const labels = {
     name: p.fullName,
@@ -110,11 +147,48 @@ export default function ProfilePage() {
     setNotice("");
   }
 
-  function saveProfile(event: FormEvent<HTMLFormElement>) {
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setProfile({ ...draft });
-    setEditing(false);
-    setNotice(p.success);
+
+    try {
+      setSaving(true);
+      setNotice("");
+
+      const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: draft.name,
+          phone: draft.phone,
+          department: draft.department,
+          position: draft.position,
+          location: draft.location,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal memperbarui profil.");
+      }
+
+      setProfile(data.profile);
+      setDraft(data.profile);
+      setEditing(false);
+      setNotice(data.message || p.success);
+    } catch (error) {
+      console.error("Save profile error:", error);
+
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Gagal menyimpan perubahan profil."
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   function cancelEditing() {
@@ -212,6 +286,12 @@ export default function ProfilePage() {
 
       <div className="px-5 pb-8 pt-2">
         {/* Konten profil dimulai di sini */}
+
+      {profileLoading && (
+        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+          Memuat informasi profil...
+        </div>
+      )}
 
         {/* Profile banner */}
         <section className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-[#063B76] via-[#087BB7] to-[#00A5D1] p-5 text-white shadow-lg shadow-sky-900/10 sm:p-8">
@@ -352,7 +432,7 @@ export default function ProfilePage() {
                     id={`profile-${key}`}
                     type={key === "email" ? "email" : "text"}
                     value={editing ? draft[key] : profile[key]}
-                    readOnly={!editing || key === "employeeId"}
+                    readOnly={!editing || key === "employeeId" || key === "email"}
                     required={
                       editing &&
                       key !== "employeeId" &&
@@ -386,10 +466,11 @@ export default function ProfilePage() {
 
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#087BB7] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#06699E]"
+                  disabled={saving || profileLoading}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#087BB7] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#06699E] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Check size={14} />
-                  {p.save}
+                  {saving ? "Menyimpan..." : p.save}
                 </button>
               </div>
             )}
@@ -497,7 +578,27 @@ export default function ProfilePage() {
                 </button>
               </div>
             </form>
-          )}
+          )}        
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <button
+              type="button"
+              onClick={async () => {
+                const confirmed = window.confirm(
+                  "Apakah kamu yakin ingin keluar dari akun NEXUS?"
+                );
+
+                if (!confirmed) return;
+
+                await signOut({
+                  redirectTo: "/login",
+                });
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100 active:scale-[0.99]"
+            >
+              <LogOut size={17} />
+              Logout
+            </button>
+          </div>
         </section>
 
         <footer className="py-7 text-center text-xs text-slate-400">

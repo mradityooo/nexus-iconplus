@@ -80,15 +80,11 @@ export function LanguageProvider({
   children: ReactNode;
 }) {
 
-
 const [language, setLanguageState] = useState<Language>(() => {
-  if (typeof window === "undefined") {
-    return "id";
-  }
+  if (typeof window === "undefined") return "id";
 
   try {
     const saved = window.localStorage.getItem("nexus-language");
-
     return saved === "id" || saved === "en" ? saved : "id";
   } catch {
     return "id";
