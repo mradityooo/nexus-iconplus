@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import {
   Eye,
   EyeOff,
@@ -14,6 +15,7 @@ import {
 type AuthMode = "login" | "signin";
 
 export default function LoginPage() {
+  const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -23,24 +25,46 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError("");
+  
+async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  setError("");
 
-    if (mode === "signin") {
-      if (password !== confirmPassword) {
-        setError("Konfirmasi password tidak cocok.");
-        return;
-      }
-
-      setError(
-        "Registrasi belum terhubung ke backend NEXUS."
-      );
+  if (mode === "signin") {
+    if (password !== confirmPassword) {
+      setError("Konfirmasi password tidak cocok.");
       return;
     }
 
-    setError("Login belum terhubung ke backend NEXUS.");
+    setError("Fitur registrasi belum tersedia.");
+    return;
   }
+
+  try {
+    setIsLoading(true);
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: "/",
+    });
+
+    if (result?.error) {
+      setError("Email atau password salah.");
+      return;
+    }
+
+    if (result?.url) {
+      window.location.href = result.url;
+    }
+  } catch {
+    setError("Terjadi kesalahan saat login. Silakan coba lagi.");
+  } finally {
+    setIsLoading(false);
+  }
+}
+
 
   return (
     
@@ -256,13 +280,19 @@ export default function LoginPage() {
             </p>
           )}
 
-          {/* Tombol utama */}
+          {/* Tombol utama */}     
           <button
             type="submit"
-            className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
+            disabled={isLoading}
+            className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {mode === "login" ? "Login" : "Create Account"}
-            <ArrowRight className="h-4 w-4" />
+            {isLoading
+              ? "Please wait..."
+              : mode === "login"
+                ? "Login"
+                : "Create Account"}
+
+            {!isLoading && <ArrowRight className="h-4 w-4" />}
           </button>
         </form>
 

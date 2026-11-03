@@ -282,7 +282,7 @@ function checkOut() {
                 Your time matters.
               </h2>
 
-              <p className="mt-0 text-[11px] leading-5 text-sky-100">
+              <p className="mt-2 max-w-[270px] text-[11px] leading-4 text-blue-50">
                 Keep track of your work attendance and planned time off.
               </p>
             </div>

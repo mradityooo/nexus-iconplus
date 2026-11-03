@@ -209,7 +209,7 @@ export default function MyRequestPage() {
 
           {/* Summary */}
           <section className="mb-5 grid grid-cols-3 gap-2">
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-black">
                 Total Request
               </p>
@@ -218,7 +218,7 @@ export default function MyRequestPage() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-black">
                 Dalam Proses
               </p>
@@ -227,7 +227,7 @@ export default function MyRequestPage() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
               <p className="text-[10px] text-black">
                 Disetujui
               </p>

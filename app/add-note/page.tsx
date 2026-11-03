@@ -11,7 +11,6 @@ import {
   CalendarDays,
   CheckCircle2,
   Circle,
-  Clock3,
   Pencil,
   Trash2,
   X,
