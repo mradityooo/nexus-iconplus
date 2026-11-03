@@ -593,7 +593,7 @@ export default function ProfilePage() {
                   redirectTo: "/login",
                 });
               }}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100 active:scale-[0.99]"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100 active:scale-[0.99]"
             >
               <LogOut size={17} />
               Logout
