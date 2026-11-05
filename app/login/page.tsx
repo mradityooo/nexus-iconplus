@@ -50,6 +50,12 @@ async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
       callbackUrl: "/",
     });
 
+    console.log("[LOGIN RESULT]", {
+      error: result?.error ?? null,
+      status: result?.status ?? null,
+      url: result?.url ?? null,
+    });
+
     if (result?.error) {
       setError("Email atau password salah.");
       return;

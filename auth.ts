@@ -27,6 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
 
       async authorize(credentials) {
+
         const email = String(credentials?.email ?? "")
           .trim()
           .toLowerCase();
@@ -34,6 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = String(credentials?.password ?? "");
 
         if (!email || !password) {
+          console.log("[AUTH CHECK] Email atau password kosong");
           return null;
         }
 
@@ -41,11 +43,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email },
         });
 
+
+
         if (!user || user.status !== "ACTIVE") {
           return null;
         }
 
         const isValid = await compare(password, user.password);
+
+        console.log(
+          "[AUTH CHECK] Password:",
+          isValid ? "MATCH" : "NOT MATCH"
+        );
 
         if (!isValid) {
           return null;
@@ -67,7 +76,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role;
       }
 
-      return token;
+      return token; 
     },
 
     async session({ session, token }) {
