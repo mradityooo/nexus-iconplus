@@ -20,17 +20,39 @@ enum AccountStatus {
   INACTIVE
 }
 
+enum VehicleStatus {
+  AVAILABLE
+  MAINTENANCE
+  INACTIVE
+}
+
+enum DriverStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
 model User {
-  id           String        @id @default(uuid()) @db.Uuid
-  email        String        @unique
-  password     String
-  role         UserRole      @default(EMPLOYEE)
-  status       AccountStatus @default(ACTIVE)
+  id        String        @id @default(uuid()) @db.Uuid
+  email     String        @unique
+  password  String
+  role      UserRole      @default(EMPLOYEE)
+  status    AccountStatus @default(ACTIVE)
 
-  employee     Employee?
+  employee  Employee?
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  // Reservasi yang disetujui oleh user (GA)
+  approvedReservations VehicleReservation[] @relation("ReservationApprover")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
@@ -49,8 +71,77 @@ model Employee {
 
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  reservations VehicleReservation[]
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@map("employees")
+}
+
+model Vehicle {
+  id           String        @id @default(uuid()) @db.Uuid
+  vehicleCode  String        @unique
+  name         String
+  plateNumber  String        @unique
+  vehicleType  String?
+  seatCapacity Int
+  status       VehicleStatus @default(AVAILABLE)
+
+  reservations VehicleReservation[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("vehicles")
+}
+
+model Driver {
+  id            String       @id @default(uuid()) @db.Uuid
+  fullName      String
+  phone         String?
+  licenseNumber String?      @unique
+  status        DriverStatus @default(ACTIVE)
+
+  reservations  VehicleReservation[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("drivers")
+}
+
+model VehicleReservation {
+  id             String            @id @default(uuid()) @db.Uuid
+
+  employeeId     String            @db.Uuid
+  vehicleId      String            @db.Uuid
+  driverId       String?           @db.Uuid
+  approvedById   String?           @db.Uuid
+
+  startAt        DateTime
+  endAt          DateTime
+
+  destination    String
+  purpose        String
+  passengerCount Int
+
+  status         ReservationStatus @default(PENDING)
+  reviewNote     String?
+  reviewedAt     DateTime?
+
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driver         Driver?  @relation(fields: [driverId], references: [id], onDelete: Restrict)
+
+  approvedBy     User?    @relation("ReservationApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([vehicleId, startAt, endAt])
+  @@index([driverId, startAt, endAt])
+  @@index([status])
+  @@map("vehicle_reservations")
 }
