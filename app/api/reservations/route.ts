@@ -104,7 +104,6 @@ export async function POST(request: Request) {
       "endAt",
       "destination",
       "purpose",
-      "passengerCount",
     ];
 
     const keys = Object.keys(body);
@@ -144,17 +143,14 @@ export async function POST(request: Request) {
         ? body.purpose.trim()
         : "";
 
-    const passengerCount = body.passengerCount;
-
     if (
       !vehicleId ||
       driverId === "" ||
       !destination ||
       !purpose ||
       destination.length > 255 ||
-      purpose.length > 1000 ||
-      !Number.isInteger(passengerCount) ||
-      passengerCount < 1
+      purpose.length > 1000 
+
     ) {
       return NextResponse.json(
         { message: "Periksa kembali data pengajuan." },
@@ -239,14 +235,6 @@ export async function POST(request: Request) {
           }
         }
 
-        // Kapasitas dihitung termasuk driver jika menggunakan driver.
-        const totalOccupants =
-          passengerCount + (driverId ? 1 : 0);
-
-        if (totalOccupants > vehicle.seatCapacity) {
-          return { error: "CAPACITY_EXCEEDED" as const };
-        }
-
         const timeRange = {
           startAt: { lt: endAt },
           endAt: { gt: startAt },
@@ -306,7 +294,6 @@ export async function POST(request: Request) {
               endAt,
               destination,
               purpose,
-              passengerCount,
               status: "PENDING",
             },
             include: {
@@ -352,10 +339,6 @@ export async function POST(request: Request) {
         DRIVER_UNAVAILABLE: {
           message: "Driver sedang tidak aktif.",
           status: 409,
-        },
-        CAPACITY_EXCEEDED: {
-          message: "Jumlah orang melebihi kapasitas kendaraan.",
-          status: 400,
         },
         VEHICLE_BOOKED: {
           message: "Kendaraan sudah memiliki reservasi pada jadwal tersebut.",

@@ -124,7 +124,6 @@ model VehicleReservation {
 
   destination    String
   purpose        String
-  passengerCount Int
 
   status         ReservationStatus @default(PENDING)
   reviewNote     String?
