@@ -4,7 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -162,6 +162,99 @@ noLeaveRequests: "Belum Ada Pengajuan Cuti",
 noLeaveRequestsDescription: "Buat pengajuan cuti pertama Anda.",
 createRequest: "Buat Pengajuan",
     },
+    request: {
+  section: "LAYANAN KARYAWAN",
+  title: "Permintaan",
+  description: "Ajukan dan pantau permintaan operasional Anda dalam satu tempat.",
+  totalRequests: "Total Permintaan",
+pending: "Menunggu",
+approved: "Disetujui",
+newRequestTab: "Buat Permintaan",
+myRequestsTab: "Permintaan Saya",
+formTitle: "Informasi Permintaan",
+requestTitleLabel: "Judul Permintaan",
+requestTitlePlaceholder: "Masukkan judul permintaan",
+categoryLabel: "Kategori",
+selectCategory: "Pilih kategori",
+itEquipment: "TI & Peralatan",
+systemAccess: "Akses Sistem",
+facility: "Fasilitas",
+administration: "Administrasi",
+other: "Lainnya",
+priorityLabel: "Prioritas",
+priorityLow: "Rendah",
+priorityNormal: "Normal",
+priorityHigh: "Tinggi",
+priorityUrgent: "Mendesak",
+neededDateLabel: "Tanggal Dibutuhkan",
+requestDescriptionLabel: "Deskripsi Permintaan",
+requestDescriptionPlaceholder: "Jelaskan permintaan Anda dan tujuannya...",
+characterCount: "karakter",
+requestNotice: "Pastikan informasi permintaan Anda sudah lengkap sebelum dikirim. Pengajuan akan mendapatkan status Menunggu.",
+submitRequestButton: "Kirim Permintaan",
+myRequestsDescription: "Pantau status permintaan yang telah Anda ajukan.",
+newButton: "Baru",
+searchPlaceholder: "Cari judul, ID, atau kategori",
+inReview: "Sedang Ditinjau",
+rejected: "Ditolak",
+detailsTitle: "Detail Permintaan",
+submittedAtLabel: "Tanggal Pengajuan",
+descriptionLabel: "Deskripsi",
+closeDetailsButton: "Tutup Detail",
+submitSuccess: "berhasil diajukan.",
+invalidNeededDate: "Tanggal dibutuhkan tidak boleh sebelum hari ini.",
+noRequestsFound: "Permintaan tidak ditemukan",
+noRequestsDescription: "Coba kata kunci lain atau buat permintaan baru.",
+},
+wfa: {
+  section: "LAYANAN KARYAWAN",
+  title: "Kerja dari Mana Saja",
+  description: "Kelola jadwal kerja jarak jauh dan pengajuan WFA Anda.",
+  totalRequests: "Total Permintaan",
+pending: "Menunggu",
+approved: "Disetujui",
+newWfaTab: "Buat WFA",
+myRequestsTab: "Permintaan Saya",
+formTitle: "Pengajuan WFA",
+formDescription: "Lengkapi informasi kerja jarak jauh Anda",
+workLocationLabel: "Lokasi Kerja",
+homeLocation: "Rumah",
+otherLocation: "Lainnya",
+locationDetailsLabel: "Detail Lokasi",
+locationDetailsPlaceholder: "Kota atau alamat tempat kerja",
+startDateLabel: "Tanggal Mulai",
+endDateLabel: "Tanggal Selesai",
+reasonLabel: "Alasan Pengajuan WFA",
+reasonPlaceholder: "Jelaskan alasan Anda perlu bekerja jarak jauh...",
+notesLabel: "Catatan Tambahan",
+notesPlaceholder: "Informasi tambahan (opsional)",
+submitButton: "Kirim Pengajuan WFA",
+myWfaRequests: "Permintaan WFA Saya",
+myWfaDescription: "Pantau pengajuan kerja jarak jauh Anda",
+requestCountOne: "pengajuan",
+requestCountMany: "pengajuan",
+rejected: "Ditolak",
+notesDisplayLabel: "Catatan",
+removeButton: "Hapus",
+submitSuccess: "Pengajuan WFA berhasil ditambahkan.",
+invalidStartDate: "Tanggal mulai tidak boleh di masa lalu.",
+invalidEndDate: "Tanggal selesai tidak boleh sebelum tanggal mulai.",
+removeSuccess: "Pengajuan berhasil dihapus.",
+emptyTitle: "Belum ada pengajuan WFA",
+emptyDescription: "Buat pengajuan kerja jarak jauh pertama Anda.",
+createRequestButton: "Buat Pengajuan",
+summaryTitle: "Ringkasan WFA",
+summaryDescription: "Ringkasan pengajuan WFA Anda",
+totalLabel: "Total",
+prototypeNotice:
+  "Ini masih berupa prototipe lokal. Pengajuan belum terhubung dengan sistem persetujuan admin atau database.",
+backButton: "Kembali",
+confirmButton: "Konfirmasi",
+summaryConfirmedTitle: "Ringkasan Berhasil Dikonfirmasi",
+summaryConfirmedDescription:
+  "Ini hanya konfirmasi prototipe. Belum ada pengajuan yang dikirim ke server atau sistem persetujuan.",
+createNewWfaButton: "Buat WFA Baru",
+},
   },
   en: {
     employeePortal: "Employee Portal",
@@ -315,6 +408,99 @@ noLeaveRequests: "No leave requests yet",
 noLeaveRequestsDescription: "Create your first leave application.",
 createRequest: "Create Request",
     },
+    request: {
+  section: "EMPLOYEE SERVICES",
+  title: "Request",
+  description: "Submit and track your operational requests in one place.",
+  totalRequests: "Total Requests",
+pending: "Pending",
+approved: "Approved",
+newRequestTab: "New Request",
+myRequestsTab: "My Requests",
+formTitle: "Request Information",
+requestTitleLabel: "Request Title",
+requestTitlePlaceholder: "Enter request title",
+categoryLabel: "Category",
+selectCategory: "Select category",
+itEquipment: "IT & Equipment",
+systemAccess: "System Access",
+facility: "Facility",
+administration: "Administration",
+other: "Other",
+priorityLabel: "Priority",
+priorityLow: "Low",
+priorityNormal: "Normal",
+priorityHigh: "High",
+priorityUrgent: "Urgent",
+neededDateLabel: "Needed Date",
+requestDescriptionLabel: "Request Description",
+requestDescriptionPlaceholder: "Explain your request and its purpose...",
+characterCount: "characters",
+requestNotice: "Make sure your request information is complete before submitting. The request will initially be marked as Pending.",
+submitRequestButton: "Submit Request",
+myRequestsDescription: "Track the status of your submissions.",
+newButton: "New",
+searchPlaceholder: "Search title, ID, or category",
+inReview: "In Review",
+rejected: "Rejected",
+detailsTitle: "Request Details",
+submittedAtLabel: "Submitted At",
+descriptionLabel: "Description",
+closeDetailsButton: "Close Details",
+submitSuccess: "submitted successfully.",
+invalidNeededDate: "The needed date cannot be earlier than today.",
+noRequestsFound: "No requests found",
+noRequestsDescription: "Try another keyword or create a new request.",
+},
+wfa: {
+  section: "EMPLOYEE SERVICES",
+  title: "Work From Anywhere",
+  description: "Manage your remote work schedule and WFA requests.",
+  totalRequests: "Total Requests",
+pending: "Pending",
+approved: "Approved",
+newWfaTab: "New WFA",
+myRequestsTab: "My Requests",
+formTitle: "WFA Request",
+formDescription: "Complete your remote work details",
+workLocationLabel: "Work Location",
+homeLocation: "Home",
+otherLocation: "Other",
+locationDetailsLabel: "Location Details",
+locationDetailsPlaceholder: "City or work address",
+startDateLabel: "Start Date",
+endDateLabel: "End Date",
+reasonLabel: "Reason for WFA",
+reasonPlaceholder: "Explain why you need to work remotely...",
+notesLabel: "Additional Notes",
+notesPlaceholder: "Additional information (optional)",
+submitButton: "Submit WFA Request",
+myWfaRequests: "My WFA Requests",
+myWfaDescription: "Track your remote work requests",
+requestCountOne: "request",
+requestCountMany: "requests",
+rejected: "Rejected",
+notesDisplayLabel: "Notes",
+removeButton: "Remove",
+submitSuccess: "WFA request submitted successfully.",
+invalidStartDate: "Start date cannot be in the past.",
+invalidEndDate: "End date cannot be earlier than start date.",
+removeSuccess: "Request removed successfully.",
+emptyTitle: "No WFA requests yet",
+emptyDescription: "Create your first remote work request.",
+createRequestButton: "Create Request",
+summaryTitle: "WFA Summary",
+summaryDescription: "Overview of your requests",
+totalLabel: "Total",
+prototypeNotice:
+  "This is a local prototype. Requests are not yet connected to the admin approval system or database.",
+backButton: "Back",
+confirmButton: "Confirm",
+summaryConfirmedTitle: "Summary confirmed",
+summaryConfirmedDescription:
+  "This is a prototype confirmation. No request has been sent to a server or approval workflow.",
+createNewWfaButton: "Create New WFA",
+},
   },
 } as const;
 
@@ -328,35 +514,49 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined
 );
 
+function getLanguageSnapshot(): Language {
+  try {
+    const saved = window.localStorage.getItem("nexus-language");
+    return saved === "en" ? "en" : "id";
+  } catch {
+    return "id";
+  }
+}
+
+function getServerLanguageSnapshot(): Language {
+  return "id";
+}
+
+function subscribeToLanguage(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener("nexus-language-change", callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("nexus-language-change", callback);
+  };
+}
+
 export function LanguageProvider({
   children,
 }: {
   children: ReactNode;
 }) {
 
-const [language, setLanguageState] = useState<Language>("id");
-
-useEffect(() => {
-  try {
-    const saved = window.localStorage.getItem("nexus-language");
-
-    if (saved === "id" || saved === "en") {
-      setLanguageState(saved);
-    }
-  } catch (error) {
-    console.error("Failed to load language preference:", error);
-  }
-}, []);
+const language = useSyncExternalStore(
+  subscribeToLanguage,
+  getLanguageSnapshot,
+  getServerLanguageSnapshot
+);
 
 useEffect(() => {
   document.documentElement.lang = language;
 }, [language]);
 
 function setLanguage(nextLanguage: Language) {
-  setLanguageState(nextLanguage);
-
   try {
     window.localStorage.setItem("nexus-language", nextLanguage);
+    window.dispatchEvent(new Event("nexus-language-change"));
   } catch (error) {
     console.error("Failed to save language preference:", error);
   }

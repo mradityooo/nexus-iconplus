@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useLanguage } from "../context/LanguageContext";
 import {
   ArrowLeft,
@@ -46,18 +47,39 @@ const inputClass =
 const labelClass =
   "mb-1.5 block text-xs font-semibold text-slate-700";
 
-const formatDate = (date: string) => {
+const formatDate = (date: string, language: "id" | "en") => {
   if (!date) return "-";
 
-  return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return new Date(`${date}T00:00:00`).toLocaleDateString(
+    language === "id" ? "id-ID" : "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  );
 };
 
+function formatAttendanceDate(date: string, language: "id" | "en") {
+  if (language === "en") return date;
+
+  const months: Record<string, string> = {
+    May: "Mei",
+    Aug: "Agu",
+    Sep: "Sep",
+    Sept: "Sep",
+    Oct: "Okt",
+    Dec: "Des",
+  };
+
+  return date.replace(
+    /\b(May|Aug|Sept|Sep|Oct|Dec)\b/g,
+    (month) => months[month] ?? month
+  );
+}
+
 export default function LeaveAttendancePage() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
   const [view, setView] = useState<"attendance" | "request" | "history">(
     "attendance"
   );
@@ -69,6 +91,7 @@ export default function LeaveAttendancePage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] =
   useState<"success" | "error">("error");
+  const [messageDays, setMessageDays] = useState(0);
 
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [attendance, setAttendance] =
@@ -108,12 +131,12 @@ export default function LeaveAttendancePage() {
     e.preventDefault();
 
     if (!reason.trim()) {
-  showMessage(t.leaveAttendance.invalidReason, "error");
+  showMessage("invalidReason", "error");
   return;
 }
 
     if (endDate < startDate) {
-      showMessage(t.leaveAttendance.invalidDate, "error");
+      showMessage("invalidDate", "error");
       return;
     }
 
@@ -124,6 +147,10 @@ export default function LeaveAttendancePage() {
       Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
 
     if (leaveType === "Annual Leave" && days > leaveBalance) {
+  setMessageDays(leaveBalance);
+  showMessage("insufficientLeaveBalance", "error");
+  return;
+}{
       showMessage(
   t.leaveAttendance.insufficientLeaveBalance.replace(
     "{days}",
@@ -147,7 +174,7 @@ export default function LeaveAttendancePage() {
       ...current,
     ]);
 
-    showMessage(t.leaveAttendance.leaveSubmitSuccess, "success");
+    showMessage("leaveSubmitSuccess", "success");
     setStartDate("");
     setEndDate("");
     setReason("");
@@ -161,7 +188,6 @@ export default function LeaveAttendancePage() {
       minute: "2-digit",
     });
 
-    const today = now.toLocaleDateString("en-CA");
     const todayLabel = now.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
@@ -173,7 +199,7 @@ export default function LeaveAttendancePage() {
     );
 
     if (alreadyCheckedIn) {
-      showMessage(t.leaveAttendance.alreadyRecordedError, "error");
+      showMessage("alreadyRecordedError", "error");
       return;
     }
 
@@ -189,7 +215,7 @@ export default function LeaveAttendancePage() {
     ]);
 
     setShowCheckIn(true);
-    showMessage(t.leaveAttendance.checkInSuccess, "success");
+    showMessage("checkInSuccess", "success");
   }
 
   
@@ -207,12 +233,12 @@ function checkOut() {
   );
 
   if (!record) {
-    showMessage(t.leaveAttendance.checkInFirstError, "error");
+    showMessage("checkInFirstError", "error");
     return;
   }
 
   if (record.checkOut !== "--:--") {
-    showMessage(t.leaveAttendance.alreadyCheckedOutError, "error");
+    showMessage("alreadyCheckedOutError", "error");
     return;
   }
 
@@ -230,7 +256,7 @@ function checkOut() {
     )
   );
 
-  showMessage(t.leaveAttendance.checkOutSuccess, "success");
+  showMessage("checkOutSuccess", "success");
 }
 
 
@@ -238,7 +264,7 @@ function checkOut() {
     setLeaveRequests((current) =>
       current.filter((item) => item.id !== id)
     );
-    showMessage(t.leaveAttendance.leaveRemovedSuccess, "success");
+    showMessage("leaveRemovedSuccess", "success");
   }
 
   const todayRecord = attendance.find(
@@ -265,11 +291,13 @@ function checkOut() {
               <ArrowLeft size={18} />
             </Link>
 
-            <img
-              src="/nexus.png"
-              alt="NEXUS"
-              className="h-10 w-auto object-contain"
-            />
+            <Image
+  src="/nexus.png"
+  alt="NEXUS"
+  width={120}
+  height={40}
+  className="h-10 w-auto object-contain"
+/>
           </div>
 
           <div className="flex items-center gap-4">
@@ -423,7 +451,30 @@ function checkOut() {
         : "border-red-200 bg-red-50 text-red-700"
     }`}
   >
-    {message}
+    {message === "leaveSubmitSuccess"
+  ? t.leaveAttendance.leaveSubmitSuccess
+  : message === "checkInSuccess"
+    ? t.leaveAttendance.checkInSuccess
+    : message === "checkOutSuccess"
+      ? t.leaveAttendance.checkOutSuccess
+      : message === "leaveRemovedSuccess"
+        ? t.leaveAttendance.leaveRemovedSuccess
+        : message === "alreadyRecordedError"
+          ? t.leaveAttendance.alreadyRecordedError
+          : message === "checkInFirstError"
+            ? t.leaveAttendance.checkInFirstError
+            : message === "alreadyCheckedOutError"
+  ? t.leaveAttendance.alreadyCheckedOutError
+  : message === "invalidReason"
+    ? t.leaveAttendance.invalidReason
+    : message === "invalidDate"
+  ? t.leaveAttendance.invalidDate
+  : message === "insufficientLeaveBalance"
+    ? t.leaveAttendance.insufficientLeaveBalance.replace(
+        "{days}",
+        String(messageDays)
+      )
+    : message}
   </div>
 )}
 
@@ -507,7 +558,10 @@ function checkOut() {
                   </div>
 
                   <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-bold text-slate-800">
-                    {attendance.length} {t.leaveAttendance.records}
+                    {attendance.length}{" "}
+{language === "en" && attendance.length === 1
+  ? "record"
+  : t.leaveAttendance.records}
                   </span>
                 </div>
 
@@ -524,7 +578,7 @@ function checkOut() {
 
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-slate-900">
-                            {item.date}
+                            {formatAttendanceDate(item.date, language)}
                           </p>
                           <p className="mt-1 text-[10px] text-slate-500">
                             {t.leaveAttendance.weekdays[
@@ -822,7 +876,7 @@ function checkOut() {
                             {t.leaveAttendance.historyStartDate}
                           </p>
                           <p className="mt-1 text-xs font-semibold text-slate-800">
-                            {formatDate(item.startDate)}
+                            {formatDate(item.startDate, language)}
                           </p>
                         </div>
 
@@ -831,7 +885,7 @@ function checkOut() {
                             {t.leaveAttendance.historyEndDate}
                           </p>
                           <p className="mt-1 text-xs font-semibold text-slate-800">
-                            {formatDate(item.endDate)}
+                            {formatDate(item.endDate, language)}
                           </p>
                         </div>
                       </div>
