@@ -9,6 +9,7 @@ import {
   CarFront,
   UserRound,
   CalendarCheck,
+  Plane,
   ShieldCheck,
   LogOut,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const menus = [
   { label: "Vehicles", href: "/admin/vehicles", icon: CarFront },
   { label: "Drivers", href: "/admin/drivers", icon: UserRound },
   { label: "Reservations", href: "/admin/reservations", icon: CalendarCheck },
+  { label: "Business Travel", href: "/admin/business-travels", icon: Plane },
   { label: "Accounts", href: "/admin/accounts", icon: ShieldCheck },
 ];
 
@@ -44,7 +46,12 @@ export default function AdminSidebar() {
 
         {menus.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href;
+
+          const active =
+            item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname === item.href ||
+                pathname.startsWith(`${item.href}/`);
 
           return (
             <Link

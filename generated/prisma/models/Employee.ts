@@ -232,6 +232,7 @@ export type EmployeeWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   reservations?: Prisma.VehicleReservationListRelationFilter
+  businessTravelRequests?: Prisma.BusinessTravelRequestListRelationFilter
 }
 
 export type EmployeeOrderByWithRelationInput = {
@@ -248,6 +249,7 @@ export type EmployeeOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   reservations?: Prisma.VehicleReservationOrderByRelationAggregateInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestOrderByRelationAggregateInput
 }
 
 export type EmployeeWhereUniqueInput = Prisma.AtLeast<{
@@ -267,6 +269,7 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   reservations?: Prisma.VehicleReservationListRelationFilter
+  businessTravelRequests?: Prisma.BusinessTravelRequestListRelationFilter
 }, "id" | "userId" | "employeeCode">
 
 export type EmployeeOrderByWithAggregationInput = {
@@ -316,6 +319,7 @@ export type EmployeeCreateInput = {
   updatedAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
   reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateInput = {
@@ -331,6 +335,7 @@ export type EmployeeUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUpdateInput = {
@@ -346,6 +351,7 @@ export type EmployeeUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
   reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateInput = {
@@ -361,6 +367,7 @@ export type EmployeeUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeCreateManyInput = {
@@ -510,6 +517,20 @@ export type EmployeeUpdateOneRequiredWithoutReservationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EmployeeUpdateToOneWithWhereWithoutReservationsInput, Prisma.EmployeeUpdateWithoutReservationsInput>, Prisma.EmployeeUncheckedUpdateWithoutReservationsInput>
 }
 
+export type EmployeeCreateNestedOneWithoutBusinessTravelRequestsInput = {
+  create?: Prisma.XOR<Prisma.EmployeeCreateWithoutBusinessTravelRequestsInput, Prisma.EmployeeUncheckedCreateWithoutBusinessTravelRequestsInput>
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutBusinessTravelRequestsInput
+  connect?: Prisma.EmployeeWhereUniqueInput
+}
+
+export type EmployeeUpdateOneRequiredWithoutBusinessTravelRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.EmployeeCreateWithoutBusinessTravelRequestsInput, Prisma.EmployeeUncheckedCreateWithoutBusinessTravelRequestsInput>
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutBusinessTravelRequestsInput
+  upsert?: Prisma.EmployeeUpsertWithoutBusinessTravelRequestsInput
+  connect?: Prisma.EmployeeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EmployeeUpdateToOneWithWhereWithoutBusinessTravelRequestsInput, Prisma.EmployeeUpdateWithoutBusinessTravelRequestsInput>, Prisma.EmployeeUncheckedUpdateWithoutBusinessTravelRequestsInput>
+}
+
 export type EmployeeCreateWithoutUserInput = {
   id?: string
   employeeCode: string
@@ -522,6 +543,7 @@ export type EmployeeCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateWithoutUserInput = {
@@ -536,6 +558,7 @@ export type EmployeeUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeCreateOrConnectWithoutUserInput = {
@@ -566,6 +589,7 @@ export type EmployeeUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateWithoutUserInput = {
@@ -580,6 +604,7 @@ export type EmployeeUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeCreateWithoutReservationsInput = {
@@ -594,6 +619,7 @@ export type EmployeeCreateWithoutReservationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateWithoutReservationsInput = {
@@ -608,6 +634,7 @@ export type EmployeeUncheckedCreateWithoutReservationsInput = {
   joinDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeCreateOrConnectWithoutReservationsInput = {
@@ -638,6 +665,7 @@ export type EmployeeUpdateWithoutReservationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateWithoutReservationsInput = {
@@ -652,6 +680,83 @@ export type EmployeeUncheckedUpdateWithoutReservationsInput = {
   joinDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
+}
+
+export type EmployeeCreateWithoutBusinessTravelRequestsInput = {
+  id?: string
+  employeeCode: string
+  fullName: string
+  phone?: string | null
+  department?: string | null
+  position?: string | null
+  workLocation?: string | null
+  joinDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
+  reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
+}
+
+export type EmployeeUncheckedCreateWithoutBusinessTravelRequestsInput = {
+  id?: string
+  userId?: string | null
+  employeeCode: string
+  fullName: string
+  phone?: string | null
+  department?: string | null
+  position?: string | null
+  workLocation?: string | null
+  joinDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
+}
+
+export type EmployeeCreateOrConnectWithoutBusinessTravelRequestsInput = {
+  where: Prisma.EmployeeWhereUniqueInput
+  create: Prisma.XOR<Prisma.EmployeeCreateWithoutBusinessTravelRequestsInput, Prisma.EmployeeUncheckedCreateWithoutBusinessTravelRequestsInput>
+}
+
+export type EmployeeUpsertWithoutBusinessTravelRequestsInput = {
+  update: Prisma.XOR<Prisma.EmployeeUpdateWithoutBusinessTravelRequestsInput, Prisma.EmployeeUncheckedUpdateWithoutBusinessTravelRequestsInput>
+  create: Prisma.XOR<Prisma.EmployeeCreateWithoutBusinessTravelRequestsInput, Prisma.EmployeeUncheckedCreateWithoutBusinessTravelRequestsInput>
+  where?: Prisma.EmployeeWhereInput
+}
+
+export type EmployeeUpdateToOneWithWhereWithoutBusinessTravelRequestsInput = {
+  where?: Prisma.EmployeeWhereInput
+  data: Prisma.XOR<Prisma.EmployeeUpdateWithoutBusinessTravelRequestsInput, Prisma.EmployeeUncheckedUpdateWithoutBusinessTravelRequestsInput>
+}
+
+export type EmployeeUpdateWithoutBusinessTravelRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  joinDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
+  reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
+}
+
+export type EmployeeUncheckedUpdateWithoutBusinessTravelRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  joinDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 
@@ -661,10 +766,12 @@ export type EmployeeUncheckedUpdateWithoutReservationsInput = {
 
 export type EmployeeCountOutputType = {
   reservations: number
+  businessTravelRequests: number
 }
 
 export type EmployeeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reservations?: boolean | EmployeeCountOutputTypeCountReservationsArgs
+  businessTravelRequests?: boolean | EmployeeCountOutputTypeCountBusinessTravelRequestsArgs
 }
 
 /**
@@ -684,6 +791,13 @@ export type EmployeeCountOutputTypeCountReservationsArgs<ExtArgs extends runtime
   where?: Prisma.VehicleReservationWhereInput
 }
 
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountBusinessTravelRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BusinessTravelRequestWhereInput
+}
+
 
 export type EmployeeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -699,6 +813,7 @@ export type EmployeeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   updatedAt?: boolean
   user?: boolean | Prisma.Employee$userArgs<ExtArgs>
   reservations?: boolean | Prisma.Employee$reservationsArgs<ExtArgs>
+  businessTravelRequests?: boolean | Prisma.Employee$businessTravelRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["employee"]>
 
@@ -750,6 +865,7 @@ export type EmployeeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type EmployeeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Employee$userArgs<ExtArgs>
   reservations?: boolean | Prisma.Employee$reservationsArgs<ExtArgs>
+  businessTravelRequests?: boolean | Prisma.Employee$businessTravelRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EmployeeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -764,6 +880,7 @@ export type $EmployeePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     user: Prisma.$UserPayload<ExtArgs> | null
     reservations: Prisma.$VehicleReservationPayload<ExtArgs>[]
+    businessTravelRequests: Prisma.$BusinessTravelRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1173,6 +1290,7 @@ export interface Prisma__EmployeeClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.Employee$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Employee$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reservations<T extends Prisma.Employee$reservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Employee$reservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VehicleReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  businessTravelRequests<T extends Prisma.Employee$businessTravelRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Employee$businessTravelRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BusinessTravelRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1654,6 +1772,30 @@ export type Employee$reservationsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.VehicleReservationScalarFieldEnum | Prisma.VehicleReservationScalarFieldEnum[]
+}
+
+/**
+ * Employee.businessTravelRequests
+ */
+export type Employee$businessTravelRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BusinessTravelRequest
+   */
+  select?: Prisma.BusinessTravelRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BusinessTravelRequest
+   */
+  omit?: Prisma.BusinessTravelRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BusinessTravelRequestInclude<ExtArgs> | null
+  where?: Prisma.BusinessTravelRequestWhereInput
+  orderBy?: Prisma.BusinessTravelRequestOrderByWithRelationInput | Prisma.BusinessTravelRequestOrderByWithRelationInput[]
+  cursor?: Prisma.BusinessTravelRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BusinessTravelRequestScalarFieldEnum | Prisma.BusinessTravelRequestScalarFieldEnum[]
 }
 
 /**

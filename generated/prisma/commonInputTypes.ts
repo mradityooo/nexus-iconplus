@@ -301,6 +301,40 @@ export type EnumReservationStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumReservationStatusFilter<$PrismaModel>
 }
 
+export type EnumBusinessTravelStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelStatus | Prisma.EnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelStatusFilter<$PrismaModel> | $Enums.BusinessTravelStatus
+}
+
+export type EnumBusinessTravelStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelStatus | Prisma.EnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelStatusWithAggregatesFilter<$PrismaModel> | $Enums.BusinessTravelStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBusinessTravelStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBusinessTravelStatusFilter<$PrismaModel>
+}
+
+export type EnumBusinessTravelFacilityTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelFacilityType | Prisma.EnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelFacilityTypeFilter<$PrismaModel> | $Enums.BusinessTravelFacilityType
+}
+
+export type EnumBusinessTravelFacilityTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelFacilityType | Prisma.EnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelFacilityTypeWithAggregatesFilter<$PrismaModel> | $Enums.BusinessTravelFacilityType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBusinessTravelFacilityTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBusinessTravelFacilityTypeFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -595,6 +629,40 @@ export type NestedEnumReservationStatusWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumReservationStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumReservationStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBusinessTravelStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelStatus | Prisma.EnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelStatusFilter<$PrismaModel> | $Enums.BusinessTravelStatus
+}
+
+export type NestedEnumBusinessTravelStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelStatus | Prisma.EnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelStatus[] | Prisma.ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelStatusWithAggregatesFilter<$PrismaModel> | $Enums.BusinessTravelStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBusinessTravelStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBusinessTravelStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBusinessTravelFacilityTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelFacilityType | Prisma.EnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelFacilityTypeFilter<$PrismaModel> | $Enums.BusinessTravelFacilityType
+}
+
+export type NestedEnumBusinessTravelFacilityTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BusinessTravelFacilityType | Prisma.EnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BusinessTravelFacilityType[] | Prisma.ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBusinessTravelFacilityTypeWithAggregatesFilter<$PrismaModel> | $Enums.BusinessTravelFacilityType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBusinessTravelFacilityTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBusinessTravelFacilityTypeFilter<$PrismaModel>
 }
 
 

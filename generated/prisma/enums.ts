@@ -53,3 +53,24 @@ export const ReservationStatus = {
 } as const
 
 export type ReservationStatus = (typeof ReservationStatus)[keyof typeof ReservationStatus]
+
+
+export const BusinessTravelStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type BusinessTravelStatus = (typeof BusinessTravelStatus)[keyof typeof BusinessTravelStatus]
+
+
+export const BusinessTravelFacilityType = {
+  FLIGHT_TICKET: 'FLIGHT_TICKET',
+  HOTEL: 'HOTEL',
+  OTHER_TRANSPORTATION: 'OTHER_TRANSPORTATION'
+} as const
+
+export type BusinessTravelFacilityType = (typeof BusinessTravelFacilityType)[keyof typeof BusinessTravelFacilityType]

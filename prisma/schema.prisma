@@ -39,6 +39,21 @@ enum ReservationStatus {
   COMPLETED
 }
 
+enum BusinessTravelStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum BusinessTravelFacilityType {
+  FLIGHT_TICKET
+  HOTEL
+  OTHER_TRANSPORTATION
+}
+
 model User {
   id        String        @id @default(uuid()) @db.Uuid
   email     String        @unique
@@ -50,6 +65,7 @@ model User {
 
   // Reservasi yang disetujui oleh user (GA)
   approvedReservations VehicleReservation[] @relation("ReservationApprover")
+  approvedBusinessTravels BusinessTravelRequest[] @relation("BusinessTravelApprover")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,6 +88,7 @@ model Employee {
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   reservations VehicleReservation[]
+  businessTravelRequests BusinessTravelRequest[]
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -144,4 +161,54 @@ model VehicleReservation {
   @@index([driverId, startAt, endAt])
   @@index([status])
   @@map("vehicle_reservations")
+}
+
+model BusinessTravelRequest {
+  id           String @id @default(uuid()) @db.Uuid
+  employeeId   String @db.Uuid
+  approvedById String? @db.Uuid
+
+  destination   String
+  purpose       String
+  departureDate DateTime
+  returnDate    DateTime
+
+  transportation String?
+  notes          String?
+
+  status     BusinessTravelStatus @default(PENDING)
+  reviewNote String?
+  reviewedAt DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  approvedBy User? @relation("BusinessTravelApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  facilities BusinessTravelFacility[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([approvedById])
+  @@index([status])
+  @@index([departureDate, returnDate])
+  @@map("business_travel_requests")
+}
+
+model BusinessTravelFacility {
+  id        String @id @default(uuid()) @db.Uuid
+  requestId String @db.Uuid
+
+  type  BusinessTravelFacilityType
+  notes String?
+
+  request BusinessTravelRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([requestId, type])
+  @@index([type])
+  @@map("business_travel_facilities")
 }

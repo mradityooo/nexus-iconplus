@@ -55,7 +55,9 @@ export const ModelName = {
   Employee: 'Employee',
   Vehicle: 'Vehicle',
   Driver: 'Driver',
-  VehicleReservation: 'VehicleReservation'
+  VehicleReservation: 'VehicleReservation',
+  BusinessTravelRequest: 'BusinessTravelRequest',
+  BusinessTravelFacility: 'BusinessTravelFacility'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -151,6 +153,38 @@ export const VehicleReservationScalarFieldEnum = {
 } as const
 
 export type VehicleReservationScalarFieldEnum = (typeof VehicleReservationScalarFieldEnum)[keyof typeof VehicleReservationScalarFieldEnum]
+
+
+export const BusinessTravelRequestScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  approvedById: 'approvedById',
+  destination: 'destination',
+  purpose: 'purpose',
+  departureDate: 'departureDate',
+  returnDate: 'returnDate',
+  transportation: 'transportation',
+  notes: 'notes',
+  status: 'status',
+  reviewNote: 'reviewNote',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BusinessTravelRequestScalarFieldEnum = (typeof BusinessTravelRequestScalarFieldEnum)[keyof typeof BusinessTravelRequestScalarFieldEnum]
+
+
+export const BusinessTravelFacilityScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  type: 'type',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BusinessTravelFacilityScalarFieldEnum = (typeof BusinessTravelFacilityScalarFieldEnum)[keyof typeof BusinessTravelFacilityScalarFieldEnum]
 
 
 export const SortOrder = {

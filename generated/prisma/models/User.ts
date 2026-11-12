@@ -200,6 +200,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   employee?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null
   approvedReservations?: Prisma.VehicleReservationListRelationFilter
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -212,6 +213,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   employee?: Prisma.EmployeeOrderByWithRelationInput
   approvedReservations?: Prisma.VehicleReservationOrderByRelationAggregateInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -227,6 +229,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   employee?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null
   approvedReservations?: Prisma.VehicleReservationListRelationFilter
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -265,6 +268,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput
   approvedReservations?: Prisma.VehicleReservationCreateNestedManyWithoutApprovedByInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -277,6 +281,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   employee?: Prisma.EmployeeUncheckedCreateNestedOneWithoutUserInput
   approvedReservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutApprovedByInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUpdateInput = {
@@ -289,6 +294,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput
   approvedReservations?: Prisma.VehicleReservationUpdateManyWithoutApprovedByNestedInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -301,6 +307,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employee?: Prisma.EmployeeUncheckedUpdateOneWithoutUserNestedInput
   approvedReservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutApprovedByNestedInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -416,6 +423,22 @@ export type UserUpdateOneWithoutApprovedReservationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutApprovedReservationsInput, Prisma.UserUpdateWithoutApprovedReservationsInput>, Prisma.UserUncheckedUpdateWithoutApprovedReservationsInput>
 }
 
+export type UserCreateNestedOneWithoutApprovedBusinessTravelsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutApprovedBusinessTravelsInput, Prisma.UserUncheckedCreateWithoutApprovedBusinessTravelsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutApprovedBusinessTravelsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutApprovedBusinessTravelsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutApprovedBusinessTravelsInput, Prisma.UserUncheckedCreateWithoutApprovedBusinessTravelsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutApprovedBusinessTravelsInput
+  upsert?: Prisma.UserUpsertWithoutApprovedBusinessTravelsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutApprovedBusinessTravelsInput, Prisma.UserUpdateWithoutApprovedBusinessTravelsInput>, Prisma.UserUncheckedUpdateWithoutApprovedBusinessTravelsInput>
+}
+
 export type UserCreateWithoutEmployeeInput = {
   id?: string
   email: string
@@ -425,6 +448,7 @@ export type UserCreateWithoutEmployeeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   approvedReservations?: Prisma.VehicleReservationCreateNestedManyWithoutApprovedByInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateWithoutEmployeeInput = {
@@ -436,6 +460,7 @@ export type UserUncheckedCreateWithoutEmployeeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   approvedReservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutApprovedByInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserCreateOrConnectWithoutEmployeeInput = {
@@ -463,6 +488,7 @@ export type UserUpdateWithoutEmployeeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   approvedReservations?: Prisma.VehicleReservationUpdateManyWithoutApprovedByNestedInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutEmployeeInput = {
@@ -474,6 +500,7 @@ export type UserUncheckedUpdateWithoutEmployeeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   approvedReservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutApprovedByNestedInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserCreateWithoutApprovedReservationsInput = {
@@ -485,6 +512,7 @@ export type UserCreateWithoutApprovedReservationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateWithoutApprovedReservationsInput = {
@@ -496,6 +524,7 @@ export type UserUncheckedCreateWithoutApprovedReservationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   employee?: Prisma.EmployeeUncheckedCreateNestedOneWithoutUserInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserCreateOrConnectWithoutApprovedReservationsInput = {
@@ -523,6 +552,7 @@ export type UserUpdateWithoutApprovedReservationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovedReservationsInput = {
@@ -534,6 +564,71 @@ export type UserUncheckedUpdateWithoutApprovedReservationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employee?: Prisma.EmployeeUncheckedUpdateOneWithoutUserNestedInput
+  approvedBusinessTravels?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutApprovedByNestedInput
+}
+
+export type UserCreateWithoutApprovedBusinessTravelsInput = {
+  id?: string
+  email: string
+  password: string
+  role?: $Enums.UserRole
+  status?: $Enums.AccountStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  employee?: Prisma.EmployeeCreateNestedOneWithoutUserInput
+  approvedReservations?: Prisma.VehicleReservationCreateNestedManyWithoutApprovedByInput
+}
+
+export type UserUncheckedCreateWithoutApprovedBusinessTravelsInput = {
+  id?: string
+  email: string
+  password: string
+  role?: $Enums.UserRole
+  status?: $Enums.AccountStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  employee?: Prisma.EmployeeUncheckedCreateNestedOneWithoutUserInput
+  approvedReservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutApprovedByInput
+}
+
+export type UserCreateOrConnectWithoutApprovedBusinessTravelsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutApprovedBusinessTravelsInput, Prisma.UserUncheckedCreateWithoutApprovedBusinessTravelsInput>
+}
+
+export type UserUpsertWithoutApprovedBusinessTravelsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutApprovedBusinessTravelsInput, Prisma.UserUncheckedUpdateWithoutApprovedBusinessTravelsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutApprovedBusinessTravelsInput, Prisma.UserUncheckedCreateWithoutApprovedBusinessTravelsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutApprovedBusinessTravelsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutApprovedBusinessTravelsInput, Prisma.UserUncheckedUpdateWithoutApprovedBusinessTravelsInput>
+}
+
+export type UserUpdateWithoutApprovedBusinessTravelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  employee?: Prisma.EmployeeUpdateOneWithoutUserNestedInput
+  approvedReservations?: Prisma.VehicleReservationUpdateManyWithoutApprovedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutApprovedBusinessTravelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  employee?: Prisma.EmployeeUncheckedUpdateOneWithoutUserNestedInput
+  approvedReservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutApprovedByNestedInput
 }
 
 
@@ -543,10 +638,12 @@ export type UserUncheckedUpdateWithoutApprovedReservationsInput = {
 
 export type UserCountOutputType = {
   approvedReservations: number
+  approvedBusinessTravels: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   approvedReservations?: boolean | UserCountOutputTypeCountApprovedReservationsArgs
+  approvedBusinessTravels?: boolean | UserCountOutputTypeCountApprovedBusinessTravelsArgs
 }
 
 /**
@@ -566,6 +663,13 @@ export type UserCountOutputTypeCountApprovedReservationsArgs<ExtArgs extends run
   where?: Prisma.VehicleReservationWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountApprovedBusinessTravelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BusinessTravelRequestWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -577,6 +681,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   employee?: boolean | Prisma.User$employeeArgs<ExtArgs>
   approvedReservations?: boolean | Prisma.User$approvedReservationsArgs<ExtArgs>
+  approvedBusinessTravels?: boolean | Prisma.User$approvedBusinessTravelsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -614,6 +719,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   employee?: boolean | Prisma.User$employeeArgs<ExtArgs>
   approvedReservations?: boolean | Prisma.User$approvedReservationsArgs<ExtArgs>
+  approvedBusinessTravels?: boolean | Prisma.User$approvedBusinessTravelsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -624,6 +730,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     employee: Prisma.$EmployeePayload<ExtArgs> | null
     approvedReservations: Prisma.$VehicleReservationPayload<ExtArgs>[]
+    approvedBusinessTravels: Prisma.$BusinessTravelRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1029,6 +1136,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   employee<T extends Prisma.User$employeeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$employeeArgs<ExtArgs>>): Prisma.Prisma__EmployeeClient<runtime.Types.Result.GetResult<Prisma.$EmployeePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   approvedReservations<T extends Prisma.User$approvedReservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvedReservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VehicleReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  approvedBusinessTravels<T extends Prisma.User$approvedBusinessTravelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvedBusinessTravelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BusinessTravelRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1498,6 +1606,30 @@ export type User$approvedReservationsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.VehicleReservationScalarFieldEnum | Prisma.VehicleReservationScalarFieldEnum[]
+}
+
+/**
+ * User.approvedBusinessTravels
+ */
+export type User$approvedBusinessTravelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BusinessTravelRequest
+   */
+  select?: Prisma.BusinessTravelRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BusinessTravelRequest
+   */
+  omit?: Prisma.BusinessTravelRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BusinessTravelRequestInclude<ExtArgs> | null
+  where?: Prisma.BusinessTravelRequestWhereInput
+  orderBy?: Prisma.BusinessTravelRequestOrderByWithRelationInput | Prisma.BusinessTravelRequestOrderByWithRelationInput[]
+  cursor?: Prisma.BusinessTravelRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BusinessTravelRequestScalarFieldEnum | Prisma.BusinessTravelRequestScalarFieldEnum[]
 }
 
 /**

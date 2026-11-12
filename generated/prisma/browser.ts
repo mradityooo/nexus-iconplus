@@ -42,3 +42,13 @@ export type Driver = Prisma.DriverModel
  * 
  */
 export type VehicleReservation = Prisma.VehicleReservationModel
+/**
+ * Model BusinessTravelRequest
+ * 
+ */
+export type BusinessTravelRequest = Prisma.BusinessTravelRequestModel
+/**
+ * Model BusinessTravelFacility
+ * 
+ */
+export type BusinessTravelFacility = Prisma.BusinessTravelFacilityModel

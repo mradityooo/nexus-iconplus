@@ -401,7 +401,9 @@ export const ModelName = {
   Employee: 'Employee',
   Vehicle: 'Vehicle',
   Driver: 'Driver',
-  VehicleReservation: 'VehicleReservation'
+  VehicleReservation: 'VehicleReservation',
+  BusinessTravelRequest: 'BusinessTravelRequest',
+  BusinessTravelFacility: 'BusinessTravelFacility'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -417,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "employee" | "vehicle" | "driver" | "vehicleReservation"
+    modelProps: "user" | "employee" | "vehicle" | "driver" | "vehicleReservation" | "businessTravelRequest" | "businessTravelFacility"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -791,6 +793,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BusinessTravelRequest: {
+      payload: Prisma.$BusinessTravelRequestPayload<ExtArgs>
+      fields: Prisma.BusinessTravelRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BusinessTravelRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BusinessTravelRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.BusinessTravelRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BusinessTravelRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>
+        }
+        findMany: {
+          args: Prisma.BusinessTravelRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>[]
+        }
+        create: {
+          args: Prisma.BusinessTravelRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>
+        }
+        createMany: {
+          args: Prisma.BusinessTravelRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BusinessTravelRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.BusinessTravelRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>
+        }
+        update: {
+          args: Prisma.BusinessTravelRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.BusinessTravelRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BusinessTravelRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BusinessTravelRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.BusinessTravelRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.BusinessTravelRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBusinessTravelRequest>
+        }
+        groupBy: {
+          args: Prisma.BusinessTravelRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BusinessTravelRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BusinessTravelRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BusinessTravelRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    BusinessTravelFacility: {
+      payload: Prisma.$BusinessTravelFacilityPayload<ExtArgs>
+      fields: Prisma.BusinessTravelFacilityFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BusinessTravelFacilityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BusinessTravelFacilityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>
+        }
+        findFirst: {
+          args: Prisma.BusinessTravelFacilityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BusinessTravelFacilityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>
+        }
+        findMany: {
+          args: Prisma.BusinessTravelFacilityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>[]
+        }
+        create: {
+          args: Prisma.BusinessTravelFacilityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>
+        }
+        createMany: {
+          args: Prisma.BusinessTravelFacilityCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BusinessTravelFacilityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>[]
+        }
+        delete: {
+          args: Prisma.BusinessTravelFacilityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>
+        }
+        update: {
+          args: Prisma.BusinessTravelFacilityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>
+        }
+        deleteMany: {
+          args: Prisma.BusinessTravelFacilityDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BusinessTravelFacilityUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BusinessTravelFacilityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>[]
+        }
+        upsert: {
+          args: Prisma.BusinessTravelFacilityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BusinessTravelFacilityPayload>
+        }
+        aggregate: {
+          args: Prisma.BusinessTravelFacilityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBusinessTravelFacility>
+        }
+        groupBy: {
+          args: Prisma.BusinessTravelFacilityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BusinessTravelFacilityGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BusinessTravelFacilityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BusinessTravelFacilityCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -907,6 +1057,38 @@ export const VehicleReservationScalarFieldEnum = {
 } as const
 
 export type VehicleReservationScalarFieldEnum = (typeof VehicleReservationScalarFieldEnum)[keyof typeof VehicleReservationScalarFieldEnum]
+
+
+export const BusinessTravelRequestScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  approvedById: 'approvedById',
+  destination: 'destination',
+  purpose: 'purpose',
+  departureDate: 'departureDate',
+  returnDate: 'returnDate',
+  transportation: 'transportation',
+  notes: 'notes',
+  status: 'status',
+  reviewNote: 'reviewNote',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BusinessTravelRequestScalarFieldEnum = (typeof BusinessTravelRequestScalarFieldEnum)[keyof typeof BusinessTravelRequestScalarFieldEnum]
+
+
+export const BusinessTravelFacilityScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  type: 'type',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BusinessTravelFacilityScalarFieldEnum = (typeof BusinessTravelFacilityScalarFieldEnum)[keyof typeof BusinessTravelFacilityScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1048,6 +1230,34 @@ export type EnumReservationStatusFieldRefInput<$PrismaModel> = FieldRefInputType
  * Reference to a field of type 'ReservationStatus[]'
  */
 export type ListEnumReservationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReservationStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BusinessTravelStatus'
+ */
+export type EnumBusinessTravelStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BusinessTravelStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BusinessTravelStatus[]'
+ */
+export type ListEnumBusinessTravelStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BusinessTravelStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BusinessTravelFacilityType'
+ */
+export type EnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BusinessTravelFacilityType'>
+    
+
+
+/**
+ * Reference to a field of type 'BusinessTravelFacilityType[]'
+ */
+export type ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BusinessTravelFacilityType[]'>
     
 
 
@@ -1220,6 +1430,8 @@ export type GlobalOmitConfig = {
   vehicle?: Prisma.VehicleOmit
   driver?: Prisma.DriverOmit
   vehicleReservation?: Prisma.VehicleReservationOmit
+  businessTravelRequest?: Prisma.BusinessTravelRequestOmit
+  businessTravelFacility?: Prisma.BusinessTravelFacilityOmit
 }
 
 /* Types for Logging */
