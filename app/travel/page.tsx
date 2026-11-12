@@ -68,7 +68,21 @@ export default function TravelPage() {
   const labelClass =
   "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-  function addTravel(e: React.FormEvent<HTMLFormElement>) {
+  async function fetchBusinessTravels() {
+  const response = await fetch("/api/business-travels", {
+    cache: "no-store",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Gagal mengambil data perjalanan.");
+  }
+
+  setRequests(result.data);
+}
+
+  async function addTravel(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (returnDate < departureDate) {
@@ -76,23 +90,49 @@ export default function TravelPage() {
       return;
     }
 
-    setRequests((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        destination: destination.trim(),
-        departureDate,
-        returnDate,
-        purpose: purpose.trim(),
-        transport,
-        estimatedCost: Number(estimatedCost),
-        status: "Draft",
-      },
-    ]);
+    try {
+      setMessage("Menyimpan pengajuan...");
 
-    setMessage("Pengajuan perjalanan berhasil ditambahkan.");
-    setSubmitted(false);
-    setView("list");
+      const response = await fetch("/api/business-travels", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          destination: destination.trim(),
+          departureDate,
+          returnDate,
+          purpose: purpose.trim(),
+          transportation: transport,
+          notes: "",
+          facilities: [],
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Gagal menyimpan pengajuan."
+        );
+      }
+
+      setMessage("Pengajuan perjalanan berhasil disimpan.");
+
+      setSubmitted(false);
+      setView("list");
+
+      // Ambil ulang data dari database
+      await fetchBusinessTravels();
+    } catch (error) {
+      console.error("ADD BUSINESS TRAVEL ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menyimpan pengajuan."
+      );
+    }
   }
 
   function removeTravel(id: number) {

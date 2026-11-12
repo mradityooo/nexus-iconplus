@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -17,75 +16,123 @@ import {
   X,
 } from "lucide-react";
 
-const checklistItems = [
-  {
-    id: "tires",
-    title: "Tires & Wheels",
-    description:
-      "Check tire pressure, tread condition, and wheel condition.",
-  },
-  {
-    id: "lights",
-    title: "Lights & Turn Signals",
-    description:
-      "Check headlights, brake lights, fog lights, and turn signals.",
-  },
-  {
-    id: "brakes",
-    title: "Brake System",
-    description: "Check brake pedal response and braking performance.",
-  },
-  {
-    id: "engine",
-    title: "Engine Oil & Coolant",
-    description:
-      "Check engine oil and coolant levels according to the vehicle manual.",
-  },
-  {
-    id: "fuel",
-    title: "Fuel Level",
-    description: "Check the available fuel level before departure.",
-  },
-  {
-    id: "safety",
-    title: "Safety Equipment",
-    description:
-      "Check the availability of required safety equipment and emergency tools.",
-  },
-  {
-    id: "body",
-    title: "Vehicle Body & Mirrors",
-    description:
-      "Check vehicle body condition, mirrors, and visible damage.",
-  },
-];
+type InspectionTemplate = {
+  id: string;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+};
+
+type Reservation = {
+  id: string;
+  startAt: string;
+  endAt: string;
+  destination: string;
+  purpose: string;
+  vehicle: {
+    id: string;
+    name: string;
+    plateNumber: string;
+    vehicleCode: string;
+  };
+};
+
+type InspectionCondition =
+  | "GOOD"
+  | "NEEDS_ATTENTION"
+  | "NOT_APPLICABLE";
 
 type InspectionResult = "fit" | "not-fit";
 
 export default function PreUseInspectionPage() {
-  const [vehicle, setVehicle] = useState("");
-  const [plate, setPlate] = useState("");
+ const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [selectedReservationId, setSelectedReservationId] = useState("");
+
+  const [templates, setTemplates] = useState<InspectionTemplate[]>([]);
+  const [conditions, setConditions] = useState<
+    Record<string, InspectionCondition>
+  >({});
+
   const [inspectionDate, setInspectionDate] = useState("");
+
   const [odometer, setOdometer] = useState("");
-  const [checkedItems, setCheckedItems] = useState<string[]>([]);
-  const [result, setResult] = useState<InspectionResult | "">("");
+  const [notes, setNotes] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
-  const [notes, setNotes] = useState("");
-  const [error, setError] = useState("");
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const completedCount = checkedItems.length;
-  const allChecked = completedCount === checklistItems.length;
+  const selectedReservation = reservations.find(
+  (reservation) => reservation.id === selectedReservationId
+);
 
-  function toggleChecklist(id: string) {
-    setCheckedItems((previous) =>
-      previous.includes(id)
-        ? previous.filter((item) => item !== id)
-        : [...previous, id]
-    );
-    setError("");
+const vehicle = selectedReservation?.vehicle.name ?? "";
+const plate = selectedReservation?.vehicle.plateNumber ?? "";
+
+const completedCount = Object.keys(conditions).length;
+const allChecked = templates.length > 0 && completedCount === templates.length;
+
+useEffect(() => {
+  async function loadInspectionData() {
+    try {
+      setLoading(true);
+      setInspectionDate(new Date().toLocaleDateString("en-CA"));
+      setError("");
+
+      const [reservationResponse, templateResponse] =
+        await Promise.all([
+          fetch("/api/inspections"),
+          fetch("/api/inspection-templates"),
+        ]);
+
+      const reservationResult = await reservationResponse.json();
+      const templateResult = await templateResponse.json();
+
+      if (!reservationResponse.ok) {
+        throw new Error(
+          reservationResult.message || "Gagal mengambil reservasi"
+        );
+      }
+
+      if (!templateResponse.ok) {
+        throw new Error(
+          templateResult.message || "Gagal mengambil checklist"
+        );
+      }
+
+      const reservationData: Reservation[] = reservationResult.data;
+      const templateData: InspectionTemplate[] = templateResult.data;
+
+      setReservations(reservationData);
+      setTemplates(templateData);
+
+      if (reservationData.length > 0) {
+        setSelectedReservationId(reservationData[0].id);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Gagal memuat data inspeksi"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
+
+  loadInspectionData();
+}, []);
+
+const result: InspectionResult | "" = !allChecked
+  ? ""
+  : Object.values(conditions).some(
+        (condition) => condition === "NEEDS_ATTENTION"
+      )
+    ? "not-fit"
+    : "fit";
+
 
   function handlePhotoChange(
     event: React.ChangeEvent<HTMLInputElement>
@@ -113,22 +160,95 @@ export default function PreUseInspectionPage() {
     setError("");
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+async function handleSubmit(
+  event: React.FormEvent<HTMLFormElement>
+) {
+  event.preventDefault();
 
-    if (!allChecked) {
-      setError("Lengkapi semua item checklist sebelum submit.");
-      return;
-    }
-
-    if (!result) {
-      setError("Pilih hasil inspeksi terlebih dahulu.");
-      return;
-    }
-
-    setError("");
-    setShowConfirmation(true);
+  if (!selectedReservationId) {
+    setError("Pilih reservasi kendaraan terlebih dahulu.");
+    return;
   }
+
+  if (!inspectionDate || !odometer || Number(odometer) < 0) {
+    setError("Lengkapi tanggal inspeksi dan odometer.");
+    return;
+  }
+
+  if (!allChecked) {
+    setError("Lengkapi semua checklist sebelum submit.");
+    return;
+  }
+
+  if (result === "not-fit" && !notes.trim()) {
+    setError("Catatan wajib diisi jika kendaraan membutuhkan perhatian.");
+    return;
+  }
+
+  try {
+    setSubmitting(true);
+    setError("");
+
+    const inspectionNotes = [
+      `Odometer: ${Number(odometer).toLocaleString("id-ID")} KM`,
+      `Inspection Date: ${inspectionDate}`,
+      notes.trim() ? `Catatan: ${notes.trim()}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const response = await fetch("/api/inspections", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reservationId: selectedReservationId,
+        notes: inspectionNotes,
+        items: templates.map((item) => ({
+          templateId: item.id,
+          condition: conditions[item.id],
+        })),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Gagal menyimpan inspeksi.");
+    }
+
+    const inspectionId = data.data.id;
+    if (photo) {
+      const formData = new FormData();
+      formData.append("photo", photo);
+
+      const photoResponse = await fetch(
+        `/api/inspections/${inspectionId}/photo`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const photoResult = await photoResponse.json();
+
+      if (!photoResponse.ok) {
+        throw new Error(
+          photoResult.message || "Gagal mengunggah foto inspeksi."
+        );
+      }
+    }
+
+    setShowConfirmation(true);
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Terjadi kesalahan."
+    );
+  } finally {
+    setSubmitting(false);
+  }
+}
 
   return (
     <main
@@ -171,6 +291,33 @@ export default function PreUseInspectionPage() {
             </p>
           </section>
 
+<div className="mb-3">
+  <label className="mb-1 block text-[10px] font-bold text-slate-800">
+    Approved Reservation
+  </label>
+
+  <select
+    value={selectedReservationId}
+    onChange={(e) => {
+      setSelectedReservationId(e.target.value);
+      setConditions({});
+      setNotes("");
+      setError("");
+    }}
+    disabled={loading || reservations.length === 0}
+    required
+    className="w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-[10px] text-slate-700"
+  >
+    <option value="">Select reservation</option>
+
+    {reservations.map((reservation) => (
+      <option key={reservation.id} value={reservation.id}>
+        {reservation.vehicle.name} - {reservation.vehicle.plateNumber}
+      </option>
+    ))}
+  </select>
+</div>
+
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Vehicle Information */}
             <section className="rounded-lg border border-slate-200/60 bg-[#DCDCDC] px-4 py-3.5">
@@ -191,15 +338,17 @@ export default function PreUseInspectionPage() {
                   >
                     Vehicle
                   </label>
+
                   <input
-                  id="vehicle"
-                  type="text"
-                  value={vehicle}
-                  onChange={(e) => setVehicle(e.target.value)}
-                  placeholder="Enter vehicle name"
-                  className="w-full min-w-0 rounded-md border border-slate-300 bg-white py-2 pl-7 pr-2 text-[10px] text-slate-700 outline-none focus:border-red-400"
-                  required
-                />
+                    id="vehicle"
+                    type="text"
+                    value={vehicle}
+                    readOnly
+                    placeholder="Vehicle name"
+                    className="w-full min-w-0 rounded-md border border-slate-300 bg-white py-2 pl-7 pr-2 text-[10px] text-slate-700 outline-none focus:border-red-400"
+                    required
+                  />
+
                 </div>
 
                 <div>
@@ -209,15 +358,17 @@ export default function PreUseInspectionPage() {
                   >
                     License Plate
                   </label>
-                 <input
-                  id="plate"
-                  type="text"
-                  value={plate}
-                  onChange={(e) => setPlate(e.target.value)}
-                  placeholder="Input Plate Number"
-                  className="w-full min-w-0 rounded-md border border-slate-300 bg-white py-2 pl-7 pr-2 text-[10px] text-slate-700 outline-none focus:border-red-400"
-                  required
-                />
+
+                  <input
+                    id="plate"
+                    type="text"
+                    value={plate}
+                    readOnly
+                    placeholder="License plate"
+                    className="w-full min-w-0 rounded-md border border-slate-300 bg-white py-2 pl-7 pr-2 text-[10px] text-slate-700 outline-none focus:border-red-400"
+                    required
+                  />
+
                 </div>
 
                 <div>
@@ -264,68 +415,77 @@ export default function PreUseInspectionPage() {
               </div>
             </section>
 
-            {/* Vehicle Checklist */}
-            <section className="rounded-lg border border-slate-200/60 bg-[#DCDCDC] px-4 py-3.5">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <h2 className="text-xs font-bold text-slate-900">
-                  Vehicle Checklist
-                </h2>
-                <span className="shrink-0 text-[10px] font-medium text-slate-600">
-                  {completedCount}/{checklistItems.length} Checked
-                </span>
-              </div>
+{/* Vehicle Checklist */}
+<section className="rounded-lg border border-slate-200/60 bg-[#DCDCDC] px-4 py-3.5">
+  <div className="mb-2 flex items-center justify-between gap-2">
+    <h2 className="text-xs font-bold text-slate-900">
+      Vehicle Checklist
+    </h2>
 
-              <div className="mb-1.5 h-px bg-slate-400" />
+    <span className="text-[10px] font-medium text-slate-600">
+      {completedCount}/{templates.length} Checked
+    </span>
+  </div>
 
-              <div className="space-y-0.5">
-                {checklistItems.map((item) => {
-                  const isChecked = checkedItems.includes(item.id);
+  <div className="mb-4 h-px bg-slate-400" />
 
-                  return (
-                    <label
-                      key={item.id}
-                      className="flex cursor-pointer items-start gap-2.5 rounded-md px-0 py-2"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleChecklist(item.id)}
-                        className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-red-600"
-                      />
+  {loading ? (
+    <p className="py-4 text-center text-[10px] text-slate-500">
+      Loading checklist...
+    </p>
+  ) : templates.length === 0 ? (
+    <p className="py-4 text-center text-[10px] text-slate-500">
+      Checklist belum tersedia.
+    </p>
+  ) : (
+    <div className="space-y-3">
+      {templates.map((item) => (
+      <div key={item.id} className="rounded-md bg-white/70 px-3 py-3">
+        <p className="text-[10px] font-bold text-slate-900">
+          {item.name}
+        </p>
 
-                      <span className="min-w-0 flex-1">
-                        <span
-                          className={`block text-[10px] font-bold leading-4 ${
-                            isChecked ? "text-emerald-800" : "text-slate-900"
-                          }`}
-                        >
-                          {item.title}
-                        </span>
-                        <span className="block text-[9px] leading-[1.4] text-slate-600">
-                          {item.description}
-                        </span>
-                      </span>
+        <p className="mt-0 text-[9px] leading-4 text-slate-600">
+          {item.description}
+        </p>
 
-                      {isChecked && (
-                        <Check
-                          size={14}
-                          className="mt-0.5 shrink-0 text-emerald-600"
-                        />
-                      )}
-                    </label>
-                  );
-                })}
-              </div>
+          <select
+            value={conditions[item.id] ?? ""}
+            onChange={(e) => {
+              const value = e.target.value as InspectionCondition;
 
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/70">
-                <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-                  style={{
-                    width: `${(completedCount / checklistItems.length) * 100}%`,
-                  }}
-                />
-              </div>
-            </section>
+              setConditions((previous) => ({
+                ...previous,
+                [item.id]: value,
+              }));
+
+              setError("");
+            }}
+            className="mt-2 w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-[10px] text-slate-700"
+          >
+            <option value="">Select condition</option>
+            <option value="GOOD">Good</option>
+            <option value="NEEDS_ATTENTION">Needs Attention</option>
+            <option value="NOT_APPLICABLE">Not Applicable</option>
+          </select>
+        </div>
+      ))}
+    </div>
+  )}
+
+  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/70">
+    <div
+      className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+      style={{
+        width: `${
+          templates.length > 0
+            ? (completedCount / templates.length) * 100
+            : 0
+        }%`,
+      }}
+    />
+  </div>
+</section>
 
             {/* Inspection Result */}
             <section>
@@ -344,38 +504,20 @@ export default function PreUseInspectionPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setResult("fit");
-                    setError("");
-                  }}
-                  className={`flex min-h-10 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-[10px] font-bold transition ${
-                    result === "fit"
-                      ? "border-emerald-600 bg-emerald-600 text-white"
-                      : "border-slate-200 bg-[#DCDCDC] text-slate-800 hover:bg-emerald-50"
-                  }`}
-                >
-                  {result === "fit" && <Check size={13} />}
-                  Fit for Use
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setResult("not-fit");
-                    setError("");
-                  }}
-                  className={`flex min-h-10 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-[10px] font-bold transition ${
-                    result === "not-fit"
-                      ? "border-red-600 bg-red-600 text-white"
-                      : "border-slate-200 bg-[#DCDCDC] text-slate-800 hover:bg-red-50"
-                  }`}
-                >
-                  {result === "not-fit" && <X size={13} />}
-                  Not Fit for Use
-                </button>
+              <div
+                className={`rounded-md border px-3 py-3 text-center text-[11px] font-bold ${
+                  result === "fit"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : result === "not-fit"
+                      ? "border-red-200 bg-red-50 text-red-700"
+                      : "border-slate-200 bg-slate-50 text-slate-500"
+                }`}
+              >
+                {result === "fit"
+                  ? "✓ Fit for Use"
+                  : result === "not-fit"
+                    ? "✕ Not Fit for Use"
+                    : "Complete all vehicle checklist items"}
               </div>
 
               {result === "not-fit" && (
@@ -484,13 +626,14 @@ export default function PreUseInspectionPage() {
             )}
 
             {/* Submit */}
-            <button
-              type="submit" 
-              className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
-            >
-              Submit Inspection
-              <ChevronRight size={15} />
-            </button>
+          <button
+            type="submit"
+            disabled={submitting || loading}
+            className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {submitting ? "Submitting..." : "Submit Inspection"}
+            {!submitting && <ChevronRight size={15} />}
+          </button>
           </form>
 
           <footer className="mt-7 border-t border-slate-100 pt-4 text-center">
@@ -528,11 +671,11 @@ export default function PreUseInspectionPage() {
               id="inspection-confirmation-title"
               className="mt-4 text-center text-lg font-bold text-slate-900"
             >
-              Inspection Prepared
+              Inspection Submitted
             </h2>
 
             <p className="mt-2 text-center text-xs leading-5 text-slate-500">
-              Pemeriksaan berhasil divalidasi pada prototype. Data belum
+              Pemeriksaan kendaraan berhasil dikirim dan data inspeksi telah
               disimpan ke server.
             </p>
 
@@ -562,7 +705,7 @@ export default function PreUseInspectionPage() {
               <div className="flex justify-between gap-3">
                 <span className="text-slate-500">Checklist</span>
                 <span className="font-semibold text-slate-800">
-                  {completedCount}/{checklistItems.length}
+                  {completedCount}/{templates.length}
                 </span>
               </div>
               <div className="flex justify-between gap-3">
@@ -584,14 +727,13 @@ export default function PreUseInspectionPage() {
                 </div>
               )}
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowConfirmation(false)}
-              className="mt-4 w-full rounded-xl bg-red-600 py-3 text-xs font-bold text-white transition hover:bg-red-700"
-            >
-              Done
-            </button>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-4 w-full rounded-xl bg-red-600 py-3 text-xs font-bold text-white transition hover:bg-red-700"
+          >
+            Done
+          </button>
           </div>
         </div>
       )}
