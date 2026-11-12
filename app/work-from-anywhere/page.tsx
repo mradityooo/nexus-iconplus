@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 type WFARequest = {
-  id: number;
+  id: string;
   workLocation: string;
   locationDetails: string;
   startDate: string;
@@ -110,7 +110,7 @@ export default function WorkFromAnywherePage() {
     }
 
     const newRequest: WFARequest = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       workLocation,
       locationDetails: locationDetails.trim(),
       startDate,
@@ -126,7 +126,7 @@ export default function WorkFromAnywherePage() {
     setView("list");
   }
 
-  function removeRequest(id: number) {
+  function removeRequest(id: string) {
     setRequests((current) => current.filter((item) => item.id !== id));
     setMessage("removeSuccess");
   }
