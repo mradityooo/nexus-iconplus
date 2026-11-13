@@ -36,10 +36,10 @@ export async function GET() {
       where: isGA
         ? {}
         : {
-            employee: {
-              userId: session.user.id,
-            },
+          employee: {
+            userId: session.user.id,
           },
+        },
       include: {
         employee: {
           select: {
@@ -126,8 +126,8 @@ export async function POST(request: Request) {
 
     const driverId =
       body.driverId === undefined ||
-      body.driverId === null ||
-      body.driverId === ""
+        body.driverId === null ||
+        body.driverId === ""
         ? null
         : typeof body.driverId === "string"
           ? body.driverId.trim()

@@ -70,6 +70,15 @@ enum BusinessTravelFacilityType {
   OTHER_TRANSPORTATION
 }
 
+<<<<<<< HEAD
+=======
+enum WfaStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+>>>>>>> origin/fitur/administrasi-karyawan
 // ==========================================
 // USER
 // ==========================================
@@ -100,9 +109,15 @@ model User {
 // ==========================================
 
 model Employee {
+<<<<<<< HEAD
   id           String    @id @default(uuid()) @db.Uuid
   userId       String?   @unique @db.Uuid
   employeeCode String    @unique
+=======
+  id           String  @id @default(uuid()) @db.Uuid
+  userId       String? @unique @db.Uuid
+  employeeCode String  @unique
+>>>>>>> origin/fitur/administrasi-karyawan
   fullName     String
   phone        String?
   department   String?
@@ -112,10 +127,23 @@ model Employee {
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+<<<<<<< HEAD
   inspections           Inspection[]
   reservations          VehicleReservation[]
   businessTravelRequests BusinessTravelRequest[]
 
+=======
+  // Relasi fitur kendaraan Radityo
+  inspections  Inspection[]
+  reservations VehicleReservation[]
+
+  // Relasi perjalanan dinas
+  businessTravelRequests BusinessTravelRequest[]
+
+  // Relasi Work From Anywhere
+  wfaRequests WfaRequest[]
+
+>>>>>>> origin/fitur/administrasi-karyawan
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -179,9 +207,15 @@ model VehicleReservation {
   destination String
   purpose     String
 
+<<<<<<< HEAD
   status      ReservationStatus @default(PENDING)
   reviewNote  String?
   reviewedAt  DateTime?
+=======
+  status     ReservationStatus @default(PENDING)
+  reviewNote String?
+  reviewedAt DateTime?
+>>>>>>> origin/fitur/administrasi-karyawan
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
   vehicle  Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
@@ -279,8 +313,13 @@ model InspectionItem {
 // ==========================================
 
 model BusinessTravelRequest {
+<<<<<<< HEAD
   id           String @id @default(uuid()) @db.Uuid
   employeeId   String @db.Uuid
+=======
+  id           String  @id @default(uuid()) @db.Uuid
+  employeeId   String  @db.Uuid
+>>>>>>> origin/fitur/administrasi-karyawan
   approvedById String? @db.Uuid
 
   destination   String
@@ -331,3 +370,40 @@ model BusinessTravelFacility {
   @@index([type])
   @@map("business_travel_facilities")
 }
+<<<<<<< HEAD
+=======
+
+// ==========================================
+// WORK FROM ANYWHERE (WFA)
+// ==========================================
+
+model WfaRequest {
+  id         String @id @default(uuid()) @db.Uuid
+  employeeId String @db.Uuid
+
+  // Informasi lokasi kerja
+  workLocation    String
+  locationDetails String
+
+  // Periode WFA
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+
+  // Informasi pengajuan
+  reason String
+  notes  String?
+
+  // Status persetujuan
+  status WfaStatus @default(PENDING)
+
+  // Relasi ke karyawan
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@map("wfa_requests")
+}
+>>>>>>> origin/fitur/administrasi-karyawan

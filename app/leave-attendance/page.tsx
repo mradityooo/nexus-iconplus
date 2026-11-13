@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useLanguage } from "../context/LanguageContext";
 import {
   ArrowLeft,
   Bell,
@@ -45,17 +47,39 @@ const inputClass =
 const labelClass =
   "mb-1.5 block text-xs font-semibold text-slate-700";
 
-const formatDate = (date: string) => {
+const formatDate = (date: string, language: "id" | "en") => {
   if (!date) return "-";
 
-  return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return new Date(`${date}T00:00:00`).toLocaleDateString(
+    language === "id" ? "id-ID" : "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  );
 };
 
+function formatAttendanceDate(date: string, language: "id" | "en") {
+  if (language === "en") return date;
+
+  const months: Record<string, string> = {
+    May: "Mei",
+    Aug: "Agu",
+    Sep: "Sep",
+    Sept: "Sep",
+    Oct: "Okt",
+    Dec: "Des",
+  };
+
+  return date.replace(
+    /\b(May|Aug|Sept|Sep|Oct|Dec)\b/g,
+    (month) => months[month] ?? month
+  );
+}
+
 export default function LeaveAttendancePage() {
+    const { t, language } = useLanguage();
   const [view, setView] = useState<"attendance" | "request" | "history">(
     "attendance"
   );
@@ -65,12 +89,19 @@ export default function LeaveAttendancePage() {
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] =
+  useState<"success" | "error">("error");
+  const [messageDays, setMessageDays] = useState(0);
 
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [attendance, setAttendance] =
     useState<AttendanceRecord[]>(initialAttendance);
 
   const [showCheckIn, setShowCheckIn] = useState(false);
+  function showMessage(text: string, type: "success" | "error") {
+  setMessage(text);
+  setMessageType(type);
+}
 
   const pendingCount = leaveRequests.filter(
     (item) => item.status === "Pending"
@@ -99,8 +130,13 @@ export default function LeaveAttendancePage() {
   function submitLeave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    if (!reason.trim()) {
+  showMessage("invalidReason", "error");
+  return;
+}
+
     if (endDate < startDate) {
-      setMessage("End date cannot be before start date.");
+      showMessage("invalidDate", "error");
       return;
     }
 
@@ -111,7 +147,17 @@ export default function LeaveAttendancePage() {
       Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
 
     if (leaveType === "Annual Leave" && days > leaveBalance) {
-      setMessage(`Your remaining annual leave balance is ${leaveBalance} day(s).`);
+  setMessageDays(leaveBalance);
+  showMessage("insufficientLeaveBalance", "error");
+  return;
+}{
+      showMessage(
+  t.leaveAttendance.insufficientLeaveBalance.replace(
+    "{days}",
+    String(leaveBalance)
+  ),
+  "error"
+);
       return;
     }
 
@@ -128,7 +174,7 @@ export default function LeaveAttendancePage() {
       ...current,
     ]);
 
-    setMessage("Leave request submitted successfully.");
+    showMessage("leaveSubmitSuccess", "success");
     setStartDate("");
     setEndDate("");
     setReason("");
@@ -142,7 +188,6 @@ export default function LeaveAttendancePage() {
       minute: "2-digit",
     });
 
-    const today = now.toLocaleDateString("en-CA");
     const todayLabel = now.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
@@ -154,7 +199,7 @@ export default function LeaveAttendancePage() {
     );
 
     if (alreadyCheckedIn) {
-      setMessage("Attendance for today has already been recorded.");
+      showMessage("alreadyRecordedError", "error");
       return;
     }
 
@@ -170,7 +215,7 @@ export default function LeaveAttendancePage() {
     ]);
 
     setShowCheckIn(true);
-    setMessage("Check-in recorded in this prototype.");
+    showMessage("checkInSuccess", "success");
   }
 
   
@@ -188,12 +233,12 @@ function checkOut() {
   );
 
   if (!record) {
-    setMessage("Please check in first.");
+    showMessage("checkInFirstError", "error");
     return;
   }
 
   if (record.checkOut !== "--:--") {
-    setMessage("You have already checked out.");
+    showMessage("alreadyCheckedOutError", "error");
     return;
   }
 
@@ -211,7 +256,7 @@ function checkOut() {
     )
   );
 
-  setMessage("Check-out recorded successfully.");
+  showMessage("checkOutSuccess", "success");
 }
 
 
@@ -219,7 +264,7 @@ function checkOut() {
     setLeaveRequests((current) =>
       current.filter((item) => item.id !== id)
     );
-    setMessage("Leave request removed.");
+    showMessage("leaveRemovedSuccess", "success");
   }
 
   const todayRecord = attendance.find(
@@ -246,11 +291,31 @@ function checkOut() {
               <ArrowLeft size={18} />
             </Link>
 
-            <img
-              src="/nexus.png"
-              alt="NEXUS"
-              className="h-10 w-auto object-contain"
-            />
+            <Image
+  src="/nexus.png"
+  alt="NEXUS"
+  width={120}
+  height={40}
+  className="h-10 w-auto object-contain"
+/>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="text-slate-900 hover:text-slate-600"
+            >
+              <Bell size={21} />
+            </button>
+
+            <Link
+              href="/"
+              aria-label="Logout"
+              className="text-slate-900 hover:text-slate-600"
+            >
+              <LogOut size={21} />
+            </Link>
           </div>
         </header>
 
@@ -258,32 +323,31 @@ function checkOut() {
           {/* Title */}
           <section className="mb-5">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-red-600">
-              Employee Services
+               {t.leaveAttendance.section}
             </p>
 
             <h1 className="mt-2 text-[27px] font-bold leading-tight tracking-tight text-slate-950">
-              Leave & Attendance
+              {t.leaveAttendance.title}
             </h1>
 
-            <p className="mt-1 text-xs leading-5 text-black">
-              Manage your attendance and leave requests in one place.
+            <p className="mt-1.5 text-xs leading-5 text-slate-500">
+              {t.leaveAttendance.description}
             </p>
           </section>
 
           {/* Highlight */}
-          <section className="relative mb-6 overflow-hidden rounded-xl bg-gradient-to-br from-sky-600 to-blue-800 p-5 text-white">
+          <section className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 p-5 text-white">
             <div className="relative z-10 max-w-[260px]">
-
-              <p className="text-xs font-medium text-sky-100">
-                Employee Self-Service
+              <p className="text-xs font-medium text-slate-300">
+                {t.leaveAttendance.bannerLabel}
               </p>
 
               <h2 className="mt-1 text-xl font-bold">
-                Your time matters.
+                {t.leaveAttendance.bannerTitle}
               </h2>
 
-              <p className="mt-2 max-w-[270px] text-[11px] leading-4 text-blue-50">
-                Keep track of your work attendance and planned time off.
+              <p className="mt-1 text-[11px] leading-5 text-slate-300">
+                {t.leaveAttendance.bannerDescription}
               </p>
             </div>
 
@@ -298,11 +362,11 @@ function checkOut() {
           <section className="mb-5 rounded-2xl border border-slate-100 bg-white p-4">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-xs text-black">Annual Leave Balance</p>
+                <p className="text-xs text-slate-500">{t.leaveAttendance.annualLeaveBalance}</p>
                 <p className="mt-1 text-2xl font-bold text-slate-950">
                   {leaveBalance}{" "}
                   <span className="text-sm font-medium text-slate-500">
-                    days left
+                    {t.leaveAttendance.daysLeft}
                   </span>
                 </p>
               </div>
@@ -322,28 +386,28 @@ function checkOut() {
             </div>
 
             <p className="mt-2 text-[10px] text-slate-500">
-              Example allowance: 12 annual leave days per year.
+              {t.leaveAttendance.leaveAllowanceInfo}
             </p>
           </section>
 
           {/* Stats */}
           <section className="mb-6 grid grid-cols-3 gap-2">
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-black">Present</p>
+              <p className="text-[10px] text-slate-500">{t.leaveAttendance.present}</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {presentCount}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-black">Pending</p>
+              <p className="text-[10px] text-slate-500">{t.leaveAttendance.pending}</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {pendingCount}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-black">Approved</p>
+              <p className="text-[10px] text-slate-500">{t.leaveAttendance.approved}</p>
               <p className="mt-1 text-xl font-bold text-slate-950">
                 {approvedCount}
               </p>
@@ -354,9 +418,9 @@ function checkOut() {
           <section className="mb-4 rounded-full bg-[#DEDEDE] p-1">
             <div className="grid grid-cols-3 gap-1">
               {[
-                { id: "attendance", label: "Attendance" },
-                { id: "request", label: "New Leave" },
-                { id: "history", label: "My Requests" },
+                { id: "attendance", label: t.leaveAttendance.attendanceTab},
+                { id: "request", label: t.leaveAttendance.newLeaveTab},
+                { id: "history", label: t.leaveAttendance.myRequestsTab},
               ].map((item) => (
                 <button
                   key={item.id}
@@ -380,10 +444,39 @@ function checkOut() {
           </section>
 
           {message && (
-            <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-800">
-              {message}
-            </div>
-          )}
+  <div
+    className={`mb-4 rounded-xl border px-3 py-2.5 text-xs font-medium ${
+      messageType === "success"
+        ? "border-green-200 bg-green-50 text-green-700"
+        : "border-red-200 bg-red-50 text-red-700"
+    }`}
+  >
+    {message === "leaveSubmitSuccess"
+  ? t.leaveAttendance.leaveSubmitSuccess
+  : message === "checkInSuccess"
+    ? t.leaveAttendance.checkInSuccess
+    : message === "checkOutSuccess"
+      ? t.leaveAttendance.checkOutSuccess
+      : message === "leaveRemovedSuccess"
+        ? t.leaveAttendance.leaveRemovedSuccess
+        : message === "alreadyRecordedError"
+          ? t.leaveAttendance.alreadyRecordedError
+          : message === "checkInFirstError"
+            ? t.leaveAttendance.checkInFirstError
+            : message === "alreadyCheckedOutError"
+  ? t.leaveAttendance.alreadyCheckedOutError
+  : message === "invalidReason"
+    ? t.leaveAttendance.invalidReason
+    : message === "invalidDate"
+  ? t.leaveAttendance.invalidDate
+  : message === "insufficientLeaveBalance"
+    ? t.leaveAttendance.insufficientLeaveBalance.replace(
+        "{days}",
+        String(messageDays)
+      )
+    : message}
+  </div>
+)}
 
           {/* Attendance */}
           {view === "attendance" && (
@@ -396,24 +489,24 @@ function checkOut() {
 
                   <div>
                     <h2 className="text-sm font-bold text-slate-950">
-                      Today&apos;s Attendance
+                      {t.leaveAttendance.todaysAttendance}
                     </h2>
                     <p className="mt-0.5 text-[10px] text-slate-500">
-                      Record your daily check-in
+                      {t.leaveAttendance.recordDailyCheckIn}
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-4 grid grid-cols-2 gap-3">
                   <div className="rounded-xl bg-slate-50 p-3">
-                    <p className="text-[10px] text-slate-500">Check-in</p>
+                    <p className="text-[10px] text-slate-500">{t.leaveAttendance.checkInLabel}</p>
                     <p className="mt-1 text-lg font-bold text-slate-950">
                       {todayRecord?.checkIn ?? "--:--"}
                     </p>
                   </div>
 
                   <div className="rounded-xl bg-slate-50 p-3">
-                    <p className="text-[10px] text-slate-500">Check-out</p>
+                    <p className="text-[10px] text-slate-500">{t.leaveAttendance.checkOutLabel}</p>
                     <p className="mt-1 text-lg font-bold text-slate-950">
                       {todayRecord?.checkOut ?? "--:--"}
                     </p>
@@ -427,7 +520,9 @@ function checkOut() {
                   className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
                   <UserCheck size={17} />
-                  {todayRecord ? "Already Checked In" : "Check In"}
+                  {todayRecord
+  ? t.leaveAttendance.alreadyCheckedIn
+  : t.leaveAttendance.checkInButton}
                 </button>
 
                 
@@ -438,15 +533,15 @@ function checkOut() {
   className="mt-3 flex min-h-11 w-full items-center justify-center rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
 >
   <Clock3 size={17} />
-  {todayRecord?.checkOut !== "--:--" && todayRecord
-    ? "Already Checked Out"
-    : "Check Out"}
+  {todayRecord?.checkOut && todayRecord.checkOut !== "--:--"
+  ? t.leaveAttendance.alreadyCheckedOut
+  : t.leaveAttendance.checkOutButton}
 </button>
 
 
                 {showCheckIn && (
                   <p className="mt-2 text-center text-[10px] text-slate-500">
-                    Check-in recorded locally for this prototype.
+                    {t.leaveAttendance.checkInPrototype}
                   </p>
                 )}
               </div>
@@ -455,15 +550,18 @@ function checkOut() {
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <h2 className="text-sm font-bold text-slate-950">
-                      Attendance History
+                      {t.leaveAttendance.attendanceHistory}
                     </h2>
                     <p className="mt-1 text-[10px] text-slate-500">
-                      Recent attendance records
+                      {t.leaveAttendance.recentAttendance}
                     </p>
                   </div>
 
                   <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-bold text-slate-800">
-                    {attendance.length} records
+                    {attendance.length}{" "}
+{language === "en" && attendance.length === 1
+  ? "record"
+  : t.leaveAttendance.records}
                   </span>
                 </div>
 
@@ -480,10 +578,12 @@ function checkOut() {
 
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-slate-900">
-                            {item.date}
+                            {formatAttendanceDate(item.date, language)}
                           </p>
                           <p className="mt-1 text-[10px] text-slate-500">
-                            {item.day} · {item.checkIn} – {item.checkOut}
+                            {t.leaveAttendance.weekdays[
+  item.day as keyof typeof t.leaveAttendance.weekdays
+] ?? item.day} · {item.checkIn} – {item.checkOut}
                           </p>
                         </div>
                       </div>
@@ -497,15 +597,18 @@ function checkOut() {
                               : "bg-red-50 text-red-700"
                         }`}
                       >
-                        {item.status}
+                        {item.status === "Present"
+  ? t.leaveAttendance.present
+  : item.status === "Late"
+    ? t.leaveAttendance.late
+    : t.leaveAttendance.absent}
                       </span>
                     </article>
                   ))}
                 </div>
 
                 <p className="mt-4 text-[10px] leading-5 text-slate-500">
-                  Sample records for UI testing. Connect to the attendance
-                  service to use real employee data.
+                  {t.leaveAttendance.attendancePrototypeInfo}
                 </p>
               </div>
 
@@ -514,7 +617,7 @@ function checkOut() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-slate-800" />
                     <span className="text-xs font-semibold text-slate-700">
-                      Present
+                      {t.leaveAttendance.present}
                     </span>
                   </div>
                   <p className="mt-2 text-xl font-bold text-slate-950">
@@ -526,7 +629,7 @@ function checkOut() {
                   <div className="flex items-center gap-2">
                     <Clock3 size={16} className="text-amber-600" />
                     <span className="text-xs font-semibold text-slate-700">
-                      Late
+                      {t.leaveAttendance.late}
                     </span>
                   </div>
                   <p className="mt-2 text-xl font-bold text-slate-950">
@@ -547,10 +650,10 @@ function checkOut() {
 
                 <div>
                   <h2 className="text-sm font-bold text-slate-950">
-                    Leave Request
+                    {t.leaveAttendance.leaveRequestTitle}
                   </h2>
                   <p className="mt-0.5 text-[10px] text-slate-500">
-                    Complete your leave application
+                    {t.leaveAttendance.leaveRequestSubtitle}
                   </p>
                 </div>
               </div>
@@ -558,7 +661,7 @@ function checkOut() {
               <form onSubmit={submitLeave} className="space-y-4 p-4">
                 <div>
                   <label className={labelClass} htmlFor="leaveType">
-                    Leave Type *
+                    {t.leaveAttendance.leaveTypeLabel}
                   </label>
 
                   <select
@@ -568,17 +671,17 @@ function checkOut() {
                     className={inputClass}
                     required
                   >
-                    <option>Annual Leave</option>
-                    <option>Sick Leave</option>
-                    <option>Personal Leave</option>
-                    <option>Emergency Leave</option>
+                    <option>{t.leaveAttendance.annualLeave}</option>
+                    <option>{t.leaveAttendance.sickLeave}</option>
+                    <option>{t.leaveAttendance.personalLeave}</option>
+                    <option>{t.leaveAttendance.emergencyLeave}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass} htmlFor="startDate">
-                      Start Date *
+                      {t.leaveAttendance.startDateLabel}
                     </label>
 
                     <input
@@ -599,7 +702,7 @@ function checkOut() {
 
                   <div>
                     <label className={labelClass} htmlFor="endDate">
-                      End Date *
+                      {t.leaveAttendance.endDateLabel}
                     </label>
 
                     <input
@@ -617,7 +720,7 @@ function checkOut() {
                 {startDate && endDate && endDate >= startDate && (
                   <div className="rounded-xl bg-slate-50 p-3">
                     <p className="text-xs text-slate-500">
-                      Total calendar days
+                      {t.leaveAttendance.totalCalendarDays}
                     </p>
                     <p className="mt-1 text-sm font-bold text-slate-950">
                       {Math.round(
@@ -625,25 +728,24 @@ function checkOut() {
                           new Date(`${startDate}T00:00:00`).getTime()) /
                           86400000
                       ) + 1}{" "}
-                      day(s)
+                      {t.leaveAttendance.dayUnit}
                     </p>
                     <p className="mt-1 text-[10px] text-slate-500">
-                      Weekends and public holidays are included in this
-                      prototype calculation.
+                      {t.leaveAttendance.calendarDaysInfo}
                     </p>
                   </div>
                 )}
 
                 <div>
                   <label className={labelClass} htmlFor="reason">
-                    Reason for Leave *
+                    {t.leaveAttendance.reasonLabel}
                   </label>
 
                   <textarea
                     id="reason"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    placeholder="Explain the reason for your leave..."
+                    placeholder={t.leaveAttendance.reasonPlaceholder}
                     rows={4}
                     className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
                     required
@@ -657,8 +759,7 @@ function checkOut() {
                       className="mt-0.5 shrink-0 text-slate-600"
                     />
                     <p className="text-[10px] leading-5 text-slate-600">
-                      Your request will be marked as Pending in this prototype.
-                      Approval and notifications are not connected to a server.
+                      {t.leaveAttendance.leavePendingNotice}
                     </p>
                   </div>
                 </div>
@@ -668,7 +769,7 @@ function checkOut() {
                   className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700"
                 >
                   <Plus size={17} />
-                  Submit Leave Request
+                  {t.leaveAttendance.submitLeaveButton}
                 </button>
               </form>
             </section>
@@ -680,10 +781,10 @@ function checkOut() {
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-slate-950">
-                    My Leave Requests
+                    {t.leaveAttendance.myLeaveRequests}
                   </h2>
                   <p className="mt-1 text-xs text-slate-500">
-                    Track your application status
+                    {t.leaveAttendance.trackApplicationStatus}
                   </p>
                 </div>
 
@@ -696,7 +797,7 @@ function checkOut() {
                   className="flex items-center gap-1 rounded-full bg-slate-900 px-3 py-2 text-[10px] font-bold text-white"
                 >
                   <Plus size={14} />
-                  New
+                  {t.leaveAttendance.newRequestButton}
                 </button>
               </div>
 
@@ -707,10 +808,10 @@ function checkOut() {
                     className="mx-auto mb-3 text-slate-300"
                   />
                   <p className="text-sm font-semibold text-slate-700">
-                    No leave requests yet
+                    {t.leaveAttendance.noLeaveRequests}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Create your first leave application.
+                    {t.leaveAttendance.noLeaveRequestsDescription}
                   </p>
 
                   <button
@@ -718,7 +819,7 @@ function checkOut() {
                     onClick={() => setView("request")}
                     className="mt-4 text-xs font-bold text-slate-900 underline"
                   >
-                    Create Request
+                    {t.leaveAttendance.createRequest}
                   </button>
                 </div>
               ) : (
@@ -736,10 +837,18 @@ function checkOut() {
 
                           <div className="min-w-0">
                             <h3 className="text-sm font-bold text-slate-950">
-                              {item.type}
-                            </h3>
+  {item.type === "Annual Leave"
+    ? t.leaveAttendance.annualLeave
+    : item.type === "Sick Leave"
+      ? t.leaveAttendance.sickLeave
+      : item.type === "Personal Leave"
+        ? t.leaveAttendance.personalLeave
+        : item.type === "Emergency Leave"
+          ? t.leaveAttendance.emergencyLeave
+          : item.type}
+</h3>
                             <p className="mt-1 text-xs text-slate-500">
-                              {item.days} calendar day(s)
+                              {item.days} {t.leaveAttendance.calendarDayUnit}
                             </p>
                           </div>
                         </div>
@@ -753,32 +862,36 @@ function checkOut() {
                                 : "bg-amber-50 text-amber-700"
                           }`}
                         >
-                          {item.status}
+                          {item.status === "Pending"
+  ? t.leaveAttendance.pending
+  : item.status === "Approved"
+    ? t.leaveAttendance.approved
+    : t.leaveAttendance.rejected}
                         </span>
                       </div>
 
                       <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3">
                         <div>
                           <p className="text-[10px] text-slate-500">
-                            Start Date
+                            {t.leaveAttendance.historyStartDate}
                           </p>
                           <p className="mt-1 text-xs font-semibold text-slate-800">
-                            {formatDate(item.startDate)}
+                            {formatDate(item.startDate, language)}
                           </p>
                         </div>
 
                         <div>
                           <p className="text-[10px] text-slate-500">
-                            End Date
+                            {t.leaveAttendance.historyEndDate}
                           </p>
                           <p className="mt-1 text-xs font-semibold text-slate-800">
-                            {formatDate(item.endDate)}
+                            {formatDate(item.endDate, language)}
                           </p>
                         </div>
                       </div>
 
                       <div className="mt-3">
-                        <p className="text-[10px] text-slate-500">Reason</p>
+                        <p className="text-[10px] text-slate-500">{t.leaveAttendance.historyReason}</p>
                         <p className="mt-1 break-words text-xs leading-5 text-slate-700">
                           {item.reason}
                         </p>
@@ -787,16 +900,24 @@ function checkOut() {
                       {item.status === "Pending" && (
                         <button
                           type="button"
-                          onClick={() => cancelLeave(item.id)}
+                          onClick={() => {
+  const confirmed = window.confirm(
+    t.leaveAttendance.confirmRemoveRequest
+  );
+
+  if (confirmed) {
+    cancelLeave(item.id);
+  }
+}}
                           className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
                           <XCircle size={15} />
-                          Remove Request
+                          {t.leaveAttendance.removeRequest}
                         </button>
                       )}
 
                       <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-slate-400">
-                        <span>Request details</span>
+                        <span>{t.leaveAttendance.requestDetails}</span>
                         <ChevronRight size={13} />
                       </div>
                     </article>
