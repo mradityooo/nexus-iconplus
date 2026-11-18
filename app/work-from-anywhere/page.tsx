@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "../context/LanguageContext";
 import {
@@ -80,6 +80,65 @@ export default function WorkFromAnywherePage() {
   const [submitted, setSubmitted] = useState(false);
   const [requests, setRequests] = useState<WFARequest[]>([]);
 
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadRequests() {
+    try {
+      const response = await fetch("/api/wfa", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal mengambil riwayat WFA");
+      }
+
+      const data = await response.json();
+
+      const savedRequests: WFARequest[] = data.requests.map(
+        (item: {
+          id: string;
+          workLocation: string;
+          locationDetails: string;
+          startDate: string;
+          endDate: string;
+          reason: string;
+          notes: string | null;
+          status: "PENDING" | "APPROVED" | "REJECTED";
+        }) => ({
+          id: item.id,
+          workLocation: item.workLocation,
+          locationDetails: item.locationDetails,
+          startDate: item.startDate.slice(0, 10),
+          endDate: item.endDate.slice(0, 10),
+          reason: item.reason,
+          notes: item.notes ?? "",
+          status:
+            item.status === "APPROVED"
+              ? "Approved"
+              : item.status === "REJECTED"
+                ? "Rejected"
+                : "Pending",
+        })
+      );
+
+      if (!cancelled) {
+        setRequests(savedRequests);
+      }
+    } catch (error) {
+      console.error("GET WFA error:", error);
+    }
+  }
+
+  void loadRequests();
+
+  return () => {
+    cancelled = true
+  };
+}, []);
+
+
   const today = new Date().toLocaleDateString("en-CA");
 
   const pendingCount = requests.filter(
@@ -96,21 +155,45 @@ export default function WorkFromAnywherePage() {
   const labelClass =
     "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-  function addRequest(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  
+async function addRequest(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-    if (startDate < today) {
-      setMessage("invalidStartDate");
-      return;
-    }
+  if (startDate < today) {
+    setMessage("invalidStartDate");
+    return;
+  }
 
-    if (endDate < startDate) {
-      setMessage("invalidEndDate");
+  if (endDate < startDate) {
+    setMessage("invalidEndDate");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/wfa", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        workLocation,
+        locationDetails: locationDetails.trim(),
+        startDate,
+        endDate,
+        reason: reason.trim(),
+        notes: notes.trim(),
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.error || "Gagal menyimpan pengajuan WFA");
       return;
     }
 
     const newRequest: WFARequest = {
-      id: crypto.randomUUID(),
+      id: result.request.id,
       workLocation,
       locationDetails: locationDetails.trim(),
       startDate,
@@ -124,12 +207,56 @@ export default function WorkFromAnywherePage() {
     setMessage("submitSuccess");
     setSubmitted(false);
     setView("list");
+  } catch (error) {
+    console.error("POST WFA error:", error);
+    alert("Gagal menghubungi server WFA");
   }
+}
 
-  function removeRequest(id: string) {
-    setRequests((current) => current.filter((item) => item.id !== id));
+
+  
+async function removeRequest(id: string) {
+  const confirmed = window.confirm(
+    language === "id"
+      ? "Yakin ingin menghapus pengajuan WFA ini?"
+      : "Are you sure you want to delete this WFA request?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(`/api/wfa/${id}`, {
+      method: "DELETE",
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(
+        result.error ||
+          (language === "id"
+            ? "Gagal menghapus pengajuan WFA"
+            : "Failed to delete WFA request")
+      );
+      return;
+    }
+
+    setRequests((current) =>
+      current.filter((item) => item.id !== id)
+    );
+
     setMessage("removeSuccess");
+  } catch (error) {
+    console.error("DELETE WFA error:", error);
+
+    alert(
+      language === "id"
+        ? "Gagal menghubungi server WFA"
+        : "Failed to connect to WFA server"
+    );
   }
+}
+
 
   function resetForm() {
     setWorkLocation("Home");
