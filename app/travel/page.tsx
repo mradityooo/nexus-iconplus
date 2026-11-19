@@ -489,10 +489,8 @@ async function removeTravel(id: string) {
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    
-            
-                    className={inputClass}
-                    required
+                    rows={2}
+                    className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                   />
                 </div>
 
