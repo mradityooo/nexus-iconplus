@@ -8,7 +8,67 @@ const allowedFacilities = [
   "OTHER_TRANSPORTATION",
 ] as const;
 
-// GET: Mengambil daftar pengajuan perjalanan dinas
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, message: "Silakan login terlebih dahulu." },
+        { status: 401 }
+      );
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: {
+        userId: session.user.id,
+      },
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        { success: false, message: "Data karyawan tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    const id = request.nextUrl.searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID pengajuan wajib diisi." },
+        { status: 400 }
+      );
+    }
+
+    const deleted = await prisma.businessTravelRequest.deleteMany({
+      where: {
+        id,
+        employeeId: employee.id,
+      },
+    });
+
+    if (deleted.count === 0) {
+      return NextResponse.json(
+        { success: false, message: "Pengajuan tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Pengajuan berhasil dihapus.",
+    });
+  } catch (error) {
+    console.error("DELETE BUSINESS TRAVEL ERROR:", error);
+
+    return NextResponse.json(
+      { success: false, message: "Gagal menghapus pengajuan." },
+      { status: 500 }
+    );
+  }
+}
 
 export async function GET() {
   try {
