@@ -127,6 +127,8 @@ model Employee {
 
   // Relasi Work From Anywhere
   wfaRequests WfaRequest[]
+  // Relasi fitur Request
+  employeeRequests EmployeeRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -376,4 +378,47 @@ model WfaRequest {
   @@index([employeeId])
   @@index([status])
   @@map("wfa_requests")
+}
+
+
+ // ==========================================
+ // EMPLOYEE REQUEST
+ // ==========================================
+
+enum EmployeeRequestStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum RequestPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model EmployeeRequest {
+  id         String @id @default(uuid()) @db.Uuid
+  employeeId String @db.Uuid
+
+  // Informasi permintaan
+  title       String
+  category    String
+  priority    RequestPriority @default(NORMAL)
+  neededDate  DateTime @db.Date
+  description String
+
+  // Status permintaan
+  status      EmployeeRequestStatus @default(PENDING)
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi dengan karyawan
+employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId])
+  @@index([status])
+  @@map("employee_requests")
 }

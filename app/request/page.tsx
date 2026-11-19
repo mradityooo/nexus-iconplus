@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "../context/LanguageContext";
 import {
@@ -39,28 +39,7 @@ const inputClass =
 const labelClass =
   "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-const initialRequests: RequestItem[] = [
-  {
-    id: "REQ-001",
-    title: "Permintaan Laptop Operasional",
-    category: "IT & Equipment",
-    priority: "Normal",
-    neededDate: "2026-11-10",
-    description: "Permintaan perangkat untuk mendukung pekerjaan operasional.",
-    status: "In Review",
-    submittedAt: "2026-10-29",
-  },
-  {
-    id: "REQ-002",
-    title: "Permintaan Akses Aplikasi",
-    category: "System Access",
-    priority: "High",
-    neededDate: "2026-11-05",
-    description: "Permintaan akses ke aplikasi internal perusahaan.",
-    status: "Approved",
-    submittedAt: "27 Okt 2026",
-  },
-];
+const initialRequests: RequestItem[] = [];
 
 const categories = [
   "IT & Equipment",
@@ -148,6 +127,61 @@ const priorityLabels: Record<string, string> = {
   const [neededDate, setNeededDate] = useState("");
   const [description, setDescription] = useState("");
 
+
+  useEffect(() => {
+    async function loadRequests() {
+      try {
+        const response = await fetch("/api/request", {
+          cache: "no-store",
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          setNotice(result.error || "Gagal mengambil data Request");
+          return;
+        }
+
+        const data: RequestItem[] = result.requests.map(
+          (item: {
+            id: string;
+            title: string;
+            category: string;
+            priority: string;
+            neededDate: string;
+            description: string;
+            status: string;
+            submittedAt: string;
+          }) => ({
+            id: item.id,
+            title: item.title,
+            category: item.category,
+            priority:
+              item.priority.charAt(0) +
+              item.priority.slice(1).toLowerCase(),
+            neededDate: item.neededDate.slice(0, 10),
+            description: item.description,
+            status: (
+              item.status === "IN_REVIEW"
+                ? "In Review"
+                : item.status.charAt(0) +
+                  item.status.slice(1).toLowerCase()
+            ) as RequestItem["status"],
+            submittedAt: item.submittedAt.slice(0, 10),
+          })
+        );
+
+        setRequests(data);
+      } catch (error) {
+        console.error("GET Request error:", error);
+        setNotice("Gagal terhubung ke server");
+      }
+    }
+
+    loadRequests();
+  }, []);
+
+
   const filteredRequests = requests.filter((request) => {
   const keyword = search.trim().toLowerCase();
 
@@ -162,37 +196,70 @@ const priorityLabels: Record<string, string> = {
   );
 });
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault();
 
-    if (neededDate < getTodayLocal()) {
-  setNotice("invalidNeededDate");
-  return;
-}
+  if (neededDate < getTodayLocal()) {
+    setNotice("invalidNeededDate");
+    return;
+  }
 
+  try {
+    // Kirim data formulir ke API Request
+    const response = await fetch("/api/request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: title.trim(),
+        category,
+        priority,
+        neededDate,
+        description: description.trim(),
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      setNotice(result.error || "Gagal menyimpan Request");
+      return;
+    }
+
+    // Gunakan data yang berhasil disimpan di Supabase
     const newRequest: RequestItem = {
-      id: `REQ-${String(requests.length + 1).padStart(3, "0")}`,
-      title: title.trim(),
-      category,
+      id: result.request.id,
+      title: result.request.title,
+      category: result.request.category,
       priority,
-      neededDate,
-      description: description.trim(),
+      neededDate: result.request.neededDate.slice(0, 10),
+      description: result.request.description,
       status: "Pending",
-      submittedAt: getTodayLocal(),
+      submittedAt: result.request.submittedAt.slice(0, 10),
     };
 
+    // Perbarui tampilan setelah penyimpanan berhasil
     setRequests((previous) => [newRequest, ...previous]);
+
+    // Kosongkan formulir
     setTitle("");
     setCategory("");
     setPriority("Normal");
     setNeededDate("");
     setDescription("");
-    setNotice(`submitSuccess:${newRequest.id}`);
-    setActiveTab("list");
-  }
 
-  return (
-    <main
+        setNotice(`submitSuccess:${newRequest.id}`);
+    setActiveTab("list");
+
+  } catch (error) {
+    console.error("Submit Request error:", error);
+    setNotice("Gagal terhubung ke server");
+  }
+}
+
+return (
+  <main
       className="min-h-screen bg-white"
       style={{ backgroundImage: "url('/background.png')" }}
     >
@@ -495,7 +562,7 @@ const priorityLabels: Record<string, string> = {
                         {request.title}
                       </p>
                       <p className="mt-1 text-[10px] text-slate-500">
-                        {request.id} · {categoryLabels[request.category] ?? request.category}
+                        {`REQ-${request.id.slice(0, 8).toUpperCase()}`} · {categoryLabels[request.category] ?? request.category}
                       </p>
 
                       <div className="mt-2 flex flex-wrap items-center gap-2">
