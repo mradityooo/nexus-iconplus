@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 
 type TravelRequest = {
-  id: number;
+  id: string;
   destination: string;
   departureDate: string;
   returnDate: string;
@@ -33,8 +32,8 @@ type TravelRequest = {
   status: string;
 };
 
-const formatRupiah = (amount: number) =>
-  "Rp " + amount.toLocaleString("id-ID");
+const formatRupiah = (amount?: number | null) =>
+  "Rp " + (amount ?? 0).toLocaleString("id-ID");
 
 const transportOptions = [
   { name: "Pesawat", icon: Plane },
@@ -68,7 +67,13 @@ export default function TravelPage() {
   const labelClass =
   "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-  async function fetchBusinessTravels() {
+  useEffect(() => {
+  fetchBusinessTravels().catch((error) => {
+    console.error("FETCH BUSINESS TRAVEL ERROR:", error);
+  });
+}, []);
+
+async function fetchBusinessTravels() {
   const response = await fetch("/api/business-travels", {
     cache: "no-store",
   });
@@ -76,11 +81,35 @@ export default function TravelPage() {
   const result = await response.json();
 
   if (!response.ok || !result.success) {
-    throw new Error(result.message || "Gagal mengambil data perjalanan.");
+    throw new Error(
+      result.message || "Gagal mengambil data perjalanan."
+    );
   }
 
-  setRequests(result.data);
+  const mappedRequests: TravelRequest[] = result.data.map(
+    (item: {
+      id: string;
+      destination: string;
+      departureDate: string;
+      returnDate: string;
+      purpose: string;
+      transportation: string | null;
+      status: string;
+    }) => ({
+      id: item.id,
+      destination: item.destination,
+      departureDate: item.departureDate,
+      returnDate: item.returnDate,
+      purpose: item.purpose,
+      transport: item.transportation ?? "-",
+      estimatedCost: 0,
+      status: item.status,
+    })
+  );
+
+  setRequests(mappedRequests);
 }
+
 
   async function addTravel(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -135,10 +164,10 @@ export default function TravelPage() {
     }
   }
 
-  function removeTravel(id: number) {
-    setRequests((current) => current.filter((item) => item.id !== id));
-    setMessage("Pengajuan berhasil dihapus.");
-  }
+function removeTravel(id: string) {
+  setRequests((current) => current.filter((item) => item.id !== id));
+  setMessage("Pengajuan berhasil dihapus.");
+}
 
   function resetForm() {
     setDestination("");

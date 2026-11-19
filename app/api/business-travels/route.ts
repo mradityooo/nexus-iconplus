@@ -9,34 +9,54 @@ const allowedFacilities = [
 ] as const;
 
 // GET: Mengambil daftar pengajuan perjalanan dinas
+
 export async function GET() {
   try {
-    const count = await prisma.businessTravelRequest.count();
+    const session = await auth();
 
-console.log("USER BUSINESS TRAVEL COUNT:", count);
-    const businessTravels = await prisma.businessTravelRequest.findMany({
-      include: {
-        employee: {
-          select: {
-            id: true,
-            employeeCode: true,
-            fullName: true,
-            department: true,
-            position: true,
-          },
-        },
-        approvedBy: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
-        facilities: true,
-      },
-      orderBy: {
-        createdAt: "desc",
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, message: "Silakan login terlebih dahulu." },
+        { status: 401 }
+      );
+    }
+
+    // Cari karyawan berdasarkan akun yang sedang login
+    const employee = await prisma.employee.findUnique({
+      where: {
+        userId: session.user.id,
       },
     });
+
+    if (!employee) {
+      return NextResponse.json(
+        { success: false, message: "Data karyawan tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    // Ambil hanya pengajuan milik karyawan tersebut
+    const businessTravels =
+      await prisma.businessTravelRequest.findMany({
+        where: {
+          employeeId: employee.id,
+        },
+        include: {
+          employee: {
+            select: {
+              id: true,
+              employeeCode: true,
+              fullName: true,
+              department: true,
+              position: true,
+            },
+          },
+          facilities: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
     return NextResponse.json({
       success: true,
