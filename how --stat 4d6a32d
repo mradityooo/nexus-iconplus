@@ -1,0 +1,16 @@
+[33mcommit d6e0177b25ba9467007ee25189366d27aecc262a[m
+Author: Subayu Kalla <subayu.kalla998@gmail.com>
+Date:   Thu Nov 12 20:42:10 2026 +0700
+
+    WIP integrasi database WFA dan sinkronisasi Prisma NEXUS
+
+ app/api/reservations/route.ts                      |  11 [32m+[m[31m-[m
+ app/api/wfa/route.ts                               | 156 [32m+++++++++++[m
+ app/work-from-anywhere/page.tsx                    |   6 [32m+[m[31m-[m
+ .../migration.sql                                  |   2 [32m+[m
+ .../migration.sql                                  |  91 [32m++++++[m
+ .../migration.sql                                  |   2 [32m+[m
+ .../migration.sql                                  |  64 [32m+++++[m
+ .../20261111_add_wfa_requests/migration.sql        |  28 [32m++[m
+ prisma/schema.prisma                               | 310 [32m++++++++++++++++++[m[31m---[m
+ 9 files changed, 622 insertions(+), 48 deletions(-)

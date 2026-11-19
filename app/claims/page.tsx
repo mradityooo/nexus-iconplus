@@ -1,7 +1,7 @@
 
 "use client";
 
-import { use, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 type Claim = {
-  id: number;
+  id: string;
   category: string;
   date: string;
   reference: string;
@@ -33,6 +33,21 @@ type Claim = {
   liters?: number;
   pricePerLiter?: number;
   stationLocation?: string;
+  status?: string;
+};
+
+type ClaimApiResponse = {
+  id: string;
+  category: string;
+  transactionDate: string;
+  reference: string | null;
+  description: string;
+  amount: string | number;
+  fuelType: string | null;
+  liters: string | number | null;
+  pricePerLiter: string | number | null;
+  stationLocation: string | null;
+  status: string;
 };
 
 const categories = [
@@ -42,6 +57,22 @@ const categories = [
   { name: "Fuel", icon: Fuel },
   { name: "Others", icon: MoreHorizontal },
 ];
+
+const categoryToEnum: Record<string, string> = {
+  "Car Wash": "CAR_WASH",
+  Meals: "MEALS",
+  "Toll Fee": "TOLL_FEE",
+  Fuel: "FUEL",
+  Others: "OTHERS",
+};
+
+const enumToCategory: Record<string, string> = {
+  CAR_WASH: "Car Wash",
+  MEALS: "Meals",
+  TOLL_FEE: "Toll Fee",
+  FUEL: "Fuel",
+  OTHERS: "Others",
+};
 
 const formatRupiah = (amount: number) =>
   "Rp. " + amount.toLocaleString("id-ID");
@@ -59,8 +90,57 @@ export default function ReimbursementPage() {
   const [pricePerLiter, setPricePerLiter] = useState("");
   const [notes, setNotes] = useState("");
   const [claims, setClaims] = useState<Claim[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  
+  useEffect(() => {
+  async function fetchClaims() {
+    try {
+      setLoading(true);
+
+      const response = await fetch("/api/claims");
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Gagal mengambil data klaim");
+      }
+
+      const data = await response.json();
+
+      const formattedClaims: Claim[] = (data as ClaimApiResponse[]).map((claim) => ({
+        id: claim.id,
+        category: enumToCategory[claim.category] || claim.category,
+        date: String(claim.transactionDate).slice(0, 10),
+        reference: claim.reference || "",
+        description: claim.description,
+        amount: Number(claim.amount),
+        fuelType: claim.fuelType || undefined,
+        liters: claim.liters != null ? Number(claim.liters) : undefined,
+        pricePerLiter:
+          claim.pricePerLiter != null
+            ? Number(claim.pricePerLiter)
+            : undefined,
+        stationLocation: claim.stationLocation || undefined,
+        status: claim.status,
+      }));
+
+      setClaims(formattedClaims);
+    } catch (error) {
+      console.error("FETCH CLAIMS ERROR:", error);
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengambil data klaim"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchClaims();
+  }, []);
 
   const total = claims.reduce((sum, claim) => sum + claim.amount, 0);
   const fuelTotal =
@@ -72,43 +152,122 @@ export default function ReimbursementPage() {
 
   const labelClass = "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-  function addClaim(e: React.FormEvent<HTMLFormElement>) {
+  async function addClaim(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-       setClaims((current) => [
-          ...current,
-          {
-            id: Date.now(),
-            category,
-            date,
-            reference,
-            description: description.trim(),
-            amount: category === "Fuel" ? fuelTotal : Number(amount),
-            stationLocation:
-              category === "Fuel" ? stationLocation.trim() : undefined,
-            fuelType: category === "Fuel" ? fuelType : undefined,
-            liters: category === "Fuel" ? Number(liters) : undefined,
-            pricePerLiter:
-              category === "Fuel" ? Number(pricePerLiter) : undefined,
-            
-          },
-        ]);
+    try {
+      setSaving(true);
+      setMessage("");
 
-    setDate("");
-    setReference("");
-    setDescription("");
-    setAmount("");
-    setFuelType("");
-    setLiters("");
-    setPricePerLiter("");
-    setStationLocation("");
-    setMessage("Claim berhasil ditambahkan.");
-    setView("claims");
+      const claimAmount =
+        category === "Fuel" ? fuelTotal : Number(amount);
+
+      const response = await fetch("/api/claims", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          category: categoryToEnum[category],
+          transactionDate: date,
+          reference: reference.trim() || null,
+          description: description.trim(),
+          amount: claimAmount,
+          fuelType: category === "Fuel" ? fuelType : null,
+          liters: category === "Fuel" ? Number(liters) : null,
+          pricePerLiter:
+            category === "Fuel" ? Number(pricePerLiter) : null,
+          stationLocation:
+            category === "Fuel" ? stationLocation.trim() : null,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal menyimpan klaim");
+      }
+
+      const savedClaim = result.data;
+
+      const newClaim: Claim = {
+        id: savedClaim.id,
+        category: enumToCategory[savedClaim.category] || savedClaim.category,
+        date: String(savedClaim.transactionDate).slice(0, 10),
+        reference: savedClaim.reference || "",
+        description: savedClaim.description,
+        amount: Number(savedClaim.amount),
+        fuelType: savedClaim.fuelType || undefined,
+        liters:
+          savedClaim.liters != null
+            ? Number(savedClaim.liters)
+            : undefined,
+        pricePerLiter:
+          savedClaim.pricePerLiter != null
+            ? Number(savedClaim.pricePerLiter)
+            : undefined,
+        stationLocation: savedClaim.stationLocation || undefined,
+        status: savedClaim.status,
+      };
+
+      setClaims((current) => [newClaim, ...current]);
+
+      setDate("");
+      setReference("");
+      setDescription("");
+      setAmount("");
+      setFuelType("");
+      setLiters("");
+      setPricePerLiter("");
+      setStationLocation("");
+
+      setMessage("Claim berhasil disimpan ke database.");
+      setView("claims");
+    } catch (error) {
+      console.error("ADD CLAIM ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menyimpan klaim"
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function removeClaim(id: number) {
-    setClaims((current) => current.filter((claim) => claim.id !== id));
-    setMessage("Claim berhasil dihapus.");
+  async function removeClaim(id: string) {
+    try {
+      setMessage("");
+
+      const response = await fetch("/api/claims", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal menghapus klaim");
+      }
+
+      setClaims((current) =>
+        current.filter((claim) => claim.id !== id)
+      );
+
+      setMessage("Claim berhasil dihapus dari database.");
+    } catch (error) {
+      console.error("REMOVE CLAIM ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menghapus klaim"
+      );
+    }
   }
 
   function openSummary() {
@@ -119,6 +278,40 @@ export default function ReimbursementPage() {
 
     setMessage("");
     setView("summary");
+  }
+
+  async function confirmClaim() {
+    try {
+      setSaving(true);
+      setMessage("");
+
+      const response = await fetch("/api/claims/notes", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notes }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal mengonfirmasi klaim");
+      }
+
+      setSubmitted(true);
+      setMessage("Pengajuan klaim berhasil dikonfirmasi.");
+    } catch (error) {
+      console.error("CONFIRM CLAIM ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat mengonfirmasi klaim"
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -419,7 +612,13 @@ export default function ReimbursementPage() {
 
                 <div className="mb-1 h-px bg-slate-300" />
 
-                {claims.length === 0 ? (
+                {loading ? (
+                <div className="py-10 text-center">
+                  <p className="text-xs text-slate-500">
+                    Loading claims...
+                  </p>
+                </div>
+              ) : claims.length === 0 ? (
                   <div className="py-10 text-center">
                     <ReceiptText
                       size={30}
@@ -479,15 +678,12 @@ export default function ReimbursementPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  type="button"
-                  onClick={() => {
-                    setView("form");
-                    setMessage("");
-                  }}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                  type="submit"
+                  disabled={saving}
+                  className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Plus size={14} />
-                  Add Claim
+                  <Plus size={15} />
+                  {saving ? "Saving..." : "Add Claim"}
                 </button>
 
                 <button
@@ -599,14 +795,12 @@ export default function ReimbursementPage() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setSubmitted(true);
-                    setMessage("");
-                  }}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700"
+                  onClick={confirmClaim}
+                  disabled={saving || claims.length === 0}
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Check size={15} />
-                  Confirm Claim
+                  {saving ? "Confirming..." : "Confirm Claim"}
                 </button>
               </div>
 
@@ -616,15 +810,15 @@ export default function ReimbursementPage() {
                     Claim Prepared Successfully
                   </p>
                   <p className="mt-1 text-[10px] leading-5 text-emerald-700">
-                    Simulasi berhasil. Data belum dikirim atau disimpan ke server.
+                    Additional Notes berhasil disimpan ke database. Pengajuan klaim tercatat dengan status PENDING.
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      setClaims([]);
                       setNotes("");
                       setSubmitted(false);
                       setView("form");
+                      setMessage("");
                     }}
                     className="mt-3 text-[11px] font-bold text-emerald-800 underline"
                   >
