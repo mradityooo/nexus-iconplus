@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "../context/LanguageContext";
 import {
@@ -30,53 +30,6 @@ type Job = {
   skills: string[];
 };
 
-const jobs: Job[] = [
-  {
-    id: 1,
-    title: "Frontend Developer",
-    department: "Digital Solution",
-    location: "Jakarta",
-    level: "Experienced",
-    deadline: "30 Nov 2026",
-    description:
-      "Mengembangkan aplikasi web internal, berkolaborasi dengan tim UI/UX, dan memastikan kualitas serta performa aplikasi.",
-    skills: ["React", "Next.js", "TypeScript"],
-  },
-  {
-    id: 2,
-    title: "IT Business Analyst",
-    department: "Information Technology",
-    location: "Bandung",
-    level: "Experienced",
-    deadline: "5 Dec 2026",
-    description:
-      "Menganalisis kebutuhan bisnis dan menyusun kebutuhan sistem bersama stakeholder serta tim pengembangan.",
-    skills: ["Business Analysis", "SQL", "Documentation"],
-  },
-  {
-    id: 3,
-    title: "UI/UX Designer",
-    department: "Digital Experience",
-    location: "Jakarta",
-    level: "Intermediate",
-    deadline: "10 Dec 2026",
-    description:
-      "Merancang pengalaman pengguna untuk produk digital perusahaan melalui riset, wireframe, dan prototyping.",
-    skills: ["Figma", "Prototyping", "User Research"],
-  },
-  {
-    id: 4,
-    title: "Network Operations Engineer",
-    department: "Network Operations",
-    location: "Lampung",
-    level: "Intermediate",
-    deadline: "15 Dec 2026",
-    description:
-      "Memantau performa jaringan, membantu penanganan gangguan, dan mendukung pemeliharaan infrastruktur jaringan.",
-    skills: ["Networking", "Monitoring", "Troubleshooting"],
-  },
-];
-
 type Application = {
   job: Job;
   status: string;
@@ -91,6 +44,7 @@ const labelClass =
 
 export default function CareerPlanningPage() {
   const { language, t } = useLanguage();
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [activeTab, setActiveTab] = useState<"explore" | "applications">(
     "explore"
   );
@@ -100,6 +54,124 @@ export default function CareerPlanningPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    async function loadJobs() {
+      try {
+        // Ambil lowongan dari API Career Planning
+        const response = await fetch("/api/career/jobs", {
+          cache: "no-store",
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          setNotice(result.error || "Gagal mengambil data lowongan");
+          return;
+        }
+
+        // Ubah data Supabase agar sesuai dengan tipe Job
+        const jobData: Job[] = result.jobs.map(
+          (item: {
+            id: number;
+            title: string;
+            department: string;
+            location: string;
+            level: string;
+            deadline: string;
+            description: string;
+            skills: string[];
+          }) => ({
+            id: item.id,
+            title: item.title,
+            department: item.department,
+            location: item.location,
+            level: item.level,
+            deadline: new Date(item.deadline).toLocaleDateString(
+              "en-GB",
+              {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                timeZone: "UTC",
+              }
+            ),
+            description: item.description,
+            skills: item.skills,
+          })
+        );
+
+        // Tampilkan lowongan dari Supabase
+        setJobs(jobData);
+      } catch (error) {
+        console.error("GET Career Jobs error:", error);
+        setNotice("Gagal terhubung ke server");
+      }
+    }
+
+    loadJobs();
+  }, []);
+
+
+useEffect(() => {
+  async function loadApplications() {
+    try {
+      const response = await fetch("/api/career/applications", {
+        cache: "no-store",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setNotice(result.error || "Gagal mengambil riwayat lamaran");
+        return;
+      }
+
+      const applicationData: Application[] = result.applications.map(
+        (item: {
+          status: string;
+          appliedAt: string;
+          job: Job;
+        }) => ({
+          job: {
+            ...item.job,
+            deadline: new Date(item.job.deadline).toLocaleDateString(
+              "en-GB",
+              {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                timeZone: "UTC",
+              }
+            ),
+          },
+          status:
+            item.status === "IN_REVIEW"
+              ? "In Review"
+              : item.status.charAt(0) +
+                item.status.slice(1).toLowerCase(),
+          appliedAt: new Date(item.appliedAt).toLocaleDateString(
+            "id-ID",
+            {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            }
+          ),
+        })
+      );
+
+      setApplications(applicationData);
+    } catch (error) {
+      console.error("GET Career Applications error:", error);
+      setNotice("Gagal terhubung ke server");
+    }
+  }
+
+  loadApplications();
+}, []);
+
+
 
   const filteredJobs = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -126,31 +198,66 @@ export default function CareerPlanningPage() {
         (location === "All Locations" || job.location === location)
       );
     });
-  }, [search, department, location]);
+  }, [jobs, search, department, location]);
 
-  function applyForJob(job: Job) {
-    if (applications.some((item) => item.job.id === job.id)) {
-      setNotice(t.career.duplicateApplication);
-      setSelectedJob(null);
+async function applyForJob(job: Job) {
+  // 1. Periksa apakah lowongan sudah dilamar
+  if (applications.some((item) => item.job.id === job.id)) {
+    setNotice(t.career.duplicateApplication);
+    setSelectedJob(null);
+    return;
+  }
+
+  try {
+    // 2. Kirim lamaran ke API Career Planning
+    const response = await fetch("/api/career/applications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jobId: job.id,
+      }),
+    });
+
+    const result = await response.json();
+
+    // 3. Tampilkan pesan jika penyimpanan gagal
+    if (!response.ok) {
+      setNotice(result.error || "Gagal mengirim lamaran");
       return;
     }
 
+    // 4. Tambahkan lamaran yang berhasil disimpan
+    const newApplication: Application = {
+      job,
+      status: "Submitted",
+      appliedAt: new Date(
+        result.application.appliedAt
+      ).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+    };
+
     setApplications((previous) => [
+      newApplication,
       ...previous,
-      {
-        job,
-        status: "Submitted",
-        appliedAt: new Date().toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        }),
-      },
     ]);
 
+    // 5. Tutup detail dan tampilkan pesan sukses
     setSelectedJob(null);
-    t.career.applicationSuccess.replace("{job}", job.title)
+    setNotice(
+      t.career.applicationSuccess.replace("{job}", job.title)
+    );
+    setActiveTab("applications");
+  } catch (error) {
+    console.error("Submit Career Application error:", error);
+    setNotice("Gagal terhubung ke server");
   }
+}
+
 
   return (
     <main

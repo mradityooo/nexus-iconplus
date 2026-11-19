@@ -76,6 +76,22 @@ enum WfaStatus {
   REJECTED
 }
 
+enum ClaimCategory {
+  CAR_WASH
+  MEALS
+  TOLL_FEE
+  FUEL
+  OTHERS
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+}
+
 // ==========================================
 // USER
 // ==========================================
@@ -88,6 +104,9 @@ model User {
   status   AccountStatus @default(ACTIVE)
 
   employee Employee?
+
+  // User yang menyetujui Claims
+  approvedClaims Claim[] @relation("ClaimApprover")
 
   // User yang menyetujui reservasi kendaraan
   approvedReservations VehicleReservation[] @relation("ReservationApprover")
@@ -125,10 +144,17 @@ model Employee {
   // Relasi perjalanan dinas
   businessTravelRequests BusinessTravelRequest[]
 
+  // Relasi Claims
+  claims Claim[]
+
   // Relasi Work From Anywhere
   wfaRequests WfaRequest[]
+
   // Relasi fitur Request
   employeeRequests EmployeeRequest[]
+
+  // Relasi lamaran Career Planning
+  careerApplications CareerApplication[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -380,10 +406,9 @@ model WfaRequest {
   @@map("wfa_requests")
 }
 
-
- // ==========================================
- // EMPLOYEE REQUEST
- // ==========================================
+// ==========================================
+// EMPLOYEE REQUEST
+// ==========================================
 
 enum EmployeeRequestStatus {
   PENDING
@@ -416,9 +441,108 @@ model EmployeeRequest {
   updatedAt   DateTime @updatedAt
 
   // Relasi dengan karyawan
-employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
   @@index([employeeId])
   @@index([status])
   @@map("employee_requests")
+}
+
+// ==========================================
+// CAREER PLANNING
+// ==========================================
+
+enum CareerApplicationStatus {
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model CareerJob {
+  id          Int      @id @default(autoincrement())
+  title       String
+  department  String
+  location    String
+  level       String
+  deadline    DateTime @db.Date
+  description String
+  skills      String[]
+
+  isActive Boolean @default(true)
+
+  // Relasi ke lamaran
+  applications CareerApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, deadline])
+  @@map("career_jobs")
+}
+
+model CareerApplication {
+  id         String @id @default(uuid()) @db.Uuid
+  employeeId String @db.Uuid
+  jobId      Int
+
+  status    CareerApplicationStatus @default(SUBMITTED)
+  appliedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relasi ke karyawan
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  // Relasi ke lowongan
+  job CareerJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  // Satu karyawan hanya boleh melamar satu kali pada lowongan yang sama
+  @@unique([employeeId, jobId])
+  @@index([jobId])
+  @@index([status])
+  @@map("career_applications")
+}
+
+// ==========================================
+// CLAIMS
+// ==========================================
+
+model Claim {
+  id         String @id @default(uuid()) @db.Uuid
+  employeeId String @db.Uuid
+
+  category        ClaimCategory
+  transactionDate DateTime @db.Date
+  reference       String?
+  description     String
+  amount          Decimal @db.Decimal(15, 2)
+
+  // Detail khusus Fuel
+  fuelType        String?
+  liters          Decimal? @db.Decimal(10, 2)
+  pricePerLiter   Decimal? @db.Decimal(15, 2)
+  stationLocation String?
+
+  // Bukti dan catatan
+  receiptUrl String?
+  notes      String?
+
+  // Persetujuan
+  status       ClaimStatus @default(PENDING)
+  reviewNote   String?
+  approvedById String? @db.Uuid
+  reviewedAt   DateTime?
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  approvedBy User?    @relation("ClaimApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([approvedById])
+  @@index([status])
+  @@index([category])
+  @@index([transactionDate])
+  @@map("claims")
 }
