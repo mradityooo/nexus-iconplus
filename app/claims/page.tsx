@@ -29,6 +29,7 @@ type Claim = {
   reference: string;
   description: string;
   amount: number;
+  receiptUrl?: string | null;
   fuelType?: string;
   liters?: number;
   pricePerLiter?: number;
@@ -48,6 +49,15 @@ type ClaimApiResponse = {
   pricePerLiter: string | number | null;
   stationLocation: string | null;
   status: string;
+  receiptUrl: string | null;
+};
+
+type EmployeeProfile = {
+  fullName: string;
+  position: string | null;
+  employeeCode: string;
+  email: string | null;
+  department: string | null;
 };
 
 const categories = [
@@ -92,8 +102,40 @@ export default function ReimbursementPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  const [employeeProfile, setEmployeeProfile] =
+  useState<EmployeeProfile | null>(null);
+
+  useEffect(() => {
+  async function fetchEmployeeProfile() {
+    try {
+      const response = await fetch("/api/claims/profile");
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(
+          result.message || "Gagal mengambil informasi karyawan"
+        );
+      }
+
+      const data: EmployeeProfile = await response.json();
+      setEmployeeProfile(data);
+    } catch (error) {
+      console.error("FETCH EMPLOYEE PROFILE ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengambil informasi karyawan"
+      );
+    }
+  }
+
+  fetchEmployeeProfile();
+  }, []);
   
   useEffect(() => {
   async function fetchClaims() {
@@ -124,6 +166,7 @@ export default function ReimbursementPage() {
             : undefined,
         stationLocation: claim.stationLocation || undefined,
         status: claim.status,
+        receiptUrl: claim.receiptUrl,
       }));
 
       setClaims(formattedClaims);
@@ -162,6 +205,7 @@ export default function ReimbursementPage() {
       const claimAmount =
         category === "Fuel" ? fuelTotal : Number(amount);
 
+      // 1. Simpan data klaim ke database
       const response = await fetch("/api/claims", {
         method: "POST",
         headers: {
@@ -190,9 +234,33 @@ export default function ReimbursementPage() {
 
       const savedClaim = result.data;
 
+      // 2. Upload bukti transaksi jika file dipilih
+      let uploadWarning = "";
+
+      if (receiptFile) {
+        const formData = new FormData();
+
+        formData.append("file", receiptFile);
+        formData.append("claimId", savedClaim.id);
+
+        const uploadResponse = await fetch("/api/claims/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const uploadResult = await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+          uploadWarning =
+            uploadResult.message || "Bukti transaksi gagal diunggah.";
+        }
+      }
+
+      // 3. Masukkan klaim ke tampilan
       const newClaim: Claim = {
         id: savedClaim.id,
-        category: enumToCategory[savedClaim.category] || savedClaim.category,
+        category:
+          enumToCategory[savedClaim.category] || savedClaim.category,
         date: String(savedClaim.transactionDate).slice(0, 10),
         reference: savedClaim.reference || "",
         description: savedClaim.description,
@@ -212,6 +280,7 @@ export default function ReimbursementPage() {
 
       setClaims((current) => [newClaim, ...current]);
 
+      // 4. Reset form
       setDate("");
       setReference("");
       setDescription("");
@@ -220,8 +289,14 @@ export default function ReimbursementPage() {
       setLiters("");
       setPricePerLiter("");
       setStationLocation("");
+      setReceiptFile(null);
 
-      setMessage("Claim berhasil disimpan ke database.");
+      setMessage(
+        uploadWarning
+          ? `Claim berhasil disimpan, tetapi ${uploadWarning}`
+          : "Claim dan bukti transaksi berhasil disimpan."
+      );
+
       setView("claims");
     } catch (error) {
       console.error("ADD CLAIM ERROR:", error);
@@ -578,6 +653,60 @@ export default function ReimbursementPage() {
             </div>
           )}
 
+            <div>
+              <label className={labelClass} htmlFor="receipt">
+                Transaction Receipt
+              </label>
+
+              <input
+                id="receipt"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+
+                  if (!file) {
+                    setReceiptFile(null);
+                    return;
+                  }
+
+                  const allowedTypes = [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp",
+                    "application/pdf",
+                  ];
+
+                  if (!allowedTypes.includes(file.type)) {
+                    setMessage("Format file harus JPG, PNG, WebP, atau PDF.");
+                    e.target.value = "";
+                    setReceiptFile(null);
+                    return;
+                  }
+
+                  if (file.size > 5 * 1024 * 1024) {
+                    setMessage("Ukuran file maksimal 5 MB.");
+                    e.target.value = "";
+                    setReceiptFile(null);
+                    return;
+                  }
+
+                  setReceiptFile(file);
+                  setMessage("");
+                }}
+                className="w-full rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-[10px] file:font-semibold file:text-blue-600"
+              />
+
+              <p className="mt-1 text-[9px] text-slate-500">
+                JPG, PNG, WebP, atau PDF. Maksimal 5 MB.
+              </p>
+
+              {receiptFile && (
+                <p className="mt-2 text-[10px] font-medium text-green-700">
+                  File dipilih: {receiptFile.name}
+                </p>
+              )}
+            </div>
 
                   <button
                     type="submit"
@@ -649,6 +778,17 @@ export default function ReimbursementPage() {
                               </p>
                             )}
                           </div>
+                          {claim.receiptUrl && (
+                            <a
+                              href={`/api/claims/${claim.id}/receipt`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1.5 text-[10px] font-semibold text-blue-600 transition hover:bg-blue-100"
+                            >
+                              <ReceiptText size={12} />
+                              View Receipt
+                            </a>
+                          )}
 
                           <p className="shrink-0 text-[11px] font-bold text-slate-900">
                             {formatRupiah(claim.amount)}
@@ -708,20 +848,20 @@ export default function ReimbursementPage() {
                 <div className="mb-3 h-px bg-slate-400/80" />
 
                 <div className="grid grid-cols-2 gap-x-3 gap-y-3">
-                  {[
-                    ["Employee Name", "Employee Name"],
-                    ["Position", "Employee"],
-                    ["Employee ID", "NEXUS-0001"],
-                    ["Email", "employee@example.com"],
-                    ["Department", "Operations"],
-                  ].map(([label, value]) => (
-                    <div key={label} className="min-w-0">
-                      <p className="text-[9px] text-slate-500">{label}</p>
-                      <p className="mt-0.5 break-words text-[10px] font-semibold text-slate-800">
-                        {value}
-                      </p>
-                    </div>
-                  ))}
+                {[
+                  ["Employee Name", employeeProfile?.fullName || "-"],
+                  ["Position", employeeProfile?.position || "-"],
+                  ["Employee ID", employeeProfile?.employeeCode || "-"],
+                  ["Email", employeeProfile?.email || "-"],
+                  ["Department", employeeProfile?.department || "-"],
+                ].map(([label, value]) => (
+                  <div key={label} className="min-w-0">
+                    <p className="text-[9px] text-slate-500">{label}</p>
+                    <p className="mt-0.5 break-words text-[10px] font-semibold text-slate-800">
+                      {value}
+                    </p>
+                  </div>
+                ))}
                 </div>
               </section>
 
