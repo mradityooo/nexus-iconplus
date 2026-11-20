@@ -74,3 +74,25 @@ export const BusinessTravelFacilityType = {
 } as const
 
 export type BusinessTravelFacilityType = (typeof BusinessTravelFacilityType)[keyof typeof BusinessTravelFacilityType]
+
+
+export const ClaimCategory = {
+  CAR_WASH: 'CAR_WASH',
+  MEALS: 'MEALS',
+  TOLL_FEE: 'TOLL_FEE',
+  FUEL: 'FUEL',
+  OTHERS: 'OTHERS'
+} as const
+
+export type ClaimCategory = (typeof ClaimCategory)[keyof typeof ClaimCategory]
+
+
+export const ClaimStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type ClaimStatus = (typeof ClaimStatus)[keyof typeof ClaimStatus]

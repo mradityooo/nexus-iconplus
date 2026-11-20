@@ -35,31 +35,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const password = String(credentials?.password ?? "");
 
-        if (!email || !password) return null;
-
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
-
-        if (!user || user.status !== "ACTIVE") {
+        if (!email || !password) {
+          console.log("[ADMIN AUTH] Input kosong");
           return null;
         }
 
-        // Portal Admin hanya menerima GA dan ADMIN
-        if (user.role !== "GA" && user.role !== "ADMIN") {
-          return null;
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (!user) {
+            console.log("[ADMIN AUTH] User tidak ditemukan");
+            return null;
+          }
+
+          if (user.status !== "ACTIVE") {
+            console.log("[ADMIN AUTH] Akun tidak aktif");
+            return null;
+          }
+
+          if (!["GA", "ADMIN"].includes(user.role)) {
+            console.log("[ADMIN AUTH] Role tidak diizinkan");
+            return null;
+          }
+
+          const isValid = await compare(password, user.password);
+
+          console.log(
+            "[ADMIN AUTH] Password:",
+            isValid ? "MATCH" : "NOT MATCH"
+          );
+
+          if (!isValid) return null;
+
+          return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error("[ADMIN AUTH] Error:", error);
+          throw error;
         }
-
-        const isValid = await compare(password, user.password);
-
-        if (!isValid) return null;
-
-        return {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-        };
-      },
+      }
     }),
   ],
 

@@ -69,6 +69,10 @@ export default function BusinessTravelDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [reviewNote, setReviewNote] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
+
   useEffect(() => {
     let cancelled = false;
 
@@ -107,6 +111,58 @@ export default function BusinessTravelDetailPage() {
       cancelled = true;
     };
   }, [id]);
+
+  async function handleDecision(status: "APPROVED" | "REJECTED") {
+    if (status === "REJECTED" && !reviewNote.trim()) {
+      setActionMessage("Alasan penolakan wajib diisi.");
+      return;
+    }
+
+    const confirmation =
+      status === "APPROVED"
+        ? "Apakah kamu yakin ingin menyetujui pengajuan ini?"
+        : "Apakah kamu yakin ingin menolak pengajuan ini?";
+
+    if (!window.confirm(confirmation)) return;
+
+    try {
+      setSaving(true);
+      setActionMessage("");
+
+      const response = await fetch(
+        `/api/admin/business-travels/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status,
+            reviewNote,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Gagal memproses pengajuan."
+        );
+      }
+
+      setData(result.data);
+      setActionMessage(result.message);
+    } catch (error) {
+      setActionMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString("id-ID", {
@@ -358,6 +414,63 @@ export default function BusinessTravelDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Approval Actions */}
+      {data.status === "PENDING" && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="font-semibold text-slate-900">
+            Tindakan Persetujuan
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Periksa pengajuan sebelum memberikan keputusan.
+          </p>
+
+          <div className="mt-5 space-y-2">
+            <label
+              htmlFor="reviewNote"
+              className="text-sm font-medium text-slate-700"
+            >
+              Catatan / Alasan Penolakan
+            </label>
+
+            <textarea
+              id="reviewNote"
+              value={reviewNote}
+              onChange={(e) => setReviewNote(e.target.value)}
+              placeholder="Isi alasan jika pengajuan ditolak..."
+              rows={3}
+              className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+            />
+          </div>
+
+          {actionMessage && (
+            <p className="mt-3 text-sm text-red-600">
+              {actionMessage}
+            </p>
+          )}
+
+          <div className="mt-5 flex flex-wrap justify-end gap-3">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => handleDecision("REJECTED")}
+              className="rounded-xl border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
+            >
+              {saving ? "Memproses..." : "Reject"}
+            </button>
+
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => handleDecision("APPROVED")}
+              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {saving ? "Memproses..." : "Approve"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Approval Information */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

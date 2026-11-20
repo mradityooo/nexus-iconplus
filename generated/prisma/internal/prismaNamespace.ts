@@ -403,7 +403,8 @@ export const ModelName = {
   Driver: 'Driver',
   VehicleReservation: 'VehicleReservation',
   BusinessTravelRequest: 'BusinessTravelRequest',
-  BusinessTravelFacility: 'BusinessTravelFacility'
+  BusinessTravelFacility: 'BusinessTravelFacility',
+  Claim: 'Claim'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -419,7 +420,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "employee" | "vehicle" | "driver" | "vehicleReservation" | "businessTravelRequest" | "businessTravelFacility"
+    modelProps: "user" | "employee" | "vehicle" | "driver" | "vehicleReservation" | "businessTravelRequest" | "businessTravelFacility" | "claim"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -941,6 +942,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Claim: {
+      payload: Prisma.$ClaimPayload<ExtArgs>
+      fields: Prisma.ClaimFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClaimFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClaimFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>
+        }
+        findFirst: {
+          args: Prisma.ClaimFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClaimFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>
+        }
+        findMany: {
+          args: Prisma.ClaimFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>[]
+        }
+        create: {
+          args: Prisma.ClaimCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>
+        }
+        createMany: {
+          args: Prisma.ClaimCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ClaimCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>[]
+        }
+        delete: {
+          args: Prisma.ClaimDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>
+        }
+        update: {
+          args: Prisma.ClaimUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>
+        }
+        deleteMany: {
+          args: Prisma.ClaimDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClaimUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ClaimUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>[]
+        }
+        upsert: {
+          args: Prisma.ClaimUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimPayload>
+        }
+        aggregate: {
+          args: Prisma.ClaimAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClaim>
+        }
+        groupBy: {
+          args: Prisma.ClaimGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClaimGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClaimCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClaimCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1089,6 +1164,31 @@ export const BusinessTravelFacilityScalarFieldEnum = {
 } as const
 
 export type BusinessTravelFacilityScalarFieldEnum = (typeof BusinessTravelFacilityScalarFieldEnum)[keyof typeof BusinessTravelFacilityScalarFieldEnum]
+
+
+export const ClaimScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  category: 'category',
+  transactionDate: 'transactionDate',
+  reference: 'reference',
+  description: 'description',
+  amount: 'amount',
+  fuelType: 'fuelType',
+  liters: 'liters',
+  pricePerLiter: 'pricePerLiter',
+  stationLocation: 'stationLocation',
+  receiptUrl: 'receiptUrl',
+  notes: 'notes',
+  status: 'status',
+  reviewNote: 'reviewNote',
+  approvedById: 'approvedById',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClaimScalarFieldEnum = (typeof ClaimScalarFieldEnum)[keyof typeof ClaimScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1258,6 +1358,48 @@ export type EnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel> = FieldRef
  * Reference to a field of type 'BusinessTravelFacilityType[]'
  */
 export type ListEnumBusinessTravelFacilityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BusinessTravelFacilityType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimCategory'
+ */
+export type EnumClaimCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimCategory[]'
+ */
+export type ListEnumClaimCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimCategory[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimStatus'
+ */
+export type EnumClaimStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimStatus[]'
+ */
+export type ListEnumClaimStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimStatus[]'>
     
 
 
@@ -1432,6 +1574,7 @@ export type GlobalOmitConfig = {
   vehicleReservation?: Prisma.VehicleReservationOmit
   businessTravelRequest?: Prisma.BusinessTravelRequestOmit
   businessTravelFacility?: Prisma.BusinessTravelFacilityOmit
+  claim?: Prisma.ClaimOmit
 }
 
 /* Types for Logging */

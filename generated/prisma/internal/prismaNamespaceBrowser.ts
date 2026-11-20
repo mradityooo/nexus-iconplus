@@ -57,7 +57,8 @@ export const ModelName = {
   Driver: 'Driver',
   VehicleReservation: 'VehicleReservation',
   BusinessTravelRequest: 'BusinessTravelRequest',
-  BusinessTravelFacility: 'BusinessTravelFacility'
+  BusinessTravelFacility: 'BusinessTravelFacility',
+  Claim: 'Claim'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -185,6 +186,31 @@ export const BusinessTravelFacilityScalarFieldEnum = {
 } as const
 
 export type BusinessTravelFacilityScalarFieldEnum = (typeof BusinessTravelFacilityScalarFieldEnum)[keyof typeof BusinessTravelFacilityScalarFieldEnum]
+
+
+export const ClaimScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  category: 'category',
+  transactionDate: 'transactionDate',
+  reference: 'reference',
+  description: 'description',
+  amount: 'amount',
+  fuelType: 'fuelType',
+  liters: 'liters',
+  pricePerLiter: 'pricePerLiter',
+  stationLocation: 'stationLocation',
+  receiptUrl: 'receiptUrl',
+  notes: 'notes',
+  status: 'status',
+  reviewNote: 'reviewNote',
+  approvedById: 'approvedById',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClaimScalarFieldEnum = (typeof ClaimScalarFieldEnum)[keyof typeof ClaimScalarFieldEnum]
 
 
 export const SortOrder = {

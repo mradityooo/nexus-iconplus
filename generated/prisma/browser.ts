@@ -52,3 +52,8 @@ export type BusinessTravelRequest = Prisma.BusinessTravelRequestModel
  * 
  */
 export type BusinessTravelFacility = Prisma.BusinessTravelFacilityModel
+/**
+ * Model Claim
+ * 
+ */
+export type Claim = Prisma.ClaimModel
