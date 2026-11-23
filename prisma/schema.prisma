@@ -85,6 +85,7 @@ enum ClaimCategory {
 }
 
 enum ClaimStatus {
+  DRAFT
   PENDING
   APPROVED
   REJECTED
@@ -107,6 +108,9 @@ model User {
 
   // User yang menyetujui Claims
   approvedClaims Claim[] @relation("ClaimApprover")
+
+  // Relasi persetujuan pengajuan Claims
+approvedClaimRequests ClaimRequest[] @relation("ClaimRequestApprover")
 
   // User yang menyetujui reservasi kendaraan
   approvedReservations VehicleReservation[] @relation("ReservationApprover")
@@ -147,6 +151,9 @@ model Employee {
   // Relasi Claims
   claims Claim[]
 
+  // Relasi pengajuan Claims
+claimRequests ClaimRequest[]
+
   // Relasi Work From Anywhere
   wfaRequests WfaRequest[]
 
@@ -155,6 +162,12 @@ model Employee {
 
   // Relasi lamaran Career Planning
   careerApplications CareerApplication[]
+
+  // Relasi absensi karyawan
+attendances Attendance[]
+
+// Relasi pengajuan cuti
+leaveRequests LeaveRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -536,13 +549,136 @@ model Claim {
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
   approvedBy User?    @relation("ClaimApprover", fields: [approvedById], references: [id], onDelete: SetNull)
 
+    // Relasi ke pengajuan Claims
+  requestId String? @db.Uuid
+  request   ClaimRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+
+  @@index([requestId])
   @@index([employeeId])
   @@index([approvedById])
   @@index([status])
   @@index([category])
   @@index([transactionDate])
   @@map("claims")
+}
+
+
+ // ==========================================
+ // CLAIM REQUEST
+ // ==========================================
+
+model ClaimRequest {
+  id            String  @id @default(uuid()) @db.Uuid
+  employeeId    String  @db.Uuid
+  requestNumber String  @unique
+  totalAmount   Decimal @db.Decimal(15, 2)
+
+  // Status dan persetujuan
+  status       ClaimStatus @default(PENDING)
+  notes        String?
+  reviewNote   String?
+  approvedById String? @db.Uuid
+  reviewedAt   DateTime?
+
+  // Relasi ke karyawan
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  // Relasi ke user yang menyetujui
+  approvedBy User? @relation("ClaimRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  // Satu pengajuan bisa memiliki beberapa klaim
+  claims Claim[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([approvedById])
+  @@index([status])
+  @@index([createdAt])
+  @@map("claim_requests")
+}
+
+
+
+ // ==========================================
+ // ATTENDANCE
+ // ==========================================
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+}
+
+model Attendance {
+  id             String @id @default(uuid()) @db.Uuid
+  employeeId     String @db.Uuid
+
+  // Tanggal absensi
+  attendanceDate DateTime @db.Date
+
+  // Jam masuk dan pulang
+  checkInAt  DateTime @db.Timestamptz(3)
+  checkOutAt DateTime? @db.Timestamptz(3)
+
+  // Status kehadiran
+  status AttendanceStatus @default(PRESENT)
+
+  // Relasi ke karyawan
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Satu karyawan hanya boleh absen sekali per tanggal
+  @@unique([employeeId, attendanceDate])
+  @@index([attendanceDate])
+  @@map("attendances")
+}
+
+// ==========================================
+// LEAVE REQUEST
+// ==========================================
+
+enum LeaveType {
+  ANNUAL
+  SICK
+  PERSONAL
+  EMERGENCY
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model LeaveRequest {
+  id         String @id @default(uuid()) @db.Uuid
+  employeeId String @db.Uuid
+
+  // Informasi pengajuan cuti
+  type      LeaveType
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  days      Int
+  reason    String
+
+  // Status persetujuan
+  status LeaveStatus @default(PENDING)
+
+  // Relasi ke karyawan
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@map("leave_requests")
 }

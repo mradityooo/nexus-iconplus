@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useLanguage } from "../context/LanguageContext";
@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 type LeaveRequest = {
-  id: number;
+  id: string;
   type: string;
   startDate: string;
   endDate: string;
@@ -31,6 +31,45 @@ type LeaveRequest = {
   status: "Pending" | "Approved" | "Rejected";
 };
 
+
+type LeaveRequestApiRecord = {
+  id: string;
+  type: "ANNUAL" | "SICK" | "PERSONAL" | "EMERGENCY";
+  startDate: string;
+  endDate: string;
+  days: number;
+  reason: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+};
+
+function mapLeaveRequest(
+  record: LeaveRequestApiRecord
+): LeaveRequest {
+  const leaveTypes = {
+    ANNUAL: "Annual Leave",
+    SICK: "Sick Leave",
+    PERSONAL: "Personal Leave",
+    EMERGENCY: "Emergency Leave",
+  };
+
+  const leaveStatuses = {
+    PENDING: "Pending",
+    APPROVED: "Approved",
+    REJECTED: "Rejected",
+  } as const;
+
+  return {
+    id: record.id,
+    type: leaveTypes[record.type],
+    startDate: record.startDate.slice(0, 10),
+    endDate: record.endDate.slice(0, 10),
+    days: record.days,
+    reason: record.reason,
+    status: leaveStatuses[record.status],
+  };
+}
+
+
 type AttendanceRecord = {
   date: string;
   day: string;
@@ -38,6 +77,57 @@ type AttendanceRecord = {
   checkOut: string;
   status: "Present" | "Late" | "Absent";
 };
+
+
+type AttendanceApiRecord = {
+  attendanceDate: string;
+  checkInAt: string;
+  checkOutAt: string | null;
+  status: "PRESENT" | "LATE" | "ABSENT";
+};
+
+
+function mapAttendance(record: AttendanceApiRecord): AttendanceRecord {
+  // Ambil tanggal absensi tanpa pergeseran zona waktu
+  const dateOnly = record.attendanceDate.slice(0, 10);
+  const date = new Date(`${dateOnly}T00:00:00.000Z`);
+
+  // Ubah waktu UTC dari database menjadi WIB
+  const formatTime = (value: string) =>
+    new Date(value).toLocaleTimeString("en-GB", {
+      timeZone: "Asia/Jakarta",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    });
+
+  return {
+    date: date.toLocaleDateString("en-GB", {
+      timeZone: "UTC",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+
+    day: date.toLocaleDateString("en-US", {
+      timeZone: "UTC",
+      weekday: "long",
+    }),
+
+    checkIn: formatTime(record.checkInAt),
+    checkOut: record.checkOutAt
+      ? formatTime(record.checkOutAt)
+      : "--:--",
+
+    status:
+      record.status === "PRESENT"
+        ? "Present"
+        : record.status === "LATE"
+          ? "Late"
+          : "Absent",
+  };
+}
+
 
 const initialAttendance: AttendanceRecord[] = [];
 
@@ -97,6 +187,75 @@ export default function LeaveAttendancePage() {
   const [attendance, setAttendance] =
     useState<AttendanceRecord[]>(initialAttendance);
 
+
+useEffect(() => {
+  let active = true;
+
+  async function loadLeaveRequests() {
+    try {
+      // 1. Ambil riwayat cuti dari API
+      const response = await fetch("/api/leave-requests");
+
+      if (!response.ok) {
+        throw new Error("Gagal mengambil pengajuan cuti");
+      }
+
+      // 2. Baca data dari Supabase
+      const data: {
+        leaveRequests: LeaveRequestApiRecord[];
+      } = await response.json();
+
+      // 3. Sesuaikan data dengan tampilan NEXUS
+      if (active) {
+        setLeaveRequests(
+          data.leaveRequests.map(mapLeaveRequest)
+        );
+      }
+    } catch (error) {
+      console.error("Gagal memuat pengajuan cuti:", error);
+    }
+  }
+
+  void loadLeaveRequests();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+
+
+useEffect(() => {
+  let active = true;
+
+  async function loadAttendance() {
+    try {
+      const response = await fetch("/api/attendance");
+
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data absensi");
+      }
+
+      const data: {
+        attendances: AttendanceApiRecord[];
+      } = await response.json();
+
+      if (active) {
+        setAttendance(data.attendances.map(mapAttendance));
+      }
+    } catch (error) {
+      console.error("Gagal memuat absensi:", error);
+    }
+  }
+
+  void loadAttendance();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+
   const [showCheckIn, setShowCheckIn] = useState(false);
   function showMessage(text: string, type: "success" | "error") {
   setMessage(text);
@@ -120,14 +279,18 @@ export default function LeaveAttendancePage() {
   ).length;
 
   const leaveBalance = Math.max(
-    0,
-    12 -
-      leaveRequests
-        .filter((item) => item.status === "Approved" && item.type === "Annual Leave")
-        .reduce((total, item) => total + item.days, 0)
-  );
+  0,
+  12 -
+    leaveRequests
+      .filter(
+        (item) =>
+          item.type === "Annual Leave" &&
+          (item.status === "Pending" || item.status === "Approved")
+      )
+      .reduce((total, item) => total + item.days, 0)
+);
 
-  function submitLeave(e: React.FormEvent<HTMLFormElement>) {
+  async function submitLeave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!reason.trim()) {
@@ -150,122 +313,190 @@ export default function LeaveAttendancePage() {
   setMessageDays(leaveBalance);
   showMessage("insufficientLeaveBalance", "error");
   return;
-}{
-      showMessage(
-  t.leaveAttendance.insufficientLeaveBalance.replace(
-    "{days}",
-    String(leaveBalance)
-  ),
-  "error"
-);
-      return;
-    }
+}
 
-    setLeaveRequests((current) => [
-      {
-        id: Date.now(),
-        type: leaveType,
-        startDate,
-        endDate,
-        days,
-        reason: reason.trim(),
-        status: "Pending",
-      },
-      ...current,
-    ]);
+   
+try {
+  // Kirim data formulir ke API
+  const response = await fetch("/api/leave-requests", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      type: leaveType,
+      startDate,
+      endDate,
+      reason: reason.trim(),
+    }),
+  });
 
-    showMessage("leaveSubmitSuccess", "success");
-    setStartDate("");
-    setEndDate("");
-    setReason("");
-    setView("history");
+  const data: {
+    leaveRequest?: LeaveRequestApiRecord;
+    error?: string;
+  } = await response.json();
+
+  const savedRequest = data.leaveRequest;
+
+  if (!response.ok || !savedRequest) {
+    showMessage(
+      data.error ?? "Gagal mengajukan cuti",
+      "error"
+    );
+    return;
   }
 
-  function checkIn() {
-    const now = new Date();
-    const time = now.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  // Tampilkan data yang berhasil disimpan di Supabase
+  setLeaveRequests((current) => [
+    mapLeaveRequest(savedRequest),
+    ...current,
+  ]);
 
-    const todayLabel = now.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+  showMessage("leaveSubmitSuccess", "success");
 
-    const alreadyCheckedIn = attendance.some(
-      (item) => item.date === todayLabel
-    );
+  // Kosongkan formulir
+  setStartDate("");
+  setEndDate("");
+  setReason("");
+  setView("history");
+} catch (error) {
+  console.error("Gagal mengajukan cuti:", error);
+  showMessage("Gagal menghubungi server", "error");
+}
 
-    if (alreadyCheckedIn) {
-      showMessage("alreadyRecordedError", "error");
-      return;
-    }
-
-    setAttendance((current) => [
-      {
-        date: todayLabel,
-        day: now.toLocaleDateString("en-US", { weekday: "long" }),
-        checkIn: time,
-        checkOut: "--:--",
-        status: time > "08:00" ? "Late" : "Present",
-      },
-      ...current,
-    ]);
-
-    setShowCheckIn(true);
-    showMessage("checkInSuccess", "success");
   }
 
   
-function checkOut() {
-  const now = new Date();
+async function checkIn() {
+  try {
+    // Kirim permintaan Check-in ke API
+    const response = await fetch("/api/attendance", {
+      method: "POST",
+    });
 
-  const todayLabel = now.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+    const data: {
+      attendance?: AttendanceApiRecord;
+      error?: string;
+    } = await response.json();
 
-  const record = attendance.find(
-    (item) => item.date === todayLabel
-  );
+    // Tangani Check-in gagal
+    if (!response.ok || !data.attendance) {
+      if (response.status === 409) {
+        showMessage("alreadyRecordedError", "error");
+      } else {
+        showMessage(
+          data.error ?? "Gagal melakukan check-in",
+          "error"
+        );
+      }
+      return;
+    }
 
-  if (!record) {
-    showMessage("checkInFirstError", "error");
-    return;
+    // Ubah hasil API ke format tampilan NEXUS
+    const record = mapAttendance(data.attendance);
+
+    // Perbarui riwayat menggunakan data dari Supabase
+    setAttendance((current) => [
+      record,
+      ...current.filter((item) => item.date !== record.date),
+    ]);
+
+    setShowCheckIn(false);
+    showMessage("checkInSuccess", "success");
+  } catch (error) {
+    console.error("Gagal Check-in:", error);
+    showMessage("Gagal menghubungi server", "error");
   }
-
-  if (record.checkOut !== "--:--") {
-    showMessage("alreadyCheckedOutError", "error");
-    return;
-  }
-
-  const time = now.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-
-  setAttendance((current) =>
-    current.map((item) =>
-      item.date === todayLabel
-        ? { ...item, checkOut: time }
-        : item
-    )
-  );
-
-  showMessage("checkOutSuccess", "success");
 }
 
 
-  function cancelLeave(id: number) {
+  
+
+async function checkOut() {
+  try {
+    // 1. Kirim permintaan Check-out ke server
+    const response = await fetch("/api/attendance/checkout", {
+      method: "POST",
+    });
+
+    const data: {
+      attendance?: AttendanceApiRecord;
+      error?: string;
+    } = await response.json();
+
+    // 2. Tangani jika Check-out gagal
+    if (!response.ok || !data.attendance) {
+      if (response.status === 404) {
+        showMessage("checkInFirstError", "error");
+      } else if (response.status === 409) {
+        showMessage("alreadyCheckedOutError", "error");
+      } else {
+        showMessage(
+          data.error ?? "Gagal melakukan check-out",
+          "error"
+        );
+      }
+      return;
+    }
+
+    // 3. Ubah hasil database ke format UI NEXUS
+    const record = mapAttendance(data.attendance);
+
+    // 4. Perbarui jam Check-out pada riwayat absensi
+    setAttendance((current) =>
+      current.map((item) =>
+        item.date === record.date ? record : item
+      )
+    );
+
+    // 5. Tampilkan pesan berhasil
+    showMessage("checkOutSuccess", "success");
+  } catch (error) {
+    console.error("Gagal Check-out:", error);
+    showMessage("Gagal menghubungi server", "error");
+  }
+}
+
+
+
+  
+async function cancelLeave(id: string) {
+  try {
+    // 1. Kirim permintaan hapus ke API
+    const response = await fetch(
+      `/api/leave-requests/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    const data: {
+      message?: string;
+      error?: string;
+    } = await response.json();
+
+    // 2. Tangani jika penghapusan gagal
+    if (!response.ok) {
+      showMessage(
+        data.error ?? "Gagal menghapus pengajuan cuti",
+        "error"
+      );
+      return;
+    }
+
+    // 3. Hapus dari tampilan setelah berhasil di Supabase
     setLeaveRequests((current) =>
       current.filter((item) => item.id !== id)
     );
+
+    // 4. Tampilkan pesan berhasil
     showMessage("leaveRemovedSuccess", "success");
+  } catch (error) {
+    console.error("Gagal menghapus pengajuan:", error);
+    showMessage("Gagal menghubungi server", "error");
   }
+}
+
 
   const todayRecord = attendance.find(
     (item) =>
@@ -607,9 +838,7 @@ function checkOut() {
                   ))}
                 </div>
 
-                <p className="mt-4 text-[10px] leading-5 text-slate-500">
-                  {t.leaveAttendance.attendancePrototypeInfo}
-                </p>
+
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -671,10 +900,20 @@ function checkOut() {
                     className={inputClass}
                     required
                   >
-                    <option>{t.leaveAttendance.annualLeave}</option>
-                    <option>{t.leaveAttendance.sickLeave}</option>
-                    <option>{t.leaveAttendance.personalLeave}</option>
-                    <option>{t.leaveAttendance.emergencyLeave}</option>
+                    
+<option value="Annual Leave">
+  {t.leaveAttendance.annualLeave}
+</option>
+<option value="Sick Leave">
+  {t.leaveAttendance.sickLeave}
+</option>
+<option value="Personal Leave">
+  {t.leaveAttendance.personalLeave}
+</option>
+<option value="Emergency Leave">
+  {t.leaveAttendance.emergencyLeave}
+</option>
+
                   </select>
                 </div>
 
