@@ -12,6 +12,8 @@
 export const UserRole = {
   EMPLOYEE: 'EMPLOYEE',
   GA: 'GA',
+  BRANCH_HEAD: 'BRANCH_HEAD',
+  TREASURER: 'TREASURER',
   SUPERVISOR: 'SUPERVISOR',
   ADMIN: 'ADMIN'
 } as const
@@ -88,6 +90,7 @@ export type ClaimCategory = (typeof ClaimCategory)[keyof typeof ClaimCategory]
 
 
 export const ClaimStatus = {
+  DRAFT: 'DRAFT',
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
@@ -96,3 +99,32 @@ export const ClaimStatus = {
 } as const
 
 export type ClaimStatus = (typeof ClaimStatus)[keyof typeof ClaimStatus]
+
+
+export const ClaimRequestStatus = {
+  PENDING_GA: 'PENDING_GA',
+  PENDING_BRANCH_HEAD: 'PENDING_BRANCH_HEAD',
+  PENDING_TREASURER: 'PENDING_TREASURER',
+  PROCESSING_PAYMENT: 'PROCESSING_PAYMENT',
+  PAID: 'PAID',
+  REJECTED: 'REJECTED'
+} as const
+
+export type ClaimRequestStatus = (typeof ClaimRequestStatus)[keyof typeof ClaimRequestStatus]
+
+
+export const ClaimReviewStage = {
+  GA: 'GA',
+  BRANCH_HEAD: 'BRANCH_HEAD',
+  TREASURER: 'TREASURER'
+} as const
+
+export type ClaimReviewStage = (typeof ClaimReviewStage)[keyof typeof ClaimReviewStage]
+
+
+export const ClaimReviewDecision = {
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type ClaimReviewDecision = (typeof ClaimReviewDecision)[keyof typeof ClaimReviewDecision]

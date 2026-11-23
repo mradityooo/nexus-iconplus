@@ -58,7 +58,9 @@ export const ModelName = {
   VehicleReservation: 'VehicleReservation',
   BusinessTravelRequest: 'BusinessTravelRequest',
   BusinessTravelFacility: 'BusinessTravelFacility',
-  Claim: 'Claim'
+  Claim: 'Claim',
+  ClaimRequest: 'ClaimRequest',
+  ClaimRequestReview: 'ClaimRequestReview'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -207,10 +209,44 @@ export const ClaimScalarFieldEnum = {
   approvedById: 'approvedById',
   reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  requestId: 'requestId'
 } as const
 
 export type ClaimScalarFieldEnum = (typeof ClaimScalarFieldEnum)[keyof typeof ClaimScalarFieldEnum]
+
+
+export const ClaimRequestScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  requestNumber: 'requestNumber',
+  totalAmount: 'totalAmount',
+  status: 'status',
+  notes: 'notes',
+  reviewNote: 'reviewNote',
+  approvedById: 'approvedById',
+  reviewedAt: 'reviewedAt',
+  paidById: 'paidById',
+  paidAt: 'paidAt',
+  paymentReference: 'paymentReference',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClaimRequestScalarFieldEnum = (typeof ClaimRequestScalarFieldEnum)[keyof typeof ClaimRequestScalarFieldEnum]
+
+
+export const ClaimRequestReviewScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  reviewerId: 'reviewerId',
+  stage: 'stage',
+  decision: 'decision',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type ClaimRequestReviewScalarFieldEnum = (typeof ClaimRequestReviewScalarFieldEnum)[keyof typeof ClaimRequestReviewScalarFieldEnum]
 
 
 export const SortOrder = {

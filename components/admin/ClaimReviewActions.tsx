@@ -11,13 +11,15 @@ import {
 } from "lucide-react";
 
 interface ClaimReviewActionsProps {
-  claimId: string;
+  requestId: string;
   status: string;
+  reviewerRole: string;
 }
 
 export default function ClaimReviewActions({
-  claimId,
+  requestId,
   status,
+  reviewerRole,
 }: ClaimReviewActionsProps) {
   const router = useRouter();
 
@@ -36,6 +38,31 @@ export default function ClaimReviewActions({
     );
   }
 
+  const requiredStatusByRole: Record<string, string> = {
+  GA: "PENDING_GA",
+  ADMIN: "PENDING_GA", // sementara: akun GA saat ini masih ber-role ADMIN
+  BRANCH_HEAD: "PENDING_BRANCH_HEAD",
+  TREASURER: "PENDING_TREASURER",
+  };
+
+  const requiredStatus = requiredStatusByRole[reviewerRole];
+
+  if (!requiredStatus) {
+    return (
+      <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Role Anda tidak memiliki akses untuk mereview pengajuan klaim.
+      </p>
+    );
+  }
+
+  if (status !== requiredStatus) {
+    return (
+      <p className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+        Pengajuan ini belum berada pada tahap review yang sesuai dengan role Anda.
+      </p>
+    );
+  }
+
   async function handleReview() {
     if (!action || loading) return;
 
@@ -49,7 +76,7 @@ export default function ClaimReviewActions({
 
     try {
       const response = await fetch(
-        `/api/admin/claims/${claimId}/review`,
+        `/api/admin/claims/${requestId}/review`,
         {
           method: "PATCH",
           headers: {

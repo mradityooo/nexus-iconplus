@@ -423,6 +423,57 @@ export type EnumClaimStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumClaimStatusFilter<$PrismaModel>
 }
 
+export type EnumClaimRequestStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimRequestStatus | Prisma.EnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimRequestStatusFilter<$PrismaModel> | $Enums.ClaimRequestStatus
+}
+
+export type EnumClaimRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimRequestStatus | Prisma.EnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.ClaimRequestStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClaimRequestStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClaimRequestStatusFilter<$PrismaModel>
+}
+
+export type EnumClaimReviewStageFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewStage | Prisma.EnumClaimReviewStageFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewStageFilter<$PrismaModel> | $Enums.ClaimReviewStage
+}
+
+export type EnumClaimReviewDecisionFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewDecision | Prisma.EnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewDecisionFilter<$PrismaModel> | $Enums.ClaimReviewDecision
+}
+
+export type EnumClaimReviewStageWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewStage | Prisma.EnumClaimReviewStageFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewStageWithAggregatesFilter<$PrismaModel> | $Enums.ClaimReviewStage
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClaimReviewStageFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClaimReviewStageFilter<$PrismaModel>
+}
+
+export type EnumClaimReviewDecisionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewDecision | Prisma.EnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewDecisionWithAggregatesFilter<$PrismaModel> | $Enums.ClaimReviewDecision
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClaimReviewDecisionFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClaimReviewDecisionFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -839,6 +890,57 @@ export type NestedEnumClaimStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumClaimStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumClaimStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumClaimRequestStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimRequestStatus | Prisma.EnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimRequestStatusFilter<$PrismaModel> | $Enums.ClaimRequestStatus
+}
+
+export type NestedEnumClaimRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimRequestStatus | Prisma.EnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimRequestStatus[] | Prisma.ListEnumClaimRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.ClaimRequestStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClaimRequestStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClaimRequestStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumClaimReviewStageFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewStage | Prisma.EnumClaimReviewStageFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewStageFilter<$PrismaModel> | $Enums.ClaimReviewStage
+}
+
+export type NestedEnumClaimReviewDecisionFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewDecision | Prisma.EnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewDecisionFilter<$PrismaModel> | $Enums.ClaimReviewDecision
+}
+
+export type NestedEnumClaimReviewStageWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewStage | Prisma.EnumClaimReviewStageFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewStage[] | Prisma.ListEnumClaimReviewStageFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewStageWithAggregatesFilter<$PrismaModel> | $Enums.ClaimReviewStage
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClaimReviewStageFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClaimReviewStageFilter<$PrismaModel>
+}
+
+export type NestedEnumClaimReviewDecisionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClaimReviewDecision | Prisma.EnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  in?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClaimReviewDecision[] | Prisma.ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClaimReviewDecisionWithAggregatesFilter<$PrismaModel> | $Enums.ClaimReviewDecision
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClaimReviewDecisionFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClaimReviewDecisionFilter<$PrismaModel>
 }
 
 

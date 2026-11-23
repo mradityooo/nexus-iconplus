@@ -404,7 +404,9 @@ export const ModelName = {
   VehicleReservation: 'VehicleReservation',
   BusinessTravelRequest: 'BusinessTravelRequest',
   BusinessTravelFacility: 'BusinessTravelFacility',
-  Claim: 'Claim'
+  Claim: 'Claim',
+  ClaimRequest: 'ClaimRequest',
+  ClaimRequestReview: 'ClaimRequestReview'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -420,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "employee" | "vehicle" | "driver" | "vehicleReservation" | "businessTravelRequest" | "businessTravelFacility" | "claim"
+    modelProps: "user" | "employee" | "vehicle" | "driver" | "vehicleReservation" | "businessTravelRequest" | "businessTravelFacility" | "claim" | "claimRequest" | "claimRequestReview"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1016,6 +1018,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ClaimRequest: {
+      payload: Prisma.$ClaimRequestPayload<ExtArgs>
+      fields: Prisma.ClaimRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClaimRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClaimRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.ClaimRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClaimRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>
+        }
+        findMany: {
+          args: Prisma.ClaimRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>[]
+        }
+        create: {
+          args: Prisma.ClaimRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>
+        }
+        createMany: {
+          args: Prisma.ClaimRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ClaimRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.ClaimRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>
+        }
+        update: {
+          args: Prisma.ClaimRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.ClaimRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClaimRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ClaimRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.ClaimRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.ClaimRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClaimRequest>
+        }
+        groupBy: {
+          args: Prisma.ClaimRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClaimRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClaimRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClaimRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    ClaimRequestReview: {
+      payload: Prisma.$ClaimRequestReviewPayload<ExtArgs>
+      fields: Prisma.ClaimRequestReviewFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClaimRequestReviewFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClaimRequestReviewFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>
+        }
+        findFirst: {
+          args: Prisma.ClaimRequestReviewFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClaimRequestReviewFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>
+        }
+        findMany: {
+          args: Prisma.ClaimRequestReviewFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>[]
+        }
+        create: {
+          args: Prisma.ClaimRequestReviewCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>
+        }
+        createMany: {
+          args: Prisma.ClaimRequestReviewCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ClaimRequestReviewCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>[]
+        }
+        delete: {
+          args: Prisma.ClaimRequestReviewDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>
+        }
+        update: {
+          args: Prisma.ClaimRequestReviewUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>
+        }
+        deleteMany: {
+          args: Prisma.ClaimRequestReviewDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClaimRequestReviewUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ClaimRequestReviewUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>[]
+        }
+        upsert: {
+          args: Prisma.ClaimRequestReviewUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClaimRequestReviewPayload>
+        }
+        aggregate: {
+          args: Prisma.ClaimRequestReviewAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClaimRequestReview>
+        }
+        groupBy: {
+          args: Prisma.ClaimRequestReviewGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClaimRequestReviewGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClaimRequestReviewCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClaimRequestReviewCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1185,10 +1335,44 @@ export const ClaimScalarFieldEnum = {
   approvedById: 'approvedById',
   reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  requestId: 'requestId'
 } as const
 
 export type ClaimScalarFieldEnum = (typeof ClaimScalarFieldEnum)[keyof typeof ClaimScalarFieldEnum]
+
+
+export const ClaimRequestScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  requestNumber: 'requestNumber',
+  totalAmount: 'totalAmount',
+  status: 'status',
+  notes: 'notes',
+  reviewNote: 'reviewNote',
+  approvedById: 'approvedById',
+  reviewedAt: 'reviewedAt',
+  paidById: 'paidById',
+  paidAt: 'paidAt',
+  paymentReference: 'paymentReference',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClaimRequestScalarFieldEnum = (typeof ClaimRequestScalarFieldEnum)[keyof typeof ClaimRequestScalarFieldEnum]
+
+
+export const ClaimRequestReviewScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  reviewerId: 'reviewerId',
+  stage: 'stage',
+  decision: 'decision',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type ClaimRequestReviewScalarFieldEnum = (typeof ClaimRequestReviewScalarFieldEnum)[keyof typeof ClaimRequestReviewScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1404,6 +1588,48 @@ export type ListEnumClaimStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'ClaimRequestStatus'
+ */
+export type EnumClaimRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimRequestStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimRequestStatus[]'
+ */
+export type ListEnumClaimRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimRequestStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimReviewStage'
+ */
+export type EnumClaimReviewStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimReviewStage'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimReviewStage[]'
+ */
+export type ListEnumClaimReviewStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimReviewStage[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimReviewDecision'
+ */
+export type EnumClaimReviewDecisionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimReviewDecision'>
+    
+
+
+/**
+ * Reference to a field of type 'ClaimReviewDecision[]'
+ */
+export type ListEnumClaimReviewDecisionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClaimReviewDecision[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1575,6 +1801,8 @@ export type GlobalOmitConfig = {
   businessTravelRequest?: Prisma.BusinessTravelRequestOmit
   businessTravelFacility?: Prisma.BusinessTravelFacilityOmit
   claim?: Prisma.ClaimOmit
+  claimRequest?: Prisma.ClaimRequestOmit
+  claimRequestReview?: Prisma.ClaimRequestReviewOmit
 }
 
 /* Types for Logging */

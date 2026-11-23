@@ -46,7 +46,9 @@ export default async function AdminDashboard() {
 
   if (
     !session?.user ||
-    !["GA", "ADMIN"].includes(session.user.role)
+    !["GA", "ADMIN", "BRANCH_HEAD", "TREASURER"].includes(
+  session.user.role
+)
   ) {
     redirect("/login");
   }

@@ -234,6 +234,7 @@ export type EmployeeWhereInput = {
   reservations?: Prisma.VehicleReservationListRelationFilter
   businessTravelRequests?: Prisma.BusinessTravelRequestListRelationFilter
   claims?: Prisma.ClaimListRelationFilter
+  claimRequests?: Prisma.ClaimRequestListRelationFilter
 }
 
 export type EmployeeOrderByWithRelationInput = {
@@ -252,6 +253,7 @@ export type EmployeeOrderByWithRelationInput = {
   reservations?: Prisma.VehicleReservationOrderByRelationAggregateInput
   businessTravelRequests?: Prisma.BusinessTravelRequestOrderByRelationAggregateInput
   claims?: Prisma.ClaimOrderByRelationAggregateInput
+  claimRequests?: Prisma.ClaimRequestOrderByRelationAggregateInput
 }
 
 export type EmployeeWhereUniqueInput = Prisma.AtLeast<{
@@ -273,6 +275,7 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<{
   reservations?: Prisma.VehicleReservationListRelationFilter
   businessTravelRequests?: Prisma.BusinessTravelRequestListRelationFilter
   claims?: Prisma.ClaimListRelationFilter
+  claimRequests?: Prisma.ClaimRequestListRelationFilter
 }, "id" | "userId" | "employeeCode">
 
 export type EmployeeOrderByWithAggregationInput = {
@@ -324,6 +327,7 @@ export type EmployeeCreateInput = {
   reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
   businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateInput = {
@@ -341,6 +345,7 @@ export type EmployeeUncheckedCreateInput = {
   reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimUncheckedCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUpdateInput = {
@@ -358,6 +363,7 @@ export type EmployeeUpdateInput = {
   reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateInput = {
@@ -375,6 +381,7 @@ export type EmployeeUncheckedUpdateInput = {
   reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUncheckedUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeCreateManyInput = {
@@ -552,6 +559,20 @@ export type EmployeeUpdateOneRequiredWithoutClaimsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EmployeeUpdateToOneWithWhereWithoutClaimsInput, Prisma.EmployeeUpdateWithoutClaimsInput>, Prisma.EmployeeUncheckedUpdateWithoutClaimsInput>
 }
 
+export type EmployeeCreateNestedOneWithoutClaimRequestsInput = {
+  create?: Prisma.XOR<Prisma.EmployeeCreateWithoutClaimRequestsInput, Prisma.EmployeeUncheckedCreateWithoutClaimRequestsInput>
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutClaimRequestsInput
+  connect?: Prisma.EmployeeWhereUniqueInput
+}
+
+export type EmployeeUpdateOneRequiredWithoutClaimRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.EmployeeCreateWithoutClaimRequestsInput, Prisma.EmployeeUncheckedCreateWithoutClaimRequestsInput>
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutClaimRequestsInput
+  upsert?: Prisma.EmployeeUpsertWithoutClaimRequestsInput
+  connect?: Prisma.EmployeeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EmployeeUpdateToOneWithWhereWithoutClaimRequestsInput, Prisma.EmployeeUpdateWithoutClaimRequestsInput>, Prisma.EmployeeUncheckedUpdateWithoutClaimRequestsInput>
+}
+
 export type EmployeeCreateWithoutUserInput = {
   id?: string
   employeeCode: string
@@ -566,6 +587,7 @@ export type EmployeeCreateWithoutUserInput = {
   reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
   businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateWithoutUserInput = {
@@ -582,6 +604,7 @@ export type EmployeeUncheckedCreateWithoutUserInput = {
   reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimUncheckedCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeCreateOrConnectWithoutUserInput = {
@@ -614,6 +637,7 @@ export type EmployeeUpdateWithoutUserInput = {
   reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateWithoutUserInput = {
@@ -630,6 +654,7 @@ export type EmployeeUncheckedUpdateWithoutUserInput = {
   reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUncheckedUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeCreateWithoutReservationsInput = {
@@ -646,6 +671,7 @@ export type EmployeeCreateWithoutReservationsInput = {
   user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
   businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateWithoutReservationsInput = {
@@ -662,6 +688,7 @@ export type EmployeeUncheckedCreateWithoutReservationsInput = {
   updatedAt?: Date | string
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimUncheckedCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeCreateOrConnectWithoutReservationsInput = {
@@ -694,6 +721,7 @@ export type EmployeeUpdateWithoutReservationsInput = {
   user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateWithoutReservationsInput = {
@@ -710,6 +738,7 @@ export type EmployeeUncheckedUpdateWithoutReservationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUncheckedUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeCreateWithoutBusinessTravelRequestsInput = {
@@ -726,6 +755,7 @@ export type EmployeeCreateWithoutBusinessTravelRequestsInput = {
   user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
   reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateWithoutBusinessTravelRequestsInput = {
@@ -742,6 +772,7 @@ export type EmployeeUncheckedCreateWithoutBusinessTravelRequestsInput = {
   updatedAt?: Date | string
   reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
   claims?: Prisma.ClaimUncheckedCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeCreateOrConnectWithoutBusinessTravelRequestsInput = {
@@ -774,6 +805,7 @@ export type EmployeeUpdateWithoutBusinessTravelRequestsInput = {
   user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
   reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateWithoutBusinessTravelRequestsInput = {
@@ -790,6 +822,7 @@ export type EmployeeUncheckedUpdateWithoutBusinessTravelRequestsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
   claims?: Prisma.ClaimUncheckedUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeCreateWithoutClaimsInput = {
@@ -806,6 +839,7 @@ export type EmployeeCreateWithoutClaimsInput = {
   user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
   reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
   businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeUncheckedCreateWithoutClaimsInput = {
@@ -822,6 +856,7 @@ export type EmployeeUncheckedCreateWithoutClaimsInput = {
   updatedAt?: Date | string
   reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
+  claimRequests?: Prisma.ClaimRequestUncheckedCreateNestedManyWithoutEmployeeInput
 }
 
 export type EmployeeCreateOrConnectWithoutClaimsInput = {
@@ -854,6 +889,7 @@ export type EmployeeUpdateWithoutClaimsInput = {
   user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
   reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUpdateManyWithoutEmployeeNestedInput
 }
 
 export type EmployeeUncheckedUpdateWithoutClaimsInput = {
@@ -870,6 +906,91 @@ export type EmployeeUncheckedUpdateWithoutClaimsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
   businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
+  claimRequests?: Prisma.ClaimRequestUncheckedUpdateManyWithoutEmployeeNestedInput
+}
+
+export type EmployeeCreateWithoutClaimRequestsInput = {
+  id?: string
+  employeeCode: string
+  fullName: string
+  phone?: string | null
+  department?: string | null
+  position?: string | null
+  workLocation?: string | null
+  joinDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
+  reservations?: Prisma.VehicleReservationCreateNestedManyWithoutEmployeeInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestCreateNestedManyWithoutEmployeeInput
+  claims?: Prisma.ClaimCreateNestedManyWithoutEmployeeInput
+}
+
+export type EmployeeUncheckedCreateWithoutClaimRequestsInput = {
+  id?: string
+  userId?: string | null
+  employeeCode: string
+  fullName: string
+  phone?: string | null
+  department?: string | null
+  position?: string | null
+  workLocation?: string | null
+  joinDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reservations?: Prisma.VehicleReservationUncheckedCreateNestedManyWithoutEmployeeInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedCreateNestedManyWithoutEmployeeInput
+  claims?: Prisma.ClaimUncheckedCreateNestedManyWithoutEmployeeInput
+}
+
+export type EmployeeCreateOrConnectWithoutClaimRequestsInput = {
+  where: Prisma.EmployeeWhereUniqueInput
+  create: Prisma.XOR<Prisma.EmployeeCreateWithoutClaimRequestsInput, Prisma.EmployeeUncheckedCreateWithoutClaimRequestsInput>
+}
+
+export type EmployeeUpsertWithoutClaimRequestsInput = {
+  update: Prisma.XOR<Prisma.EmployeeUpdateWithoutClaimRequestsInput, Prisma.EmployeeUncheckedUpdateWithoutClaimRequestsInput>
+  create: Prisma.XOR<Prisma.EmployeeCreateWithoutClaimRequestsInput, Prisma.EmployeeUncheckedCreateWithoutClaimRequestsInput>
+  where?: Prisma.EmployeeWhereInput
+}
+
+export type EmployeeUpdateToOneWithWhereWithoutClaimRequestsInput = {
+  where?: Prisma.EmployeeWhereInput
+  data: Prisma.XOR<Prisma.EmployeeUpdateWithoutClaimRequestsInput, Prisma.EmployeeUncheckedUpdateWithoutClaimRequestsInput>
+}
+
+export type EmployeeUpdateWithoutClaimRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  joinDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
+  reservations?: Prisma.VehicleReservationUpdateManyWithoutEmployeeNestedInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUpdateManyWithoutEmployeeNestedInput
+  claims?: Prisma.ClaimUpdateManyWithoutEmployeeNestedInput
+}
+
+export type EmployeeUncheckedUpdateWithoutClaimRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeCode?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  joinDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reservations?: Prisma.VehicleReservationUncheckedUpdateManyWithoutEmployeeNestedInput
+  businessTravelRequests?: Prisma.BusinessTravelRequestUncheckedUpdateManyWithoutEmployeeNestedInput
+  claims?: Prisma.ClaimUncheckedUpdateManyWithoutEmployeeNestedInput
 }
 
 
@@ -881,12 +1002,14 @@ export type EmployeeCountOutputType = {
   reservations: number
   businessTravelRequests: number
   claims: number
+  claimRequests: number
 }
 
 export type EmployeeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reservations?: boolean | EmployeeCountOutputTypeCountReservationsArgs
   businessTravelRequests?: boolean | EmployeeCountOutputTypeCountBusinessTravelRequestsArgs
   claims?: boolean | EmployeeCountOutputTypeCountClaimsArgs
+  claimRequests?: boolean | EmployeeCountOutputTypeCountClaimRequestsArgs
 }
 
 /**
@@ -920,6 +1043,13 @@ export type EmployeeCountOutputTypeCountClaimsArgs<ExtArgs extends runtime.Types
   where?: Prisma.ClaimWhereInput
 }
 
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountClaimRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClaimRequestWhereInput
+}
+
 
 export type EmployeeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -937,6 +1067,7 @@ export type EmployeeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   reservations?: boolean | Prisma.Employee$reservationsArgs<ExtArgs>
   businessTravelRequests?: boolean | Prisma.Employee$businessTravelRequestsArgs<ExtArgs>
   claims?: boolean | Prisma.Employee$claimsArgs<ExtArgs>
+  claimRequests?: boolean | Prisma.Employee$claimRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["employee"]>
 
@@ -990,6 +1121,7 @@ export type EmployeeInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   reservations?: boolean | Prisma.Employee$reservationsArgs<ExtArgs>
   businessTravelRequests?: boolean | Prisma.Employee$businessTravelRequestsArgs<ExtArgs>
   claims?: boolean | Prisma.Employee$claimsArgs<ExtArgs>
+  claimRequests?: boolean | Prisma.Employee$claimRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EmployeeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1006,6 +1138,7 @@ export type $EmployeePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     reservations: Prisma.$VehicleReservationPayload<ExtArgs>[]
     businessTravelRequests: Prisma.$BusinessTravelRequestPayload<ExtArgs>[]
     claims: Prisma.$ClaimPayload<ExtArgs>[]
+    claimRequests: Prisma.$ClaimRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1417,6 +1550,7 @@ export interface Prisma__EmployeeClient<T, Null = never, ExtArgs extends runtime
   reservations<T extends Prisma.Employee$reservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Employee$reservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VehicleReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   businessTravelRequests<T extends Prisma.Employee$businessTravelRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Employee$businessTravelRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BusinessTravelRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   claims<T extends Prisma.Employee$claimsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Employee$claimsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClaimPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  claimRequests<T extends Prisma.Employee$claimRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Employee$claimRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClaimRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1946,6 +2080,30 @@ export type Employee$claimsArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.ClaimScalarFieldEnum | Prisma.ClaimScalarFieldEnum[]
+}
+
+/**
+ * Employee.claimRequests
+ */
+export type Employee$claimRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClaimRequest
+   */
+  select?: Prisma.ClaimRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClaimRequest
+   */
+  omit?: Prisma.ClaimRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClaimRequestInclude<ExtArgs> | null
+  where?: Prisma.ClaimRequestWhereInput
+  orderBy?: Prisma.ClaimRequestOrderByWithRelationInput | Prisma.ClaimRequestOrderByWithRelationInput[]
+  cursor?: Prisma.ClaimRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClaimRequestScalarFieldEnum | Prisma.ClaimRequestScalarFieldEnum[]
 }
 
 /**

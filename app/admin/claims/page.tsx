@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -35,12 +34,31 @@ const categoryLabels: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  PENDING: "Pending",
-  APPROVED: "Approved",
-  REJECTED: "Rejected",
-  PROCESSING: "Processing",
-  COMPLETED: "Completed",
+  PENDING_GA: "Menunggu GA",
+  PENDING_BRANCH_HEAD: "Menunggu Kepala Cabang",
+  PENDING_TREASURER: "Menunggu Bendahara",
+  PROCESSING_PAYMENT: "Menunggu Pencairan",
+  PAID: "Sudah Cair",
+  REJECTED: "Ditolak",
 };
+
+const validStatuses = [
+  "PENDING_GA",
+  "PENDING_BRANCH_HEAD",
+  "PENDING_TREASURER",
+  "PROCESSING_PAYMENT",
+  "PAID",
+  "REJECTED",
+] as const;
+
+
+const validCategories = [
+  "CAR_WASH",
+  "MEALS",
+  "TOLL_FEE",
+  "FUEL",
+  "OTHERS",
+] as const;
 
 const formatRupiah = (amount: number) =>
   "Rp " + amount.toLocaleString("id-ID");
@@ -50,91 +68,158 @@ export default async function ClaimsPage({
 }: ClaimsPageProps) {
   const session = await auth();
 
-  if (
-    !session?.user ||
-    !["GA", "ADMIN"].includes(session.user.role)
-  ) {
+  if (!session?.user || !["GA", "ADMIN"].includes(session.user.role)) {
     redirect("/login");
   }
 
   const params = await searchParams;
   const q = params.q?.trim() ?? "";
-  const status = params.status ?? "";
-  const category = params.category ?? "";
 
-  const requestedPage = Math.max(1, Number(params.page) || 1);
+  // Hanya terima nilai filter yang valid.
+  const status = validStatuses.find(
+    (value) => value === params.status
+  );
 
+  const category = validCategories.find(
+    (value) => value === params.category
+  );
+
+  const parsedPage = Number.parseInt(params.page ?? "1", 10);
+  const requestedPage =
+    Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+
+  /*
+   * Filter kategori diterapkan ke item Claim di dalam request.
+   * Jika q dan kategori dipakai bersamaan, keduanya harus cocok.
+   */
   const where = {
-    ...(status ? { status: status as "PENDING" | "APPROVED" | "REJECTED" | "PROCESSING" | "COMPLETED" } : {}),
-    ...(category
-      ? { category: category as "CAR_WASH" | "MEALS" | "TOLL_FEE" | "FUEL" | "OTHERS" }
-      : {}),
-    ...(q
+    ...(status ? { status } : {}),
+    ...(q || category
       ? {
-          OR: [
-            {
-              employee: {
-                fullName: {
-                  contains: q,
-                  mode: "insensitive" as const,
-                },
-              },
-            },
-            {
-              employee: {
-                employeeCode: {
-                  contains: q,
-                  mode: "insensitive" as const,
-                },
-              },
-            },
-            {
-              description: {
-                contains: q,
-                mode: "insensitive" as const,
-              },
-            },
+          AND: [
+            ...(category
+              ? [
+                  {
+                    claims: {
+                      some: {
+                        category,
+                      },
+                    },
+                  },
+                ]
+              : []),
+            ...(q
+              ? [
+                  {
+                    OR: [
+                      {
+                        employee: {
+                          fullName: {
+                            contains: q,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                      },
+                      {
+                        employee: {
+                          employeeCode: {
+                            contains: q,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                      },
+                      {
+                        claims: {
+                          some: {
+                            description: {
+                              contains: q,
+                              mode: "insensitive" as const,
+                            },
+                          },
+                        },
+                      },
+                      {
+                        claims: {
+                          some: {
+                            reference: {
+                              contains: q,
+                              mode: "insensitive" as const,
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ]
+              : []),
           ],
         }
       : {}),
   };
 
   const [
-    claims,
     filteredCount,
-    totalClaims,
+    totalRequests,
     pending,
     approved,
     rejected,
   ] = await Promise.all([
-    prisma.claim.findMany({
-      where,
-      include: {
-        employee: {
-          select: {
-            fullName: true,
-            employeeCode: true,
-            department: true,
-          },
+    prisma.claimRequest.count({ where }),
+    prisma.claimRequest.count(),
+    prisma.claimRequest.count({
+      where: {
+        status: {
+          in: [
+            "PENDING_GA",
+            "PENDING_BRANCH_HEAD",
+            "PENDING_TREASURER",
+          ],
         },
       },
-      orderBy: { createdAt: "desc" },
-      skip: (requestedPage - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
     }),
-    prisma.claim.count({ where }),
-    prisma.claim.count(),
-    prisma.claim.count({ where: { status: "PENDING" } }),
-    prisma.claim.count({ where: { status: "APPROVED" } }),
-    prisma.claim.count({ where: { status: "REJECTED" } }),
+    prisma.claimRequest.count({
+      where: {
+        status: {
+          in: ["PROCESSING_PAYMENT", "PAID"],
+        },
+      },
+    }),
+    prisma.claimRequest.count({
+      where: { status: "REJECTED" },
+    }),
   ]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredCount / PAGE_SIZE)
-  );
-
+  const totalPages = Math.max(1, Math.ceil(filteredCount / PAGE_SIZE));
   const currentPage = Math.min(requestedPage, totalPages);
+
+  const claimRequests = await prisma.claimRequest.findMany({
+    where,
+    include: {
+      employee: {
+        select: {
+          fullName: true,
+          employeeCode: true,
+          department: true,
+        },
+      },
+      claims: {
+        select: {
+          id: true,
+          category: true,
+          transactionDate: true,
+          amount: true,
+        },
+        orderBy: {
+          transactionDate: "asc",
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    skip: (currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+  });
 
   function createPageUrl(page: number) {
     const query = new URLSearchParams();
@@ -153,7 +238,7 @@ export default async function ClaimsPage({
       {/* Header */}
       <div>
         <p className="text-sm font-bold tracking-widest text-[#F2C300]">
-          NEXUS / FINANCE & OPERATIONS
+          NEXUS / FINANCE &amp; OPERATIONS
         </p>
 
         <h1 className="mt-2 text-2xl font-bold text-[#0756A5]">
@@ -169,8 +254,8 @@ export default async function ClaimsPage({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
-            label: "Total Claims",
-            value: totalClaims,
+            label: "Total Requests",
+            value: totalRequests,
             icon: ReceiptText,
             color: "bg-blue-50 text-[#0756A5]",
           },
@@ -200,13 +285,13 @@ export default async function ClaimsPage({
               key={item.label}
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
             >
-              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.color}`}>
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.color}`}
+              >
                 <Icon size={21} />
               </div>
 
-              <p className="mt-4 text-sm text-slate-500">
-                {item.label}
-              </p>
+              <p className="mt-4 text-sm text-slate-500">{item.label}</p>
 
               <h2 className="mt-1 text-3xl font-bold text-slate-900">
                 {item.value}
@@ -216,15 +301,15 @@ export default async function ClaimsPage({
         })}
       </div>
 
-      {/* Claims Table */}
+      {/* Claim Requests Table */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 p-5">
           <h2 className="font-semibold text-slate-900">
-            Claims Directory
+            Claim Requests
           </h2>
 
           <p className="mt-1 text-xs text-slate-500">
-            Daftar pengajuan reimbursement seluruh karyawan.
+            Setiap baris mewakili satu pengajuan beserta seluruh item klaimnya.
           </p>
 
           {/* Search and Filters */}
@@ -242,33 +327,33 @@ export default async function ClaimsPage({
               <input
                 name="q"
                 defaultValue={q}
-                placeholder="Cari nama, Employee ID, deskripsi..."
+                placeholder="Cari nomor, nama, Employee ID, deskripsi..."
                 className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-sm outline-none focus:border-[#0756A5] focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
             <select
               name="status"
-              defaultValue={status}
+              defaultValue={status ?? ""}
               className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-600"
             >
               <option value="">Semua Status</option>
-              {Object.entries(statusLabels).map(([value, label]) => (
+              {validStatuses.map((value) => (
                 <option key={value} value={value}>
-                  {label}
+                  {statusLabels[value]}
                 </option>
               ))}
             </select>
 
             <select
               name="category"
-              defaultValue={category}
+              defaultValue={category ?? ""}
               className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-600"
             >
               <option value="">Semua Kategori</option>
-              {Object.entries(categoryLabels).map(([value, label]) => (
+              {validCategories.map((value) => (
                 <option key={value} value={value}>
-                  {label}
+                  {categoryLabels[value]}
                 </option>
               ))}
             </select>
@@ -298,70 +383,97 @@ export default async function ClaimsPage({
           <table className="w-full text-left text-sm">
             <thead className="bg-[#F3F7FC] text-xs uppercase tracking-wide text-slate-500">
               <tr>
+                <th className="px-5 py-4">Request Number</th>
                 <th className="px-5 py-4">Employee</th>
-                <th className="px-5 py-4">Category</th>
-                <th className="px-5 py-4">Transaction Date</th>
-                <th className="px-5 py-4">Amount</th>
+                <th className="px-5 py-4">Items</th>
+                <th className="px-5 py-4">Total Amount</th>
                 <th className="px-5 py-4">Status</th>
                 <th className="px-5 py-4 text-right">Action</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-              {claims.map((claim) => (
+              {claimRequests.map((claimRequest) => (
                 <tr
-                  key={claim.id}
+                  key={claimRequest.id}
                   className="transition hover:bg-blue-50/40"
                 >
                   <td className="px-5 py-4">
                     <p className="font-semibold text-slate-800">
-                      {claim.employee.fullName}
+                      {claimRequest.requestNumber}
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
-                      {claim.employee.employeeCode}
+                      {new Date(claimRequest.createdAt).toLocaleDateString(
+                        "id-ID"
+                      )}
+                    </p>
+                  </td>
+
+                  <td className="px-5 py-4">
+                    <p className="font-semibold text-slate-800">
+                      {claimRequest.employee.fullName}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {claimRequest.employee.employeeCode}
+                      {claimRequest.employee.department
+                        ? ` · ${claimRequest.employee.department}`
+                        : ""}
                     </p>
                   </td>
 
                   <td className="px-5 py-4 text-slate-600">
-                    {categoryLabels[claim.category]}
-                  </td>
-
-                  <td className="whitespace-nowrap px-5 py-4 text-slate-600">
-                    {new Date(claim.transactionDate).toLocaleDateString("id-ID")}
+                    <p>
+                      {claimRequest.claims.length} item
+                      {claimRequest.claims.length === 1 ? "" : "s"}
+                    </p>
+                    <p className="mt-1 max-w-56 truncate text-xs text-slate-400">
+                      {claimRequest.claims.length > 0
+                        ? claimRequest.claims
+                            .map(
+                              (claim) =>
+                                categoryLabels[claim.category] ??
+                                claim.category
+                            )
+                            .join(", ")
+                        : "Tidak ada item klaim"}
+                    </p>
                   </td>
 
                   <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-800">
-                    {formatRupiah(Number(claim.amount))}
+                    {formatRupiah(Number(claimRequest.totalAmount))}
                   </td>
 
                   <td className="px-5 py-4">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        claim.status === "PENDING"
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        ["PENDING_GA", "PENDING_BRANCH_HEAD", "PENDING_TREASURER"].includes(
+                          claimRequest.status
+                        )
                           ? "bg-amber-50 text-amber-700"
-                          : claim.status === "APPROVED"
+                          : claimRequest.status === "PAID"
                             ? "bg-emerald-50 text-emerald-700"
-                            : claim.status === "REJECTED"
+                            : claimRequest.status === "REJECTED"
                               ? "bg-red-50 text-red-600"
                               : "bg-blue-50 text-blue-700"
                       }`}
                     >
-                      {statusLabels[claim.status]}
+                      {statusLabels[claimRequest.status] ??
+                        claimRequest.status}
                     </span>
                   </td>
 
                   <td className="px-5 py-4 text-right">
                     <Link
-                      href={`/admin/claims/${claim.id}`}
+                      href={`/admin/claims/${claimRequest.id}`}
                       className="rounded-lg px-3 py-2 text-xs font-semibold text-[#0756A5] hover:bg-blue-50"
                     >
-                      View Detail
+                      View Request
                     </Link>
                   </td>
                 </tr>
               ))}
 
-              {claims.length === 0 && (
+              {claimRequests.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
@@ -378,10 +490,13 @@ export default async function ClaimsPage({
         {/* Pagination */}
         <div className="flex flex-col gap-3 border-t border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-slate-500">
-            Menampilkan {filteredCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}
+            Menampilkan{" "}
+            {filteredCount === 0
+              ? 0
+              : (currentPage - 1) * PAGE_SIZE + 1}
             {" - "}
             {Math.min(currentPage * PAGE_SIZE, filteredCount)} dari{" "}
-            {filteredCount} klaim
+            {filteredCount} pengajuan
           </p>
 
           <div className="flex items-center gap-2">
@@ -402,7 +517,9 @@ export default async function ClaimsPage({
             </span>
 
             <Link
-              href={createPageUrl(Math.min(totalPages, currentPage + 1))}
+              href={createPageUrl(
+                Math.min(totalPages, currentPage + 1)
+              )}
               aria-disabled={currentPage >= totalPages}
               className={`rounded-lg border px-3 py-2 text-xs font-medium ${
                 currentPage >= totalPages
