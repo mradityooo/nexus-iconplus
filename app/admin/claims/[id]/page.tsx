@@ -15,6 +15,8 @@ import {
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
+export const instant = false;
+
 interface ClaimRequestDetailPageProps {
   params: Promise<{
     id: string;

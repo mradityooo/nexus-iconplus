@@ -1,4 +1,4 @@
-
+import { Suspense } from "react";
 import AdminSidebar from "@/components/admin-sidebar";
 
 export default function AdminLayout({
@@ -9,7 +9,11 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-screen bg-slate-50">
       <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">
-        <AdminSidebar />
+        <Suspense
+          fallback={<div className="w-64 shrink-0" aria-hidden="true" />}
+        >
+          <AdminSidebar />
+        </Suspense>
       </div>
 
       <main className="min-w-0 flex-1 lg:ml-64">
