@@ -7,8 +7,6 @@ import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  Bell,
-  LogOut,
   CarFront,
   Fuel,
   ClipboardList,
@@ -17,7 +15,6 @@ import {
   CircleHelp,
   FileText,
   UserRound,
-  ChevronDown,
 } from "lucide-react";
 
 const services = [
@@ -64,11 +61,31 @@ const services = [
 ];
 
 const workspace = [
-  { name: "My Request", icon: ClipboardList },
-  { name: "My Schedule", icon: CalendarDays },
-  { name: "Vehicle History", icon: History },
-  { name: "Help & Guide", icon: CircleHelp },
-  { name: "Add Note", icon: FileText },
+  { 
+    name: "My Request", 
+    href: "/my-request",
+    icon: ClipboardList, 
+  },
+  { 
+    name: "My Schedule", 
+    href: "/my-schedule",
+    icon: CalendarDays, 
+  },
+  { 
+    name: "Vehicle History", 
+    href: "/vehicle-history",
+    icon: History,
+  },
+  {
+    name: "Help & Guide",
+    href: "/help-and-guide",
+    icon: CircleHelp,
+  },
+  { 
+    name: "Add Note", 
+    href: "/add-note",
+    icon: FileText, 
+  },
 ];
 
 const activities = [
@@ -153,6 +170,7 @@ export default function HomePage() {
           <button
             type="button"
             aria-label="Open profile"
+            onClick={() => router.push("/profile")}
             className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 active:scale-95"
           >
             <UserRound size={22} strokeWidth={1.8} />
@@ -243,10 +261,11 @@ export default function HomePage() {
                 const Icon = item.icon;
 
                 return (
-                  <button
-                    key={item.name}
-                    className="flex min-w-0 flex-col items-center text-center active:scale-95"
-                  >
+                  <Link
+                      key={item.name}
+                      href={item.href}
+                      className="flex min-w-0 flex-col items-center text-center active:scale-95"
+                    >
                     <div className="flex h-[50px] w-[50px] max-w-full items-center justify-center rounded-full border border-white/80 bg-gradient-to-br from-slate-200/80 to-slate-200/50 backdrop-blur-xl">
                       <Icon
                         className="h-[21px] w-[21px]"
@@ -257,13 +276,12 @@ export default function HomePage() {
                     <span className="mt-2.5 w-full text-[10px] font-medium leading-[1.45] tracking-[-0.2px] text-black">
                       {t.workspaceItems[index]}
                     </span>
-                  </button>
+                  </Link>
                 );
               })}
             </div>
           </section>
-
-          
+  
         {/* News */}
           <section className="-mt-4">
             <div className="mb-3 border-b border-slate-300 pb-2">

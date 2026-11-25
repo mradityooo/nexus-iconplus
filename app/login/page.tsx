@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import {
   Eye,
   EyeOff,
@@ -14,18 +15,22 @@ import {
 type AuthMode = "login" | "signin";
 
 export default function LoginPage() {
+  const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const [name, setName] = useState("");
+  const [employeeCode, setEmployeeCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (mode === "signin") {
       if (password !== confirmPassword) {
@@ -33,13 +38,67 @@ export default function LoginPage() {
         return;
       }
 
-      setError(
-        "Registrasi belum terhubung ke backend NEXUS."
-      );
+      try {
+        setIsLoading(true);
+
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            employeeCode,
+            email,
+            password,
+            confirmPassword,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.message || "Registrasi gagal.");
+          return;
+        }
+
+        setSuccess(data.message || "Registrasi berhasil. Silakan login.");
+
+        setMode("login");
+        setEmployeeCode("");
+        setPassword("");
+        setConfirmPassword("");
+      } catch {
+        setError("Tidak dapat terhubung ke server. Silakan coba lagi.");
+      } finally {
+        setIsLoading(false);
+      }
+
       return;
     }
 
-    setError("Login belum terhubung ke backend NEXUS.");
+    try {
+      setIsLoading(true);
+
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: "/",
+      });
+
+      if (result?.error) {
+        setError("Email atau password salah.");
+        return;
+      }
+
+      if (result?.url) {
+        window.location.href = result.url;
+      }
+    } catch {
+      setError("Terjadi kesalahan saat login. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -104,32 +163,33 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nama hanya muncul saat Sign In */}
-          {mode === "signin" && (
-            <div>
-              <label
-                htmlFor="name"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Full Name
-              </label>
 
-              <div className="relative">
-                <UserRound className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+        {/* Employee ID hanya muncul saat Sign In */}
+        {mode === "signin" && (
+          <div>
+            <label
+              htmlFor="employeeCode"
+              className="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Employee ID
+            </label>
 
-                <input
-                  id="name"
-                  type="text"
-                  autoComplete="name"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
-                />
-              </div>
+            <div className="relative">
+              <UserRound className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+              <input
+                id="employeeCode"
+                type="text"
+                autoComplete="off"
+                placeholder="Enter your Employee ID"
+                value={employeeCode}
+                onChange={(e) => setEmployeeCode(e.target.value.toUpperCase())}
+                required
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
+              />
             </div>
-          )}
+          </div>
+        )}
 
           {/* Email */}
           <div>
@@ -246,7 +306,17 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Pesan validasi */}
+          {/* Pesan berhasil */}
+          {success && (
+            <p
+              role="status"
+              className="rounded-lg border border-green-100 bg-green-50 px-3 py-2 text-sm text-green-700"
+            >
+              {success}
+            </p>
+          )}
+
+          {/* Pesan error */}
           {error && (
             <p
               role="alert"
@@ -256,13 +326,19 @@ export default function LoginPage() {
             </p>
           )}
 
-          {/* Tombol utama */}
+          {/* Tombol utama */}     
           <button
             type="submit"
-            className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
+            disabled={isLoading}
+            className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {mode === "login" ? "Login" : "Create Account"}
-            <ArrowRight className="h-4 w-4" />
+            {isLoading
+              ? "Please wait..."
+              : mode === "login"
+                ? "Login"
+                : "Create Account"}
+
+            {!isLoading && <ArrowRight className="h-4 w-4" />}
           </button>
         </form>
 

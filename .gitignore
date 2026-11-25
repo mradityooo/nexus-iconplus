@@ -43,3 +43,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prisma generated client
+/generated/
+
+# Local scripts and temporary files (if sensitive)
+/scripts/

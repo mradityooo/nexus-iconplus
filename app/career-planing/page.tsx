@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "../context/LanguageContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -89,6 +90,7 @@ const labelClass =
   "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
 export default function CareerPlanningPage() {
+  const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"explore" | "applications">(
     "explore"
   );
@@ -113,7 +115,12 @@ export default function CareerPlanningPage() {
         .toLowerCase();
 
       return (
-        searchableText.includes(keyword) &&
+        (!keyword ||
+  (keyword.length <= 2
+    ? searchableText
+        .split(/[^a-z0-9]+/)
+        .some((word) => word.startsWith(keyword))
+    : searchableText.includes(keyword))) &&
         (department === "All Departments" ||
           job.department === department) &&
         (location === "All Locations" || job.location === location)
@@ -123,7 +130,7 @@ export default function CareerPlanningPage() {
 
   function applyForJob(job: Job) {
     if (applications.some((item) => item.job.id === job.id)) {
-      setNotice("Kamu sudah mengajukan lamaran untuk posisi ini.");
+      setNotice(t.career.duplicateApplication);
       setSelectedJob(null);
       return;
     }
@@ -142,7 +149,7 @@ export default function CareerPlanningPage() {
     ]);
 
     setSelectedJob(null);
-    setNotice(`Lamaran untuk ${job.title} berhasil diajukan.`);
+    t.career.applicationSuccess.replace("{job}", job.title)
   }
 
   return (
@@ -174,15 +181,15 @@ export default function CareerPlanningPage() {
           {/* Page title */}
           <section className="mb-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0px] text-red-600">
-              Employee Development
+              {t.career.section}
             </p>
 
            <h2 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
-              Career Planning
+              {t.career.title}
             </h2>
 
             <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-slate-">
-              Discover internal job opportunities and grow your career.
+              {t.career.subtitle}
             </p>
           </section>
 
@@ -190,16 +197,15 @@ export default function CareerPlanningPage() {
           <section className="relative mb-4 overflow-hidden rounded-xl bg-gradient-to-br from-[#063B82] to-[#0095DA] p-4 text-white">
             <div className="relative z-10">
               <span className="rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[10px] font-semibold">
-                INTERNAL CAREER PORTAL
+                {t.career.bannerLabel}
               </span>
 
               <h2 className="mt-3 max-w-[260px] text-[20px] font-bold leading-tight">
-                Your next career opportunity starts here.
+                {t.career.bannerTitle}
               </h2>
 
               <p className="mt-2 max-w-[270px] text-[11px] leading-4 text-blue-50">
-                Find a role that matches your skills and take the next step
-                within PLN Icon Plus.
+                {t.career.bannerDescription}
               </p>
 
               <button
@@ -211,7 +217,7 @@ export default function CareerPlanningPage() {
                 }
                 className="mt-4 flex h-9 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-blue-800 transition hover:bg-blue-50"
               >
-                Explore Opportunities
+                {t.career.bannerButton}
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -228,26 +234,26 @@ export default function CareerPlanningPage() {
             <div className="rounded-xl border border-slate-200 bg-white p-3">
               <div className="flex items-center gap-2 text-slate-500">
                 <BriefcaseBusiness size={15} />
-                <span className="text-[10px]">Open Positions</span>
+                <span className="text-[10px]">{t.career.openPositions}</span>
               </div>
               <p className="mt-2 text-xl font-bold text-slate-900">
                 {jobs.length}
               </p>
               <p className="mt-0.5 text-[10px] text-slate-500">
-                Available opportunities
+                {t.career.availableOpportunities}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white p-3">
               <div className="flex items-center gap-2 text-slate-500">
                 <ClipboardIcon />
-                <span className="text-[10px]">My Applications</span>
+                <span className="text-[10px]">{t.career.myApplications}</span>
               </div>
               <p className="mt-2 text-xl font-bold text-slate-900">
                 {applications.length}
               </p>
               <p className="mt-0.5 text-[10px] text-slate-500">
-                Submitted applications
+                {t.career.submittedApplications}
               </p>
             </div>
           </section>
@@ -265,7 +271,7 @@ export default function CareerPlanningPage() {
                 }`}
               >
                 <Search size={14} />
-                Explore Careers
+                {t.career.exploreCareers}
               </button>
 
               <button
@@ -278,7 +284,7 @@ export default function CareerPlanningPage() {
                 }`}
               >
                 <BriefcaseBusiness size={14} />
-                My Applications
+                {t.career.myApplications}
                 {applications.length > 0 && (
                   <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-100 px-1 text-[9px] text-blue-700">
                     {applications.length}
@@ -311,7 +317,7 @@ export default function CareerPlanningPage() {
               >
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-xs font-bold text-slate-900">
-                    Find Your Next Role
+                    {t.career.searchTitle}
                   </h2>
                   <Search size={15} className="text-slate-600" />
                 </div>
@@ -324,7 +330,7 @@ export default function CareerPlanningPage() {
                 >
                   <div>
                     <label htmlFor="job-search" className={labelClass}>
-                      Job Title or Keyword
+                      {t.career.searchLabel}
                     </label>
                     <div className="relative">
                       <Search
@@ -335,7 +341,7 @@ export default function CareerPlanningPage() {
                         id="job-search"
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search position or skills"
+                        placeholder={t.career.searchPlaceholder}
                         className={`${inputClass} pl-7`}
                       />
                     </div>
@@ -344,7 +350,7 @@ export default function CareerPlanningPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="department" className={labelClass}>
-                        Department
+                        {t.career.department}
                       </label>
                       <div className="relative">
                         <select
@@ -353,7 +359,9 @@ export default function CareerPlanningPage() {
                           onChange={(event) => setDepartment(event.target.value)}
                           className={`${inputClass} appearance-none pr-6`}
                         >
-                          <option>All Departments</option>
+                          <option value="All Departments">
+  {t.career.allDepartments}
+</option>
                           <option>Digital Solution</option>
                           <option>Information Technology</option>
                           <option>Digital Experience</option>
@@ -368,7 +376,7 @@ export default function CareerPlanningPage() {
 
                     <div>
                       <label htmlFor="location" className={labelClass}>
-                        Location
+                        {t.career.location}
                       </label>
                       <div className="relative">
                         <select
@@ -377,7 +385,9 @@ export default function CareerPlanningPage() {
                           onChange={(event) => setLocation(event.target.value)}
                           className={`${inputClass} appearance-none pr-6`}
                         >
-                          <option>All Locations</option>
+                          <option value="All Locations">
+  {t.career.allLocations}
+</option>
                           <option>Jakarta</option>
                           <option>Bandung</option>
                           <option>Lampung</option>
@@ -400,7 +410,7 @@ export default function CareerPlanningPage() {
                     className="flex h-8 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     <SlidersHorizontal size={13} />
-                    Reset Filters
+                    {t.career.resetFilters}
                   </button>
                 </form>
               </section>
@@ -410,10 +420,10 @@ export default function CareerPlanningPage() {
                 <div className="mb-3 flex items-center justify-between">
                   <div>
                     <h2 className="text-[14px] font-bold text-slate-900">
-                      Career Opportunities
+                      {t.career.careerOpportunities}
                     </h2>
                     <p className="mt-0.5 text-[10px] text-slate-500">
-                      {filteredJobs.length} position(s) found
+                      {filteredJobs.length} {t.career.positionsFound}
                     </p>
                   </div>
                   <BriefcaseBusiness size={17} className="text-slate-400" />
@@ -443,7 +453,7 @@ export default function CareerPlanningPage() {
                                 {job.title}
                               </h3>
                               <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-700">
-                                Open
+                                {t.career.openStatus}
                               </span>
                             </div>
 
@@ -458,7 +468,11 @@ export default function CareerPlanningPage() {
                               </span>
                               <span className="flex items-center gap-1">
                                 <BriefcaseBusiness size={11} />
-                                {job.level}
+                                {job.level === "Experienced"
+  ? t.career.experiencedLevel
+  : job.level === "Intermediate"
+    ? t.career.intermediateLevel
+    : job.level}
                               </span>
                             </div>
 
@@ -476,7 +490,7 @@ export default function CareerPlanningPage() {
                             <div className="mt-3 flex items-center justify-between gap-2">
                               <p className="flex items-center gap-1 text-[9px] text-slate-500">
                                 <CalendarDays size={11} />
-                                Until {job.deadline}
+{t.career.until} {job.deadline}
                               </p>
 
                               <button
@@ -484,7 +498,7 @@ export default function CareerPlanningPage() {
                                 onClick={() => setSelectedJob(job)}
                                 className="flex h-8 items-center justify-center gap-1.5 rounded-md bg-[#0095DA] px-3 text-[10px] font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
                               >
-                                {applied ? "View Details" : "View & Apply"}
+                                {applied ? t.career.viewDetails : t.career.viewAndApply}
                                 <ArrowRight size={12} />
                               </button>
                             </div>
@@ -502,10 +516,10 @@ export default function CareerPlanningPage() {
                       className="mx-auto mb-2 text-slate-300"
                     />
                     <p className="text-xs font-semibold text-slate-700">
-                      No positions found
+                      {t.career.noPositions}
                     </p>
                     <p className="mt-1 text-[10px] text-slate-500">
-                      Try another keyword or adjust your filters.
+                      {t.career.noPositionsDescription}
                     </p>
                   </div>
                 )}
@@ -516,10 +530,10 @@ export default function CareerPlanningPage() {
             <section>
               <div className="mb-3">
                 <h2 className="text-[14px] font-bold text-slate-900">
-                  My Applications
+                  {t.career.myApplications}
                 </h2>
                 <p className="mt-0.5 text-[10px] text-slate-500">
-                  Track your internal job applications.
+                  {t.career.applicationsDescription}
                 </p>
               </div>
 
@@ -532,17 +546,17 @@ export default function CareerPlanningPage() {
                     className="mx-auto mb-2 text-slate-300"
                   />
                   <p className="text-xs font-semibold text-slate-700">
-                    No applications yet
+                    {t.career.noApplications}
                   </p>
                   <p className="mt-1 text-[10px] text-slate-500">
-                    Your submitted applications will appear here.
+                    {t.career.noApplicationsDescription}
                   </p>
                   <button
                     type="button"
                     onClick={() => setActiveTab("explore")}
                     className="mt-4 flex h-9 mx-auto items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 text-xs font-bold text-white hover:bg-[#007AB8]"
                   >
-                    Explore Careers
+                    {t.career.exploreCareers}
                     <ArrowRight size={14} />
                   </button>
                 </div>
@@ -564,11 +578,13 @@ export default function CareerPlanningPage() {
                           {application.job.department}
                         </p>
                         <p className="mt-1 text-[10px] text-slate-500">
-                          Applied: {application.appliedAt}
+                          {t.career.appliedOn} {application.appliedAt}
                         </p>
                         <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-[9px] font-semibold text-blue-700">
                           <Clock3 size={11} />
-                          {application.status}
+{application.status === "Submitted"
+  ? t.career.submittedStatus
+  : application.status}
                         </span>
                       </div>
                     </article>
@@ -607,7 +623,7 @@ export default function CareerPlanningPage() {
                 </div>
                 <div>
                   <p className="text-[10px] font-semibold uppercase text-blue-700">
-                    Internal Opportunity
+                    {t.career.internalOpportunity}
                   </p>
                   <h2
                     id="job-detail-title"
@@ -633,14 +649,14 @@ export default function CareerPlanningPage() {
             <div className="mt-5 grid grid-cols-2 gap-3">
               <div className="rounded-lg bg-slate-50 p-3">
                 <MapPin size={15} className="text-blue-700" />
-                <p className="mt-2 text-[10px] text-slate-500">Location</p>
+                <p className="mt-2 text-[10px] text-slate-500">{t.career.location}</p>
                 <p className="mt-1 text-xs font-semibold text-slate-800">
                   {selectedJob.location}
                 </p>
               </div>
               <div className="rounded-lg bg-slate-50 p-3">
                 <CalendarDays size={15} className="text-blue-700" />
-                <p className="mt-2 text-[10px] text-slate-500">Deadline</p>
+                <p className="mt-2 text-[10px] text-slate-500">{t.career.deadline}</p>
                 <p className="mt-1 text-xs font-semibold text-slate-800">
                   {selectedJob.deadline}
                 </p>
@@ -648,14 +664,14 @@ export default function CareerPlanningPage() {
             </div>
 
             <h3 className="mt-5 text-xs font-bold text-slate-900">
-              Job Description
+              {t.career.jobDescription}
             </h3>
             <p className="mt-2 text-[11px] leading-5 text-slate-600">
               {selectedJob.description}
             </p>
 
             <h3 className="mt-5 text-xs font-bold text-slate-900">
-              Required Skills
+              {t.career.requiredSkills}
             </h3>
             <div className="mt-2 flex flex-wrap gap-2">
               {selectedJob.skills.map((skill) => (
@@ -669,7 +685,7 @@ export default function CareerPlanningPage() {
             </div>
 
             <p className="mt-4 rounded-lg bg-amber-50 p-3 text-[10px] leading-4 text-amber-800">
-              Prototype only. Confirm vacancy details and eligibility with HR.
+              {t.career.prototypeNotice}
             </p>
 
             <button
@@ -681,12 +697,12 @@ export default function CareerPlanningPage() {
                 (application) => application.job.id === selectedJob.id
               ) ? (
                 <>
-                  Already Applied
+                  {t.career.alreadyApplied}
                   <Check size={14} />
                 </>
               ) : (
                 <>
-                  Apply for This Position
+                  {t.career.applyPosition}
                   <ArrowRight size={14} />
                 </>
               )}

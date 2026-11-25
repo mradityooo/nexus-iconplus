@@ -1,0 +1,428 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  EMPLOYEE
+  GA
+  SUPERVISOR
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  MAINTENANCE
+  INACTIVE
+}
+
+enum DriverStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum InspectionStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWED
+}
+
+enum InspectionCondition {
+  GOOD
+  NEEDS_ATTENTION
+  NOT_APPLICABLE
+}
+
+enum BusinessTravelStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum BusinessTravelFacilityType {
+  FLIGHT_TICKET
+  HOTEL
+  OTHER_TRANSPORTATION
+}
+
+enum WfaStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ClaimCategory {
+  CAR_WASH
+  MEALS
+  TOLL_FEE
+  FUEL
+  OTHERS
+}
+
+enum ClaimStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+}
+
+// ==========================================
+// USER
+// ==========================================
+
+model User {
+  id       String        @id @default(uuid()) @db.Uuid
+  email    String        @unique
+  password String
+  role     UserRole      @default(EMPLOYEE)
+  status   AccountStatus @default(ACTIVE)
+
+  approvedClaims        Claim[]        @relation("ClaimApprover")
+  approvedClaimRequests ClaimRequest[] @relation("ClaimRequestApprover")
+
+  employee Employee?
+
+  // User yang menyetujui reservasi kendaraan
+  approvedReservations VehicleReservation[] @relation("ReservationApprover")
+
+  // User yang menyetujui perjalanan dinas
+  approvedBusinessTravels BusinessTravelRequest[] @relation("BusinessTravelApprover")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ==========================================
+// EMPLOYEE
+// ==========================================
+
+model Employee {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String?   @unique @db.Uuid
+  employeeCode String    @unique
+  fullName     String
+  phone        String?
+  department   String?
+  position     String?
+  workLocation String?
+  joinDate     DateTime?
+
+  claims        Claim[]
+  claimRequests ClaimRequest[]
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  inspections            Inspection[]
+  reservations           VehicleReservation[]
+  businessTravelRequests BusinessTravelRequest[]
+  wfaRequests            WfaRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("employees")
+}
+
+model Vehicle {
+  id           String        @id @default(uuid()) @db.Uuid
+  vehicleCode  String        @unique
+  name         String
+  plateNumber  String        @unique
+  vehicleType  String?
+  seatCapacity Int
+  status       VehicleStatus @default(AVAILABLE)
+
+  inspections  Inspection[]
+  reservations VehicleReservation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vehicles")
+}
+
+model Driver {
+  id            String       @id @default(uuid()) @db.Uuid
+  fullName      String
+  phone         String?
+  licenseNumber String?      @unique
+  status        DriverStatus @default(ACTIVE)
+
+  reservations VehicleReservation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("drivers")
+}
+
+model VehicleReservation {
+  id           String  @id @default(uuid()) @db.Uuid
+  employeeId   String  @db.Uuid
+  vehicleId    String  @db.Uuid
+  driverId     String? @db.Uuid
+  approvedById String? @db.Uuid
+
+  startAt     DateTime
+  endAt       DateTime
+  destination String
+  purpose     String
+
+  status     ReservationStatus @default(PENDING)
+  reviewNote String?
+  reviewedAt DateTime?
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driver     Driver?  @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  approvedBy User?    @relation("ReservationApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  inspection Inspection?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([vehicleId, startAt, endAt])
+  @@index([driverId, startAt, endAt])
+  @@index([status])
+  @@map("vehicle_reservations")
+}
+
+model InspectionTemplate {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  items InspectionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("inspection_templates")
+}
+
+model Inspection {
+  id            String @id @default(uuid()) @db.Uuid
+  reservationId String @unique @db.Uuid
+  employeeId    String @db.Uuid
+  vehicleId     String @db.Uuid
+
+  photoPath   String?
+  status      InspectionStatus @default(DRAFT)
+  notes       String?
+  inspectedAt DateTime?
+
+  reservation VehicleReservation @relation(fields: [reservationId], references: [id], onDelete: Restrict)
+  employee    Employee           @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  vehicle     Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+
+  items InspectionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([vehicleId])
+  @@index([status])
+  @@map("inspections")
+}
+
+model InspectionItem {
+  id           String @id @default(uuid()) @db.Uuid
+  inspectionId String @db.Uuid
+  templateId   String @db.Uuid
+
+  condition InspectionCondition?
+  notes     String?
+
+  inspection Inspection         @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  template   InspectionTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([inspectionId, templateId])
+  @@index([templateId])
+  @@map("inspection_items")
+}
+
+model BusinessTravelRequest {
+  id           String  @id @default(uuid()) @db.Uuid
+  employeeId   String  @db.Uuid
+  approvedById String? @db.Uuid
+
+  destination   String
+  purpose       String
+  departureDate DateTime
+  returnDate    DateTime
+
+  transportation String?
+  notes          String?
+
+  status     BusinessTravelStatus @default(PENDING)
+  reviewNote String?
+  reviewedAt DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  approvedBy User? @relation("BusinessTravelApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  facilities BusinessTravelFacility[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([approvedById])
+  @@index([status])
+  @@index([departureDate, returnDate])
+  @@map("business_travel_requests")
+}
+
+model BusinessTravelFacility {
+  id        String @id @default(uuid()) @db.Uuid
+  requestId String @db.Uuid
+
+  type  BusinessTravelFacilityType
+  notes String?
+
+  request BusinessTravelRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([requestId, type])
+  @@index([type])
+  @@map("business_travel_facilities")
+}
+
+model WfaRequest {
+  id         String @id @default(uuid()) @db.Uuid
+  employeeId String @db.Uuid
+
+  // Informasi lokasi kerja
+  workLocation    String
+  locationDetails String
+
+  // Periode WFA
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+
+  // Informasi pengajuan
+  reason String
+  notes  String?
+
+  // Status persetujuan
+  status WfaStatus @default(PENDING)
+
+  // Relasi ke karyawan
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@map("wfa_requests")
+}
+
+model Claim {
+  id         String @id @default(uuid()) @db.Uuid
+  employeeId String @db.Uuid
+
+  category        ClaimCategory
+  transactionDate DateTime      @db.Date
+  reference       String?
+  description     String
+  amount          Decimal       @db.Decimal(15, 2)
+
+  // Detail khusus Fuel
+  fuelType        String?
+  liters          Decimal? @db.Decimal(10, 2)
+  pricePerLiter   Decimal? @db.Decimal(15, 2)
+  stationLocation String?
+
+  // Bukti dan catatan
+  receiptUrl String?
+  notes      String?
+
+  // Persetujuan
+  status       ClaimStatus @default(PENDING)
+  reviewNote   String?
+  approvedById String?     @db.Uuid
+  reviewedAt   DateTime?
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  approvedBy User?    @relation("ClaimApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requestId String? @db.Uuid
+
+  request ClaimRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  @@index([requestId])
+  @@index([employeeId])
+  @@index([approvedById])
+  @@index([status])
+  @@index([category])
+  @@index([transactionDate])
+  @@map("claims")
+}
+
+model ClaimRequest {
+  id            String  @id @default(uuid()) @db.Uuid
+  employeeId    String  @db.Uuid
+  requestNumber String  @unique
+  totalAmount   Decimal @db.Decimal(15, 2)
+
+  status       ClaimStatus @default(PENDING)
+  notes        String?
+  reviewNote   String?
+  approvedById String?     @db.Uuid
+  reviewedAt   DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  approvedBy User? @relation("ClaimRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  claims Claim[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([approvedById])
+  @@index([status])
+  @@index([createdAt])
+  @@map("claim_requests")
+}

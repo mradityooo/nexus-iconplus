@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "../context/LanguageContext";
 import {
   ArrowLeft,
   Bell,
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 
 type WFARequest = {
-  id: number;
+  id: string;
   workLocation: string;
   locationDetails: string;
   startDate: string;
@@ -37,17 +38,36 @@ const locationOptions = [
   { name: "Other", icon: MapPinned },
 ];
 
-const formatDate = (date: string) => {
+const formatDate = (
+  date: string,
+  language: "id" | "en" = "id"
+) => {
   if (!date) return "-";
 
-  return new Date(`${date}T00:00:00`).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return new Date(`${date}T00:00:00`).toLocaleDateString(
+    language === "id" ? "id-ID" : "en-US",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }
+  );
 };
 
 export default function WorkFromAnywherePage() {
+  const { t, language } = useLanguage();
+  const messageLabels: Record<string, string> = {
+  submitSuccess: t.wfa.submitSuccess,
+  invalidStartDate: t.wfa.invalidStartDate,
+  invalidEndDate: t.wfa.invalidEndDate,
+  removeSuccess: t.wfa.removeSuccess,
+};
+  const statusLabels: Record<WFARequest["status"], string> = {
+  Pending: t.wfa.pending,
+  Approved: t.wfa.approved,
+  Rejected: t.wfa.rejected,
+};
+
   const [view, setView] = useState<"form" | "list" | "summary">("form");
 
   const [workLocation, setWorkLocation] = useState("Home");
@@ -59,6 +79,65 @@ export default function WorkFromAnywherePage() {
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [requests, setRequests] = useState<WFARequest[]>([]);
+
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadRequests() {
+    try {
+      const response = await fetch("/api/wfa", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal mengambil riwayat WFA");
+      }
+
+      const data = await response.json();
+
+      const savedRequests: WFARequest[] = data.requests.map(
+        (item: {
+          id: string;
+          workLocation: string;
+          locationDetails: string;
+          startDate: string;
+          endDate: string;
+          reason: string;
+          notes: string | null;
+          status: "PENDING" | "APPROVED" | "REJECTED";
+        }) => ({
+          id: item.id,
+          workLocation: item.workLocation,
+          locationDetails: item.locationDetails,
+          startDate: item.startDate.slice(0, 10),
+          endDate: item.endDate.slice(0, 10),
+          reason: item.reason,
+          notes: item.notes ?? "",
+          status:
+            item.status === "APPROVED"
+              ? "Approved"
+              : item.status === "REJECTED"
+                ? "Rejected"
+                : "Pending",
+        })
+      );
+
+      if (!cancelled) {
+        setRequests(savedRequests);
+      }
+    } catch (error) {
+      console.error("GET WFA error:", error);
+    }
+  }
+
+  void loadRequests();
+
+  return () => {
+    cancelled = true
+  };
+}, []);
+
 
   const today = new Date().toLocaleDateString("en-CA");
 
@@ -76,21 +155,45 @@ export default function WorkFromAnywherePage() {
   const labelClass =
     "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-  function addRequest(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  
+async function addRequest(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-    if (startDate < today) {
-      setMessage("Tanggal mulai tidak boleh di masa lalu.");
-      return;
-    }
+  if (startDate < today) {
+    setMessage("invalidStartDate");
+    return;
+  }
 
-    if (endDate < startDate) {
-      setMessage("Tanggal selesai tidak boleh sebelum tanggal mulai.");
+  if (endDate < startDate) {
+    setMessage("invalidEndDate");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/wfa", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        workLocation,
+        locationDetails: locationDetails.trim(),
+        startDate,
+        endDate,
+        reason: reason.trim(),
+        notes: notes.trim(),
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.error || "Gagal menyimpan pengajuan WFA");
       return;
     }
 
     const newRequest: WFARequest = {
-      id: Date.now(),
+      id: result.request.id,
       workLocation,
       locationDetails: locationDetails.trim(),
       startDate,
@@ -101,15 +204,59 @@ export default function WorkFromAnywherePage() {
     };
 
     setRequests((current) => [...current, newRequest]);
-    setMessage("Pengajuan WFA berhasil ditambahkan.");
+    setMessage("submitSuccess");
     setSubmitted(false);
     setView("list");
+  } catch (error) {
+    console.error("POST WFA error:", error);
+    alert("Gagal menghubungi server WFA");
   }
+}
 
-  function removeRequest(id: number) {
-    setRequests((current) => current.filter((item) => item.id !== id));
-    setMessage("Pengajuan berhasil dihapus.");
+
+  
+async function removeRequest(id: string) {
+  const confirmed = window.confirm(
+    language === "id"
+      ? "Yakin ingin menghapus pengajuan WFA ini?"
+      : "Are you sure you want to delete this WFA request?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(`/api/wfa/${id}`, {
+      method: "DELETE",
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(
+        result.error ||
+          (language === "id"
+            ? "Gagal menghapus pengajuan WFA"
+            : "Failed to delete WFA request")
+      );
+      return;
+    }
+
+    setRequests((current) =>
+      current.filter((item) => item.id !== id)
+    );
+
+    setMessage("removeSuccess");
+  } catch (error) {
+    console.error("DELETE WFA error:", error);
+
+    alert(
+      language === "id"
+        ? "Gagal menghubungi server WFA"
+        : "Failed to connect to WFA server"
+    );
   }
+}
+
 
   function resetForm() {
     setWorkLocation("Home");
@@ -155,36 +302,36 @@ export default function WorkFromAnywherePage() {
           {/* Title */}
           <section className="mb-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0px] text-red-600">
-              Employee Services
+              {t.wfa.section}
             </p>
 
             <h1 className="mt-2 text-[27px] font-bold leading-[1.2] tracking-[-1px]">
-              Work From Anywhere
+              {t.wfa.title}
             </h1>
 
             <p className="mt-1.5 max-w-[310px] text-[12px] leading-[1] text-black">
-              Manage your remote work schedule and WFA requests.
+              {t.wfa.description}
             </p>
           </section>
 
           {/* Statistics */}
           <section className="mb-6 grid grid-cols-3 gap-2">
             <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Total Requests</p>
+              <p className="text-[10px] text-slate-500">{t.wfa.totalRequests}</p>
               <p className="mt-1 text-xl font-bold text-black">
                 {requests.length}
               </p>
             </div>
 
             <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Pending</p>
+              <p className="text-[10px] text-slate-500">{t.wfa.pending}</p>
               <p className="mt-1 text-xl font-bold text-black">
                 {pendingCount}
               </p>
             </div>
 
             <div className="rounded-sm border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[10px] text-slate-500">Approved</p>
+              <p className="text-[10px] text-slate-500">{t.wfa.approved}</p>
               <p className="mt-1 text-xl font-bold text-black">
                 {approvedCount}
               </p>
@@ -208,7 +355,7 @@ export default function WorkFromAnywherePage() {
             }`}
             >
             
-            New WFA
+            {t.wfa.newWfaTab}
             </button>
 
             <button
@@ -224,7 +371,7 @@ export default function WorkFromAnywherePage() {
             }`}
             >
            
-            My Requests
+            {t.wfa.myRequestsTab}
             </button>
         </div>
         </section>
@@ -232,7 +379,9 @@ export default function WorkFromAnywherePage() {
 
           {message && (
             <div className="mb-4 flex items-start justify-between gap-2 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs text-sky-800">
-              <span>{message}</span>
+              <span>
+  {messageLabels[message] ?? message}
+</span>
               <button
                 type="button"
                 onClick={() => setMessage("")}
@@ -253,10 +402,10 @@ export default function WorkFromAnywherePage() {
 
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">
-                    WFA Request
+                    {t.wfa.formTitle}
                   </h2>
                   <p className="mt-0.5 text-[10px] text-slate-500">
-                    Complete your remote work details
+                    {t.wfa.formDescription}
                   </p>
                 </div>
               </div>
@@ -265,7 +414,7 @@ export default function WorkFromAnywherePage() {
                 {/* Work Location */}
                 <div>
                   <label className={labelClass}>
-                    Work Location <span className="text-red-500">*</span>
+                    {t.wfa.workLocationLabel} <span className="text-red-500">*</span>
                   </label>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -286,8 +435,10 @@ export default function WorkFromAnywherePage() {
                         >
                           <Icon size={20} />
                           <span className="text-[10px] font-semibold">
-                            {item.name}
-                          </span>
+  {item.name === "Home"
+    ? t.wfa.homeLocation
+    : t.wfa.otherLocation}
+</span>
                         </button>
                       );
                     })}
@@ -297,7 +448,7 @@ export default function WorkFromAnywherePage() {
                 {/* Location Details */}
                 <div>
                   <label className={labelClass} htmlFor="locationDetails">
-                    Location Details <span className="text-red-500">*</span>
+                    {t.wfa.locationDetailsLabel} <span className="text-red-500">*</span>
                   </label>
 
                   <div className="relative">
@@ -309,7 +460,7 @@ export default function WorkFromAnywherePage() {
                       id="locationDetails"
                       value={locationDetails}
                       onChange={(e) => setLocationDetails(e.target.value)}
-                      placeholder="City or work address"
+                      placeholder={t.wfa.locationDetailsPlaceholder}
                       className={`${inputClass} pl-9`}
                       required
                     />
@@ -320,14 +471,22 @@ export default function WorkFromAnywherePage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass} htmlFor="startDate">
-                      Start Date *
+                      {t.wfa.startDateLabel} *
                     </label>
                     <input
                       id="startDate"
                       type="date"
                       value={startDate}
                       min={today}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={(e) => {
+  const newStartDate = e.target.value;
+
+  setStartDate(newStartDate);
+
+  if (endDate && newStartDate && endDate < newStartDate) {
+    setEndDate("");
+  }
+}}
                       className={inputClass}
                       required
                     />
@@ -335,7 +494,7 @@ export default function WorkFromAnywherePage() {
 
                   <div>
                     <label className={labelClass} htmlFor="endDate">
-                      End Date *
+                      {t.wfa.endDateLabel} *
                     </label>
                     <input
                       id="endDate"
@@ -352,13 +511,13 @@ export default function WorkFromAnywherePage() {
                 {/* Reason */}
                 <div>
                   <label className={labelClass} htmlFor="reason">
-                    Reason for WFA *
+                    {t.wfa.reasonLabel} *
                   </label>
                   <textarea
                     id="reason"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    placeholder="Explain why you need to work remotely..."
+                    placeholder={t.wfa.reasonPlaceholder}
                     rows={3}
                     className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800 outline-none transition focus:border-[#0095DA] focus:ring-2 focus:ring-sky-100"
                     required
@@ -368,13 +527,13 @@ export default function WorkFromAnywherePage() {
                 {/* Notes */}
                 <div>
                   <label className={labelClass} htmlFor="notes">
-                    Additional Notes
+                    {t.wfa.notesLabel}
                   </label>
                   <textarea
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Additional information (optional)"
+                    placeholder={t.wfa.notesPlaceholder}
                     rows={2}
                     className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800 outline-none transition focus:border-[#0095DA] focus:ring-2 focus:ring-sky-100"
                   />
@@ -385,7 +544,7 @@ export default function WorkFromAnywherePage() {
                   className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-sky-700 active:scale-[0.99]"
                 >
                   <Plus size={17} />
-                  Submit WFA Request
+                  {t.wfa.submitButton}
                 </button>
               </form>
             </section>
@@ -397,17 +556,28 @@ export default function WorkFromAnywherePage() {
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
-                    My WFA Requests
+                    {t.wfa.myWfaRequests}
                   </h2>
                   <p className="mt-1 text-xs text-slate-500">
-                    Track your remote work requests
+                    {t.wfa.myWfaDescription}
                   </p>
                 </div>
 
                 <span className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700">
-                  {requests.length} request(s)
+                  {requests.length}{" "}
+{requests.length === 1
+  ? t.wfa.requestCountOne
+  : t.wfa.requestCountMany}
                 </span>
               </div>
+
+              <button
+  type="button"
+  onClick={() => setView("summary")}
+  className="mb-4 w-full rounded-xl bg-sky-600 px-4 py-3 text-xs font-bold text-white hover:bg-sky-700"
+>
+  {t.wfa.summaryTitle}
+</button>
 
               {requests.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-200 py-12 text-center">
@@ -416,17 +586,17 @@ export default function WorkFromAnywherePage() {
                     className="mx-auto mb-3 text-slate-300"
                   />
                   <p className="text-sm font-semibold text-slate-700">
-                    No WFA requests yet
+                     {t.wfa.emptyTitle}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Create your first remote work request.
+                    {t.wfa.emptyDescription}
                   </p>
                   <button
                     type="button"
                     onClick={() => setView("form")}
                     className="mt-4 text-xs font-bold text-sky-700"
                   >
-                    Create Request
+                    {t.wfa.createRequestButton}
                   </button>
                 </div>
               ) : (
@@ -444,7 +614,9 @@ export default function WorkFromAnywherePage() {
 
                           <div className="min-w-0">
                             <h3 className="truncate text-sm font-bold text-slate-900">
-                              {item.workLocation}
+                              {item.workLocation === "Home"
+  ? t.wfa.homeLocation
+  : t.wfa.otherLocation}
                             </h3>
                             <p className="mt-1 text-xs text-slate-500">
                               {item.locationDetails}
@@ -461,25 +633,25 @@ export default function WorkFromAnywherePage() {
                                 : "bg-amber-50 text-amber-700"
                           }`}
                         >
-                          {item.status}
+                          {statusLabels[item.status]}
                         </span>
                       </div>
 
                       <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3">
                         <div>
                           <p className="text-[10px] text-slate-500">
-                            Start Date
+                            {t.wfa.startDateLabel}
                           </p>
                           <p className="mt-1 text-xs font-semibold text-slate-800">
-                            {formatDate(item.startDate)}
+                            {formatDate(item.startDate, language)}
                           </p>
                         </div>
                         <div>
                           <p className="text-[10px] text-slate-500">
-                            End Date
+                            {t.wfa.endDateLabel}
                           </p>
                           <p className="mt-1 text-xs font-semibold text-slate-800">
-                            {formatDate(item.endDate)}
+                            {formatDate(item.endDate, language)}
                           </p>
                         </div>
                       </div>
@@ -490,7 +662,7 @@ export default function WorkFromAnywherePage() {
 
                       {item.notes && (
                         <p className="mt-2 text-[11px] text-slate-500">
-                          Notes: {item.notes}
+                          {t.wfa.notesDisplayLabel}: {item.notes}
                         </p>
                       )}
 
@@ -505,7 +677,7 @@ export default function WorkFromAnywherePage() {
                           onClick={() => removeRequest(item.id)}
                           className="rounded-lg border border-red-100 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                         >
-                          Remove
+                          {t.wfa.removeButton}
                         </button>
                       </div>
                     </article>
@@ -526,29 +698,29 @@ export default function WorkFromAnywherePage() {
 
                   <div>
                     <h2 className="text-sm font-bold text-slate-900">
-                      WFA Summary
+                      {t.wfa.summaryTitle}
                     </h2>
                     <p className="text-[10px] text-slate-500">
-                      Overview of your requests
+                      {t.wfa.summaryDescription}
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-4 grid grid-cols-3 gap-2">
                   <div className="rounded-xl bg-slate-50 p-3">
-                    <p className="text-[10px] text-slate-500">Total</p>
+                    <p className="text-[10px] text-slate-500">{t.wfa.totalLabel}</p>
                     <p className="mt-1 text-xl font-bold">
                       {requests.length}
                     </p>
                   </div>
                   <div className="rounded-xl bg-amber-50 p-3">
-                    <p className="text-[10px] text-amber-700">Pending</p>
+                    <p className="text-[10px] text-amber-700">{t.wfa.pending}</p>
                     <p className="mt-1 text-xl font-bold text-amber-700">
                       {pendingCount}
                     </p>
                   </div>
                   <div className="rounded-xl bg-emerald-50 p-3">
-                    <p className="text-[10px] text-emerald-700">Approved</p>
+                    <p className="text-[10px] text-emerald-700">{t.wfa.approved}</p>
                     <p className="mt-1 text-xl font-bold text-emerald-700">
                       {approvedCount}
                     </p>
@@ -563,15 +735,19 @@ export default function WorkFromAnywherePage() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-xs font-bold text-slate-900">
-                          {index + 1}. {item.workLocation}
+                          {index + 1}.{" "}
+{item.workLocation === "Home"
+  ? t.wfa.homeLocation
+  : t.wfa.otherLocation}
                         </p>
                         <span className="text-[10px] font-semibold text-slate-500">
-                          {item.status}
+                          {statusLabels[item.status]}
                         </span>
                       </div>
 
                       <p className="mt-1 text-[11px] text-slate-500">
-                        {formatDate(item.startDate)} – {formatDate(item.endDate)}
+                        {formatDate(item.startDate, language)} –{" "}
+{formatDate(item.endDate, language)}
                       </p>
                       <p className="mt-1 text-xs text-slate-600">
                         {item.locationDetails}
@@ -582,8 +758,7 @@ export default function WorkFromAnywherePage() {
               </div>
 
               <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 text-xs leading-5 text-amber-800">
-                This is a local prototype. Requests are not yet connected to
-                the admin approval system or database.
+                {t.wfa.prototypeNotice}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -593,37 +768,37 @@ export default function WorkFromAnywherePage() {
                   className="flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50"
                 >
                   <ChevronLeft size={16} />
-                  Back
+                  {t.wfa.backButton}
                 </button>
 
                 <button
-                  type="button"
-                  onClick={() => {
-                    setSubmitted(true);
-                    setMessage("");
-                  }}
-                  className="flex h-11 items-center justify-center gap-2 rounded-xl bg-sky-600 text-xs font-bold text-white hover:bg-sky-700"
-                >
-                  <Check size={16} />
-                  Confirm
-                </button>
+  type="button"
+  disabled={requests.length === 0}
+  onClick={() => {
+    setSubmitted(true);
+    setMessage("");
+  }}
+  className="flex h-11 items-center justify-center gap-2 rounded-xl bg-sky-600 text-xs font-bold text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+>
+  <Check size={16} />
+  {t.wfa.confirmButton}
+</button>
               </div>
 
-              {submitted && (
+              {submitted && requests.length > 0 && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                   <p className="text-sm font-bold text-emerald-800">
-                    Summary confirmed
+                    {t.wfa.summaryConfirmedTitle}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-emerald-700">
-                    This is a prototype confirmation. No request has been sent
-                    to a server or approval workflow.
+                    {t.wfa.summaryConfirmedDescription}
                   </p>
                   <button
                     type="button"
                     onClick={resetForm}
                     className="mt-3 text-xs font-bold text-emerald-800 underline"
                   >
-                    Create New WFA
+                    {t.wfa.createNewWfaButton}
                   </button>
                 </div>
               )}
