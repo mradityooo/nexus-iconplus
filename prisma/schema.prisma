@@ -10,6 +10,10 @@ datasource db {
 enum UserRole {
   EMPLOYEE
   GA
+  BRANCH_HEAD
+  TREASURER
+
+  // Pertahankan selama migrasi dan pemeriksaan pemakaian role lama.
   SUPERVISOR
   ADMIN
 }
@@ -88,6 +92,26 @@ enum ClaimStatus {
   COMPLETED
 }
 
+enum ClaimRequestStatus {
+  PENDING_GA
+  PENDING_BRANCH_HEAD
+  PENDING_TREASURER
+  PROCESSING_PAYMENT
+  PAID
+  REJECTED
+}
+
+enum ClaimReviewStage {
+  GA
+  BRANCH_HEAD
+  TREASURER
+}
+
+enum ClaimReviewDecision {
+  APPROVED
+  REJECTED
+}
+
 // ==========================================
 // USER
 // ==========================================
@@ -99,8 +123,9 @@ model User {
   role     UserRole      @default(EMPLOYEE)
   status   AccountStatus @default(ACTIVE)
 
-  approvedClaims        Claim[]        @relation("ClaimApprover")
-  approvedClaimRequests ClaimRequest[] @relation("ClaimRequestApprover")
+  approvedClaims        Claim[]              @relation("ClaimApprover")
+  approvedClaimRequests ClaimRequest[]       @relation("ClaimRequestApprover")
+  claimRequestReviews   ClaimRequestReview[] @relation("ClaimRequestReviewer")
 
   employee Employee?
 
@@ -375,7 +400,7 @@ model Claim {
   notes      String?
 
   // Persetujuan
-  status       ClaimStatus @default(PENDING)
+  status       ClaimStatus @default(DRAFT)
   reviewNote   String?
   approvedById String?     @db.Uuid
   reviewedAt   DateTime?
@@ -388,7 +413,7 @@ model Claim {
 
   requestId String? @db.Uuid
 
-  request ClaimRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  request ClaimRequest? @relation(fields: [requestId], references: [id], onDelete: Restrict)
 
   @@index([requestId])
   @@index([employeeId])
@@ -405,17 +430,18 @@ model ClaimRequest {
   requestNumber String  @unique
   totalAmount   Decimal @db.Decimal(15, 2)
 
-  status       ClaimStatus @default(PENDING)
+  status       ClaimRequestStatus @default(PENDING_GA)
   notes        String?
   reviewNote   String?
-  approvedById String?     @db.Uuid
+  approvedById String?            @db.Uuid
   reviewedAt   DateTime?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
   approvedBy User? @relation("ClaimRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull)
 
-  claims Claim[]
+  claims  Claim[]
+  reviews ClaimRequestReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -425,4 +451,22 @@ model ClaimRequest {
   @@index([status])
   @@index([createdAt])
   @@map("claim_requests")
+}
+
+model ClaimRequestReview {
+  id         String              @id @default(uuid()) @db.Uuid
+  requestId  String              @db.Uuid
+  reviewerId String              @db.Uuid
+  stage      ClaimReviewStage
+  decision   ClaimReviewDecision
+  note       String?
+  createdAt  DateTime            @default(now())
+
+  request  ClaimRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  reviewer User         @relation("ClaimRequestReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@unique([requestId, stage])
+  @@index([reviewerId])
+  @@index([createdAt])
+  @@map("claim_request_reviews")
 }

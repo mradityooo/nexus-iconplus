@@ -31,6 +31,20 @@ export async function GET() {
     const claims = await prisma.claim.findMany({
       where: {
         employeeId: employee.id,
+        status: "DRAFT",
+        requestId: null,
+      },
+      include: {
+        request: {
+          select: {
+            id: true,
+            requestNumber: true,
+            status: true,
+            totalAmount: true,
+            createdAt: true,
+            reviewNote: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -48,7 +62,7 @@ export async function GET() {
   }
 }
 
-// POST: Membuat pengajuan klaim baru
+// POST: Membuat item klaim sebagai DRAFT
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -103,11 +117,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const parsedDate = new Date(transactionDate);
+    const parsedAmount = Number(amount);
+
     if (
       !transactionDate ||
+      Number.isNaN(parsedDate.getTime()) ||
       !description?.trim() ||
-      !Number.isFinite(Number(amount)) ||
-      Number(amount) <= 0
+      !Number.isFinite(parsedAmount) ||
+      parsedAmount <= 0
     ) {
       return NextResponse.json(
         { message: "Data pengajuan belum lengkap atau tidak valid" },
@@ -115,14 +133,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // Hanya item DRAFT yang boleh ditambahkan
     const claim = await prisma.claim.create({
       data: {
         employeeId: employee.id,
         category,
-        transactionDate: new Date(transactionDate),
+        transactionDate: parsedDate,
         reference: reference || null,
         description: description.trim(),
-        amount: Number(amount),
+        amount: parsedAmount,
         fuelType: category === "FUEL" ? fuelType || null : null,
         liters:
           category === "FUEL" && liters != null
@@ -135,12 +154,13 @@ export async function POST(req: Request) {
         stationLocation:
           category === "FUEL" ? stationLocation || null : null,
         notes: notes || null,
+        status: "DRAFT",
       },
     });
 
     return NextResponse.json(
       {
-        message: "Pengajuan klaim berhasil dibuat",
+        message: "Item klaim berhasil disimpan sebagai draft",
         data: claim,
       },
       { status: 201 }
@@ -149,14 +169,13 @@ export async function POST(req: Request) {
     console.error("POST CLAIM ERROR:", error);
 
     return NextResponse.json(
-      { message: "Gagal membuat pengajuan klaim" },
+      { message: "Gagal membuat item klaim" },
       { status: 500 }
     );
   }
 }
 
-
-// DELETE: Menghapus klaim milik karyawan yang login
+// DELETE: Menghapus item DRAFT milik karyawan
 export async function DELETE(req: Request) {
   try {
     const session = await auth();
@@ -194,27 +213,27 @@ export async function DELETE(req: Request) {
       where: {
         id,
         employeeId: employee.id,
-        status: "PENDING",
+        status: "DRAFT",
+        requestId: null,
       },
     });
 
     if (deleted.count === 0) {
       return NextResponse.json(
-        { message: "Klaim tidak ditemukan atau tidak dapat dihapus" },
+        { message: "Item klaim tidak ditemukan atau sudah disubmit" },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
-      message: "Klaim berhasil dihapus",
+      message: "Item klaim berhasil dihapus",
     });
   } catch (error) {
     console.error("DELETE CLAIM ERROR:", error);
 
     return NextResponse.json(
-      { message: "Gagal menghapus klaim" },
+      { message: "Gagal menghapus item klaim" },
       { status: 500 }
     );
   }
 }
-

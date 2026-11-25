@@ -69,21 +69,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6. Pastikan klaim milik karyawan dan masih pending
+    // 6. Pastikan klaim milik karyawan, masih DRAFT, dan belum masuk request
     const claim = await prisma.claim.findFirst({
       where: {
         id: claimId,
         employeeId: employee.id,
-        status: "PENDING",
+        status: "DRAFT",
+        requestId: null,
       },
     });
 
     if (!claim) {
       return NextResponse.json(
-        { message: "Klaim tidak ditemukan atau tidak dapat diubah" },
+        { message: "Klaim tidak ditemukan atau sudah disubmit" },
         { status: 404 }
       );
     }
+
 
     // 7. Upload file ke Supabase Storage
     const filePath = `${employee.id}/${claim.id}/${crypto.randomUUID()}.${extension}`;

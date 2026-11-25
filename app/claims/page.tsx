@@ -60,6 +60,30 @@ type EmployeeProfile = {
   department: string | null;
 };
 
+type ClaimRequestProgress = {
+  id: string;
+  requestNumber: string;
+  totalAmount: string | number;
+  status: string;
+  notes: string | null;
+  reviewNote: string | null;
+  createdAt: string;
+  claims: {
+    id: string;
+    category: string;
+    transactionDate: string;
+    description: string;
+    amount: string | number;
+    status: string;
+  }[];
+  reviews: {
+    stage: string;
+    decision: string;
+    note: string | null;
+    createdAt: string;
+  }[];
+};
+
 const categories = [
   { name: "Car Wash", icon: CarFront },
   { name: "Meals", icon: Utensils },
@@ -87,6 +111,200 @@ const enumToCategory: Record<string, string> = {
 const formatRupiah = (amount: number) =>
   "Rp. " + amount.toLocaleString("id-ID");
 
+const requestStatusLabels: Record<string, string> = {
+  PENDING_GA: "Menunggu pemeriksaan GA",
+  PENDING_BRANCH_HEAD: "Menunggu Kepala Cabang",
+  PENDING_TREASURER: "Menunggu Bendahara",
+  PROCESSING_PAYMENT: "Disetujui, menunggu pencairan",
+  PAID: "Klaim selesai / cair",
+  REJECTED: "Pengajuan ditolak",
+};
+
+const reviewStages = [
+  { stage: "GA", label: "Pemeriksaan GA" },
+  { stage: "BRANCH_HEAD", label: "Pemeriksaan Kepala Cabang" },
+  { stage: "TREASURER", label: "Pemeriksaan Bendahara" },
+] as const;
+
+function ClaimRequestsProgress({
+  requests,
+}: {
+  requests: ClaimRequestProgress[];
+}) {
+  if (requests.length === 0) {
+    return (
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-sm font-bold text-slate-900">
+          Status Pengajuan Klaim
+        </h2>
+        <p className="mt-2 text-xs text-slate-500">
+          Belum ada pengajuan klaim yang dikirim.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-sm font-bold text-slate-900">
+          Status Pengajuan Klaim
+        </h2>
+        <p className="mt-1 text-[10px] text-slate-500">
+          Pantau proses setiap pengajuan yang sudah dikirim.
+        </p>
+      </div>
+
+      {requests.map((request) => (
+        <article
+          key={request.id}
+          className="rounded-xl border border-slate-200 bg-white p-4"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] text-slate-500">Nomor pengajuan</p>
+              <p className="mt-0.5 break-all text-xs font-bold text-slate-900">
+                {request.requestNumber}
+              </p>
+              <p className="mt-1 text-[10px] text-slate-500">
+                {new Date(request.createdAt).toLocaleDateString("id-ID")}
+                {" · "}
+                {request.claims.length} item
+              </p>
+            </div>
+
+            <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-center text-[9px] font-bold text-blue-700">
+              {requestStatusLabels[request.status] ?? request.status}
+            </span>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px]">
+            <span className="text-slate-600">Total pengajuan</span>
+            <span className="font-bold text-slate-900">
+              {formatRupiah(Number(request.totalAmount))}
+            </span>
+          </div>
+
+          <ol className="mt-4 space-y-3">
+            {reviewStages.map((stage) => {
+              const review = request.reviews.find(
+                (item) => item.stage === stage.stage
+              );
+
+              const isRejected = review?.decision === "REJECTED";
+              const isApproved = review?.decision === "APPROVED";
+              const isCurrent =
+                request.status === `PENDING_${stage.stage}`;
+
+              const markerClass = isRejected
+                ? "border-red-500 bg-red-500 text-white"
+                : isApproved
+                  ? "border-emerald-500 bg-emerald-500 text-white"
+                  : isCurrent
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-slate-300 bg-white text-slate-400";
+
+              return (
+                <li key={stage.stage} className="flex gap-3">
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[9px] font-bold ${markerClass}`}
+                  >
+                    {isApproved ? "✓" : isRejected ? "×" : isCurrent ? "•" : ""}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-[10px] font-semibold ${
+                        isRejected
+                          ? "text-red-700"
+                          : isApproved
+                            ? "text-emerald-700"
+                            : isCurrent
+                              ? "text-blue-700"
+                              : "text-slate-500"
+                      }`}
+                    >
+                      {stage.label}
+                      {isCurrent ? " — sedang diproses" : ""}
+                      {isRejected ? " — ditolak" : ""}
+                      {isApproved ? " — disetujui" : ""}
+                    </p>
+
+                    {review && (
+                      <p className="mt-0.5 text-[9px] text-slate-500">
+                        {new Date(review.createdAt).toLocaleString("id-ID")}
+                      </p>
+                    )}
+
+                    {review?.note && (
+                      <p className="mt-1 whitespace-pre-wrap text-[9px] text-slate-600">
+                        Catatan: {review.note}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+
+            <li className="flex gap-3">
+              <span
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[9px] font-bold ${
+                  request.status === "PAID"
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : request.status === "PROCESSING_PAYMENT"
+                      ? "border-blue-600 bg-blue-50 text-blue-700"
+                      : "border-slate-300 bg-white text-slate-400"
+                }`}
+              >
+                {request.status === "PAID"
+                  ? "✓"
+                  : request.status === "PROCESSING_PAYMENT"
+                    ? "•"
+                    : ""}
+              </span>
+
+              <div>
+                <p
+                  className={`text-[10px] font-semibold ${
+                    request.status === "PAID"
+                      ? "text-emerald-700"
+                      : request.status === "PROCESSING_PAYMENT"
+                        ? "text-blue-700"
+                        : "text-slate-500"
+                  }`}
+                >
+                  {request.status === "PAID"
+                    ? "Klaim selesai / cair"
+                    : request.status === "PROCESSING_PAYMENT"
+                      ? "Menunggu pencairan"
+                      : "Pencairan"}
+                </p>
+              </div>
+            </li>
+          </ol>
+
+          {request.status === "REJECTED" && request.reviewNote && (
+            <div className="mt-3 rounded-lg bg-red-50 p-3">
+              <p className="text-[10px] font-bold text-red-700">
+                Alasan penolakan
+              </p>
+              <p className="mt-1 whitespace-pre-wrap text-[10px] text-red-700">
+                {request.reviewNote}
+              </p>
+            </div>
+          )}
+
+          {request.notes && (
+            <p className="mt-3 border-t border-slate-100 pt-3 text-[9px] text-slate-500">
+              Catatan Anda: {request.notes}
+            </p>
+          )}
+        </article>
+      ))}
+    </section>
+  );
+}
+
 export default function ReimbursementPage() {
   const [view, setView] = useState<"form" | "claims" | "summary">("form");
   const [category, setCategory] = useState("Car Wash");
@@ -105,9 +323,57 @@ export default function ReimbursementPage() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [employeeProfile, setEmployeeProfile] = useState<EmployeeProfile | null>(null);
+  const [claimRequests, setClaimRequests] = useState<ClaimRequestProgress[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
+  const [requestsError, setRequestsError] = useState("");
 
-  const [employeeProfile, setEmployeeProfile] =
-  useState<EmployeeProfile | null>(null);
+  useEffect(() => {
+  let active = true;
+
+  async function fetchClaimRequests() {
+    try {
+      setRequestsLoading(true);
+      setRequestsError("");
+
+      const response = await fetch("/api/claims/requests", {
+        cache: "no-store",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Gagal mengambil status pengajuan klaim"
+        );
+      }
+
+      if (active) {
+        setClaimRequests(
+          Array.isArray(result.data) ? result.data : []
+        );
+      }
+    } catch (error) {
+      console.error("FETCH CLAIM REQUESTS ERROR:", error);
+
+      if (active) {
+        setRequestsError(
+          error instanceof Error
+            ? error.message
+            : "Gagal mengambil status pengajuan klaim"
+        );
+      }
+    } finally {
+      if (active) setRequestsLoading(false);
+    }
+  }
+
+  fetchClaimRequests();
+
+  return () => {
+    active = false;
+  };
+  }, []);
 
   useEffect(() => {
   async function fetchEmployeeProfile() {
@@ -185,7 +451,14 @@ export default function ReimbursementPage() {
   fetchClaims();
   }, []);
 
+  const draftClaims = claims.filter((claim) => claim.status === "DRAFT");
+
   const total = claims.reduce((sum, claim) => sum + claim.amount, 0);
+  const draftTotal = draftClaims.reduce(
+    (sum, claim) => sum + claim.amount,
+    0
+  );
+
   const fuelTotal =
     (Number(liters) || 0) * (Number(pricePerLiter) || 0);
   
@@ -279,6 +552,7 @@ export default function ReimbursementPage() {
       };
 
       setClaims((current) => [newClaim, ...current]);
+      setSubmitted(false);
 
       // 4. Reset form
       setDate("");
@@ -346,43 +620,70 @@ export default function ReimbursementPage() {
   }
 
   function openSummary() {
-    if (claims.length === 0) {
-      setMessage("Tambahkan minimal satu claim terlebih dahulu.");
-      return;
-    }
-
     setMessage("");
     setView("summary");
   }
 
   async function confirmClaim() {
+    if (saving || draftClaims.length === 0) return;
+
     try {
       setSaving(true);
       setMessage("");
 
-      const response = await fetch("/api/claims/notes", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ notes }),
+      const response = await fetch("/api/claims/submit", {
+        method: "POST",
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Gagal mengonfirmasi klaim");
+        throw new Error(
+          result.message || "Gagal mengirim pengajuan klaim"
+        );
       }
 
+      const submittedIds = new Set<string>(
+        Array.isArray(result.data?.claims)
+          ? result.data.claims.map((claim: { id: string }) => claim.id)
+          : []
+      );
+
+      // Draft yang berhasil dikirim dihapus dari My Claim.
+      setClaims((current) =>
+        current.filter((claim) => !submittedIds.has(claim.id))
+      );
+
       setSubmitted(true);
-      setMessage("Pengajuan klaim berhasil dikonfirmasi.");
+      setMessage(
+        result.data?.requestNumber
+          ? `Pengajuan berhasil dikirim. Nomor request: ${result.data.requestNumber}`
+          : result.message || "Pengajuan berhasil dikirim ke admin."
+      );
+
+      // Perbarui daftar progress agar request baru langsung terlihat di Summary.
+      try {
+        const progressResponse = await fetch("/api/claims/requests", {
+          cache: "no-store",
+        });
+
+        if (progressResponse.ok) {
+          const progressResult = await progressResponse.json();
+          setClaimRequests(
+            Array.isArray(progressResult.data) ? progressResult.data : []
+          );
+        }
+      } catch (progressError) {
+        console.error("REFRESH CLAIM PROGRESS ERROR:", progressError);
+        // Submit sudah berhasil; refresh progress dapat dicoba saat membuka Summary.
+      }
     } catch (error) {
-      console.error("CONFIRM CLAIM ERROR:", error);
+      console.error("SUBMIT CLAIM ERROR:", error);
 
       setMessage(
         error instanceof Error
           ? error.message
-          : "Terjadi kesalahan saat mengonfirmasi klaim"
+          : "Terjadi kesalahan saat mengirim pengajuan klaim"
       );
     } finally {
       setSaving(false);
@@ -828,8 +1129,8 @@ export default function ReimbursementPage() {
 
                 <button
                   type="button"
-                  onClick={openSummary}
-                  disabled={claims.length === 0}
+                  onClick={confirmClaim}
+                  disabled={saving || draftClaims.length === 0}
                   className="h-10 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
                   Submit Claim
@@ -838,135 +1139,21 @@ export default function ReimbursementPage() {
             </>
           )}
 
-          {/* Claim Summary */}
+          {/* Claim Progress / History */}
           {view === "summary" && (
-            <>
-              <section className="mb-4 rounded-xl border border-slate-200/80 bg-[#DCDCDC] p-4">
-                <h2 className="mb-3 text-xs font-bold text-slate-900">
-                  Employee Information
-                </h2>
-                <div className="mb-3 h-px bg-slate-400/80" />
-
-                <div className="grid grid-cols-2 gap-x-3 gap-y-3">
-                {[
-                  ["Employee Name", employeeProfile?.fullName || "-"],
-                  ["Position", employeeProfile?.position || "-"],
-                  ["Employee ID", employeeProfile?.employeeCode || "-"],
-                  ["Email", employeeProfile?.email || "-"],
-                  ["Department", employeeProfile?.department || "-"],
-                ].map(([label, value]) => (
-                  <div key={label} className="min-w-0">
-                    <p className="text-[9px] text-slate-500">{label}</p>
-                    <p className="mt-0.5 break-words text-[10px] font-semibold text-slate-800">
-                      {value}
-                    </p>
-                  </div>
-                ))}
+            <section className="space-y-4">
+              {requestsLoading ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 text-xs text-slate-500">
+                  Memuat status pengajuan...
                 </div>
-              </section>
-
-              <section className="mb-4 rounded-xl border border-slate-200/80 bg-[#DCDCDC] p-4">
-                <h2 className="mb-3 text-xs font-bold text-slate-900">
-                  Claim Details
-                </h2>
-                <div className="mb-3 h-px bg-slate-400/80" />
-
-                <div className="space-y-3">
-                  {claims.map((claim, index) => (
-                    <div
-                      key={claim.id}
-                      className="flex items-start justify-between gap-3"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-slate-900">
-                          {index + 1}. {claim.category}
-                        </p>
-                        <p className="mt-0.5 text-[9px] text-slate-500">
-                          {claim.date} · {claim.description}
-                        </p>
-                        {claim.reference && (
-                          <p className="mt-0.5 text-[9px] text-slate-500">
-                            {claim.reference}
-                          </p>
-                        )}
-                      </div>
-                      <p className="shrink-0 text-[10px] font-bold text-slate-900">
-                        {formatRupiah(claim.amount)}
-                      </p>
-                    </div>
-                  ))}
+              ) : requestsError ? (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">
+                  {requestsError}
                 </div>
-
-                <div className="mt-4 border-t border-slate-400 pt-3">
-                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-900">
-                    <span>Total Reimbursement</span>
-                    <span>{formatRupiah(total)}</span>
-                  </div>
-                </div>
-              </section>
-
-              <section className="mb-5 rounded-xl border border-slate-200/80 bg-[#DCDCDC] p-4">
-                <h2 className="mb-3 text-xs font-bold text-slate-900">
-                  Additional Notes
-                </h2>
-                <div className="mb-3 h-px bg-slate-400/80" />
-
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Enter additional notes..."
-                  rows={3}
-                  className="w-full resize-none rounded-md border border-slate-200 bg-white p-2.5 text-xs outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100"
-                />
-              </section>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setView("claims");
-                    setMessage("");
-                  }}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-1000 text-xs font-bold text-slate-1000 transition hover:bg-slate-50"
-                >
-                  <ChevronLeft size={15} />
-                  Back
-                </button>
-
-                <button
-                  type="button"
-                  onClick={confirmClaim}
-                  disabled={saving || claims.length === 0}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Check size={15} />
-                  {saving ? "Confirming..." : "Confirm Claim"}
-                </button>
-              </div>
-
-              {submitted && (
-                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                  <p className="text-xs font-bold text-emerald-800">
-                    Claim Prepared Successfully
-                  </p>
-                  <p className="mt-1 text-[10px] leading-5 text-emerald-700">
-                    Additional Notes berhasil disimpan ke database. Pengajuan klaim tercatat dengan status PENDING.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNotes("");
-                      setSubmitted(false);
-                      setView("form");
-                      setMessage("");
-                    }}
-                    className="mt-3 text-[11px] font-bold text-emerald-800 underline"
-                  >
-                    Create New Claim
-                  </button>
-                </div>
+              ) : (
+                <ClaimRequestsProgress requests={claimRequests} />
               )}
-            </>
+            </section>
           )}
 
           <footer className="mt-8 border-t border-slate-100 pt-4 text-center">
