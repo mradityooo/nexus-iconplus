@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 
 type TravelRequest = {
-  id: number;
+  id: string;
   destination: string;
   departureDate: string;
   returnDate: string;
@@ -33,8 +32,8 @@ type TravelRequest = {
   status: string;
 };
 
-const formatRupiah = (amount: number) =>
-  "Rp " + amount.toLocaleString("id-ID");
+const formatRupiah = (amount?: number | null) =>
+  "Rp " + (amount ?? 0).toLocaleString("id-ID");
 
 const transportOptions = [
   { name: "Pesawat", icon: Plane },
@@ -44,7 +43,7 @@ const transportOptions = [
 ];
 
 export default function TravelPage() {
-  const [view, setView] = useState<"form" | "list" | "summary">("form");
+  const [view, setView] = useState<"form" | "list">("form");
   const [destination, setDestination] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
@@ -55,7 +54,6 @@ export default function TravelPage() {
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
   const [requests, setRequests] = useState<TravelRequest[]>([]);
-  const [submitted, setSubmitted] = useState(false);
 
   const totalCost = requests.reduce(
     (sum, item) => sum + item.estimatedCost,
@@ -68,7 +66,51 @@ export default function TravelPage() {
   const labelClass =
   "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-  function addTravel(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+  fetchBusinessTravels().catch((error) => {
+    console.error("FETCH BUSINESS TRAVEL ERROR:", error);
+  });
+}, []);
+
+async function fetchBusinessTravels() {
+  const response = await fetch("/api/business-travels", {
+    cache: "no-store",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message || "Gagal mengambil data perjalanan."
+    );
+  }
+
+  const mappedRequests: TravelRequest[] = result.data.map(
+    (item: {
+      id: string;
+      destination: string;
+      departureDate: string;
+      returnDate: string;
+      purpose: string;
+      transportation: string | null;
+      status: string;
+    }) => ({
+      id: item.id,
+      destination: item.destination,
+      departureDate: item.departureDate,
+      returnDate: item.returnDate,
+      purpose: item.purpose,
+      transport: item.transportation ?? "-",
+      estimatedCost: 0,
+      status: item.status,
+    })
+  );
+
+  setRequests(mappedRequests);
+}
+
+
+  async function addTravel(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (returnDate < departureDate) {
@@ -76,29 +118,80 @@ export default function TravelPage() {
       return;
     }
 
-    setRequests((current) => [
-      ...current,
+    try {
+      setMessage("Menyimpan pengajuan...");
+
+      const response = await fetch("/api/business-travels", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          destination: destination.trim(),
+          departureDate,
+          returnDate,
+          purpose: purpose.trim(),
+          transportation: transport,
+          notes: "",
+          facilities: [],
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Gagal menyimpan pengajuan."
+        );
+      }
+
+      setMessage("Pengajuan perjalanan berhasil disimpan.");
+
+      setView("list");
+
+      // Ambil ulang data dari database
+      await fetchBusinessTravels();
+    } catch (error) {
+      console.error("ADD BUSINESS TRAVEL ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menyimpan pengajuan."
+      );
+    }
+  }
+
+
+async function removeTravel(id: string) {
+  try {
+    const response = await fetch(
+      `/api/business-travels?id=${encodeURIComponent(id)}`,
       {
-        id: Date.now(),
-        destination: destination.trim(),
-        departureDate,
-        returnDate,
-        purpose: purpose.trim(),
-        transport,
-        estimatedCost: Number(estimatedCost),
-        status: "Draft",
-      },
-    ]);
+        method: "DELETE",
+      }
+    );
 
-    setMessage("Pengajuan perjalanan berhasil ditambahkan.");
-    setSubmitted(false);
-    setView("list");
-  }
+    const result = await response.json();
 
-  function removeTravel(id: number) {
-    setRequests((current) => current.filter((item) => item.id !== id));
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Gagal menghapus pengajuan.");
+    }
+
+    await fetchBusinessTravels();
+
     setMessage("Pengajuan berhasil dihapus.");
+  } catch (error) {
+    console.error("REMOVE TRAVEL ERROR:", error);
+
+    setMessage(
+      error instanceof Error
+        ? error.message
+        : "Terjadi kesalahan saat menghapus pengajuan."
+    );
   }
+}
+
 
   function resetForm() {
     setDestination("");
@@ -110,7 +203,6 @@ export default function TravelPage() {
     setTravelerCount("1");
     setNotes("");
     setMessage("");
-    setSubmitted(false);
     setView("form");
   }
 
@@ -204,43 +296,30 @@ export default function TravelPage() {
           </section>
 
           {/* Navigation */}
-            <section className="mb-3 rounded-full bg-[#DEDEDE] p-1">
-            <div className="grid grid-cols-3 gap-1">
-                {[
+          <section className="mb-3 rounded-full bg-[#DEDEDE] p-1">
+            <div className="grid grid-cols-2 gap-1">
+              {[
                 { id: "form", label: "New Travel" },
                 { id: "list", label: "My Travel" },
-                { id: "summary", label: "Summary" },
-                ].map((item) => (
+              ].map((item) => (
                 <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                    if (item.id === "summary") {
-                        if (requests.length === 0) {
-                        setMessage(
-                            "Buat pengajuan perjalanan terlebih dahulu."
-                        );
-                        return;
-                        }
-
-                        setMessage("");
-                        setView("summary");
-                    } else {
-                        setView(item.id as "form" | "list");
-                        setMessage("");
-                    }
-                    }}
-                    className={`flex h-9 min-w-0 items-center justify-center rounded-full px-1 text-[10px] font-bold transition-all duration-200 ${
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setView(item.id as "form" | "list");
+                    setMessage("");
+                  }}
+                  className={`flex h-9 items-center justify-center rounded-full px-2 text-[10px] font-bold transition ${
                     view === item.id
-                        ? "bg-white text-black shadow-sm"
-                        : "text-slate-600 hover:bg-white/40"
-                    }`}
+                      ? "bg-white text-black shadow-sm"
+                      : "text-slate-600 hover:bg-white/40"
+                  }`}
                 >
-                    <span className="truncate">{item.label}</span>
+                  {item.label}
                 </button>
-                ))}
+              ))}
             </div>
-            </section>
+          </section>
 
           {message && (
             <div className="mb-4 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs text-sky-800">
@@ -327,7 +406,7 @@ export default function TravelPage() {
                     onChange={(e) => setPurpose(e.target.value)}
                     placeholder="Explain the purpose of your trip..."
                     rows={3}
-                    className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                    className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-xs outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                     required
                   />
                 </div>
@@ -391,15 +470,15 @@ export default function TravelPage() {
                     min="0"
                     value={estimatedCost}
                     onChange={(e) => setEstimatedCost(e.target.value)}
-                    placeholder="Enter estimated travel cost"
+                    // placeholder="Enter estimated travel cost"
                     className={inputClass}
                     required
                   />
-                  {estimatedCost !== "" && (
+                  {/* {estimatedCost !== "" && (
                     <p className="mt-1.5 text-xs font-semibold text-sky-700">
                       {formatRupiah(Number(estimatedCost) || 0)}
                     </p>
-                  )}
+                  )} */}
                 </div>
 
                 <div>
@@ -410,7 +489,6 @@ export default function TravelPage() {
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Additional information (optional)"
                     rows={2}
                     className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                   />
@@ -418,7 +496,7 @@ export default function TravelPage() {
 
                 <button
                   type="submit"
-                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700 active:scale-[0.99]"
+                  className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Plus size={17} />
                   Add Travel Request
@@ -528,107 +606,6 @@ export default function TravelPage() {
                       </div>
                     </article>
                   ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* Summary */}
-          {view === "summary" && (
-            <section className="space-y-4">
-              <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                    <ReceiptText size={20} />
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900">
-                      Travel Summary
-                    </h2>
-                    <p className="text-[10px] text-slate-500">
-                      Overview of your travel requests
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mb-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-3 bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">Total Requests</p>
-                    <p className="mt-1 text-xl font-bold text-slate-900">
-                      {requests.length}
-                    </p>
-                  </div>
-                  <div className="rounded-3 bg-sky-50 p-3">
-                    <p className="text-xs text-sky-700">Total Est. Cost</p>
-                    <p className="mt-1 text-sm font-bold text-sky-800">
-                      {formatRupiah(totalCost)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {requests.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className="border-t border-slate-100 pt-3"
-                    >
-                      <p className="text-xs font-bold text-slate-900">
-                        {index + 1}. {item.destination}
-                      </p>
-                      <p className="mt-1 text-[11px] text-slate-500">
-                        {item.departureDate} – {item.returnDate}
-                      </p>
-                      <p className="mt-1 text-xs font-semibold text-slate-800">
-                        {formatRupiah(item.estimatedCost)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 text-xs leading-5 text-amber-800">
-                This is a local prototype. Travel requests are not yet sent to
-                an approval system or database.
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setView("list")}
-                  className="flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50"
-                >
-                  <ChevronLeft size={16} />
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSubmitted(true);
-                    setMessage("");
-                  }}
-                  className="flex h-11 items-center justify-center gap-2 rounded-xl bg-sky-600 text-sm font-bold text-white hover:bg-sky-700"
-                >
-                  <Check size={16} />
-                  Confirm
-                </button>
-              </div>
-
-              {submitted && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                  <p className="text-sm font-bold text-emerald-800">
-                    Summary confirmed
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-emerald-700">
-                    Confirmation is simulated. No request has been sent to a
-                    server or approval workflow.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="mt-3 text-xs font-bold text-emerald-800 underline"
-                  >
-                    Create New Travel
-                  </button>
                 </div>
               )}
             </section>

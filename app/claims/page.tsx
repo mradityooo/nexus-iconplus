@@ -1,7 +1,7 @@
 
 "use client";
 
-import { use, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -23,16 +23,41 @@ import {
 } from "lucide-react";
 
 type Claim = {
-  id: number;
+  id: string;
   category: string;
   date: string;
   reference: string;
   description: string;
   amount: number;
+  receiptUrl?: string | null;
   fuelType?: string;
   liters?: number;
   pricePerLiter?: number;
   stationLocation?: string;
+  status?: string;
+};
+
+type ClaimApiResponse = {
+  id: string;
+  category: string;
+  transactionDate: string;
+  reference: string | null;
+  description: string;
+  amount: string | number;
+  fuelType: string | null;
+  liters: string | number | null;
+  pricePerLiter: string | number | null;
+  stationLocation: string | null;
+  status: string;
+  receiptUrl: string | null;
+};
+
+type EmployeeProfile = {
+  fullName: string;
+  position: string | null;
+  employeeCode: string;
+  email: string | null;
+  department: string | null;
 };
 
 const categories = [
@@ -42,6 +67,22 @@ const categories = [
   { name: "Fuel", icon: Fuel },
   { name: "Others", icon: MoreHorizontal },
 ];
+
+const categoryToEnum: Record<string, string> = {
+  "Car Wash": "CAR_WASH",
+  Meals: "MEALS",
+  "Toll Fee": "TOLL_FEE",
+  Fuel: "FUEL",
+  Others: "OTHERS",
+};
+
+const enumToCategory: Record<string, string> = {
+  CAR_WASH: "Car Wash",
+  MEALS: "Meals",
+  TOLL_FEE: "Toll Fee",
+  FUEL: "Fuel",
+  OTHERS: "Others",
+};
 
 const formatRupiah = (amount: number) =>
   "Rp. " + amount.toLocaleString("id-ID");
@@ -59,56 +100,249 @@ export default function ReimbursementPage() {
   const [pricePerLiter, setPricePerLiter] = useState("");
   const [notes, setNotes] = useState("");
   const [claims, setClaims] = useState<Claim[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  const [employeeProfile, setEmployeeProfile] =
+  useState<EmployeeProfile | null>(null);
+
+  useEffect(() => {
+  async function fetchEmployeeProfile() {
+    try {
+      const response = await fetch("/api/claims/profile");
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(
+          result.message || "Gagal mengambil informasi karyawan"
+        );
+      }
+
+      const data: EmployeeProfile = await response.json();
+      setEmployeeProfile(data);
+    } catch (error) {
+      console.error("FETCH EMPLOYEE PROFILE ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengambil informasi karyawan"
+      );
+    }
+  }
+
+  fetchEmployeeProfile();
+  }, []);
+
+  useEffect(() => {
+  async function fetchClaims() {
+    try {
+      setLoading(true);
+
+      const response = await fetch("/api/claims");
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Gagal mengambil data klaim");
+      }
+
+      const data = await response.json();
+
+      const formattedClaims: Claim[] = (data as ClaimApiResponse[]).map((claim) => ({
+        id: claim.id,
+        category: enumToCategory[claim.category] || claim.category,
+        date: String(claim.transactionDate).slice(0, 10),
+        reference: claim.reference || "",
+        description: claim.description,
+        amount: Number(claim.amount),
+        fuelType: claim.fuelType || undefined,
+        liters: claim.liters != null ? Number(claim.liters) : undefined,
+        pricePerLiter:
+          claim.pricePerLiter != null
+            ? Number(claim.pricePerLiter)
+            : undefined,
+        stationLocation: claim.stationLocation || undefined,
+        status: claim.status,
+        receiptUrl: claim.receiptUrl,
+      }));
+
+      setClaims(formattedClaims);
+    } catch (error) {
+      console.error("FETCH CLAIMS ERROR:", error);
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengambil data klaim"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchClaims();
+  }, []);
 
   const total = claims.reduce((sum, claim) => sum + claim.amount, 0);
   const fuelTotal =
     (Number(liters) || 0) * (Number(pricePerLiter) || 0);
-  
+
 
   const inputClass =
     "h-10 w-full rounded-md border border-slate-200 bg-white px-2.5 text-xs text-slate-800 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100";
 
   const labelClass = "mb-1.5 block text-[11px] font-semibold text-slate-700";
 
-  function addClaim(e: React.FormEvent<HTMLFormElement>) {
+  async function addClaim(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-       setClaims((current) => [
-          ...current,
-          {
-            id: Date.now(),
-            category,
-            date,
-            reference,
-            description: description.trim(),
-            amount: category === "Fuel" ? fuelTotal : Number(amount),
-            stationLocation:
-              category === "Fuel" ? stationLocation.trim() : undefined,
-            fuelType: category === "Fuel" ? fuelType : undefined,
-            liters: category === "Fuel" ? Number(liters) : undefined,
-            pricePerLiter:
-              category === "Fuel" ? Number(pricePerLiter) : undefined,
-            
-          },
-        ]);
+    try {
+      setSaving(true);
+      setMessage("");
 
-    setDate("");
-    setReference("");
-    setDescription("");
-    setAmount("");
-    setFuelType("");
-    setLiters("");
-    setPricePerLiter("");
-    setStationLocation("");
-    setMessage("Claim berhasil ditambahkan.");
-    setView("claims");
+      const claimAmount =
+        category === "Fuel" ? fuelTotal : Number(amount);
+
+      // 1. Simpan data klaim ke database
+      const response = await fetch("/api/claims", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          category: categoryToEnum[category],
+          transactionDate: date,
+          reference: reference.trim() || null,
+          description: description.trim(),
+          amount: claimAmount,
+          fuelType: category === "Fuel" ? fuelType : null,
+          liters: category === "Fuel" ? Number(liters) : null,
+          pricePerLiter:
+            category === "Fuel" ? Number(pricePerLiter) : null,
+          stationLocation:
+            category === "Fuel" ? stationLocation.trim() : null,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal menyimpan klaim");
+      }
+
+      const savedClaim = result.data;
+
+      // 2. Upload bukti transaksi jika file dipilih
+      let uploadWarning = "";
+
+      if (receiptFile) {
+        const formData = new FormData();
+
+        formData.append("file", receiptFile);
+        formData.append("claimId", savedClaim.id);
+
+        const uploadResponse = await fetch("/api/claims/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const uploadResult = await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+          uploadWarning =
+            uploadResult.message || "Bukti transaksi gagal diunggah.";
+        }
+      }
+
+      // 3. Masukkan klaim ke tampilan
+      const newClaim: Claim = {
+        id: savedClaim.id,
+        category:
+          enumToCategory[savedClaim.category] || savedClaim.category,
+        date: String(savedClaim.transactionDate).slice(0, 10),
+        reference: savedClaim.reference || "",
+        description: savedClaim.description,
+        amount: Number(savedClaim.amount),
+        fuelType: savedClaim.fuelType || undefined,
+        liters:
+          savedClaim.liters != null
+            ? Number(savedClaim.liters)
+            : undefined,
+        pricePerLiter:
+          savedClaim.pricePerLiter != null
+            ? Number(savedClaim.pricePerLiter)
+            : undefined,
+        stationLocation: savedClaim.stationLocation || undefined,
+        status: savedClaim.status,
+      };
+
+      setClaims((current) => [newClaim, ...current]);
+
+      // 4. Reset form
+      setDate("");
+      setReference("");
+      setDescription("");
+      setAmount("");
+      setFuelType("");
+      setLiters("");
+      setPricePerLiter("");
+      setStationLocation("");
+      setReceiptFile(null);
+
+      setMessage(
+        uploadWarning
+          ? `Claim berhasil disimpan, tetapi ${uploadWarning}`
+          : "Claim dan bukti transaksi berhasil disimpan."
+      );
+
+      setView("claims");
+    } catch (error) {
+      console.error("ADD CLAIM ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menyimpan klaim"
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function removeClaim(id: number) {
-    setClaims((current) => current.filter((claim) => claim.id !== id));
-    setMessage("Claim berhasil dihapus.");
+  async function removeClaim(id: string) {
+    try {
+      setMessage("");
+
+      const response = await fetch("/api/claims", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal menghapus klaim");
+      }
+
+      setClaims((current) =>
+        current.filter((claim) => claim.id !== id)
+      );
+
+      setMessage("Claim berhasil dihapus dari database.");
+    } catch (error) {
+      console.error("REMOVE CLAIM ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menghapus klaim"
+      );
+    }
   }
 
   function openSummary() {
@@ -119,6 +353,40 @@ export default function ReimbursementPage() {
 
     setMessage("");
     setView("summary");
+  }
+
+  async function confirmClaim() {
+    try {
+      setSaving(true);
+      setMessage("");
+
+      const response = await fetch("/api/claims/notes", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notes }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal mengonfirmasi klaim");
+      }
+
+      setSubmitted(true);
+      setMessage("Pengajuan klaim berhasil dikonfirmasi.");
+    } catch (error) {
+      console.error("CONFIRM CLAIM ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat mengonfirmasi klaim"
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -289,7 +557,7 @@ export default function ReimbursementPage() {
                     />
                   </div>
 
-                  
+
 {category === "Fuel" && (
   <>
           <div>
@@ -385,6 +653,60 @@ export default function ReimbursementPage() {
             </div>
           )}
 
+            <div>
+              <label className={labelClass} htmlFor="receipt">
+                Transaction Receipt
+              </label>
+
+              <input
+                id="receipt"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+
+                  if (!file) {
+                    setReceiptFile(null);
+                    return;
+                  }
+
+                  const allowedTypes = [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp",
+                    "application/pdf",
+                  ];
+
+                  if (!allowedTypes.includes(file.type)) {
+                    setMessage("Format file harus JPG, PNG, WebP, atau PDF.");
+                    e.target.value = "";
+                    setReceiptFile(null);
+                    return;
+                  }
+
+                  if (file.size > 5 * 1024 * 1024) {
+                    setMessage("Ukuran file maksimal 5 MB.");
+                    e.target.value = "";
+                    setReceiptFile(null);
+                    return;
+                  }
+
+                  setReceiptFile(file);
+                  setMessage("");
+                }}
+                className="w-full rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-[10px] file:font-semibold file:text-blue-600"
+              />
+
+              <p className="mt-1 text-[9px] text-slate-500">
+                JPG, PNG, WebP, atau PDF. Maksimal 5 MB.
+              </p>
+
+              {receiptFile && (
+                <p className="mt-2 text-[10px] font-medium text-green-700">
+                  File dipilih: {receiptFile.name}
+                </p>
+              )}
+            </div>
 
                   <button
                     type="submit"
@@ -419,7 +741,13 @@ export default function ReimbursementPage() {
 
                 <div className="mb-1 h-px bg-slate-300" />
 
-                {claims.length === 0 ? (
+                {loading ? (
+                <div className="py-10 text-center">
+                  <p className="text-xs text-slate-500">
+                    Loading claims...
+                  </p>
+                </div>
+              ) : claims.length === 0 ? (
                   <div className="py-10 text-center">
                     <ReceiptText
                       size={30}
@@ -450,6 +778,17 @@ export default function ReimbursementPage() {
                               </p>
                             )}
                           </div>
+                          {claim.receiptUrl && (
+                            <a
+                              href={`/api/claims/${claim.id}/receipt`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1.5 text-[10px] font-semibold text-blue-600 transition hover:bg-blue-100"
+                            >
+                              <ReceiptText size={12} />
+                              View Receipt
+                            </a>
+                          )}
 
                           <p className="shrink-0 text-[11px] font-bold text-slate-900">
                             {formatRupiah(claim.amount)}
@@ -479,15 +818,12 @@ export default function ReimbursementPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  type="button"
-                  onClick={() => {
-                    setView("form");
-                    setMessage("");
-                  }}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                  type="submit"
+                  disabled={saving}
+                  className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Plus size={14} />
-                  Add Claim
+                  <Plus size={15} />
+                  {saving ? "Saving..." : "Add Claim"}
                 </button>
 
                 <button
@@ -512,20 +848,20 @@ export default function ReimbursementPage() {
                 <div className="mb-3 h-px bg-slate-400/80" />
 
                 <div className="grid grid-cols-2 gap-x-3 gap-y-3">
-                  {[
-                    ["Employee Name", "Employee Name"],
-                    ["Position", "Employee"],
-                    ["Employee ID", "NEXUS-0001"],
-                    ["Email", "employee@example.com"],
-                    ["Department", "Operations"],
-                  ].map(([label, value]) => (
-                    <div key={label} className="min-w-0">
-                      <p className="text-[9px] text-slate-500">{label}</p>
-                      <p className="mt-0.5 break-words text-[10px] font-semibold text-slate-800">
-                        {value}
-                      </p>
-                    </div>
-                  ))}
+                {[
+                  ["Employee Name", employeeProfile?.fullName || "-"],
+                  ["Position", employeeProfile?.position || "-"],
+                  ["Employee ID", employeeProfile?.employeeCode || "-"],
+                  ["Email", employeeProfile?.email || "-"],
+                  ["Department", employeeProfile?.department || "-"],
+                ].map(([label, value]) => (
+                  <div key={label} className="min-w-0">
+                    <p className="text-[9px] text-slate-500">{label}</p>
+                    <p className="mt-0.5 break-words text-[10px] font-semibold text-slate-800">
+                      {value}
+                    </p>
+                  </div>
+                ))}
                 </div>
               </section>
 
@@ -599,14 +935,12 @@ export default function ReimbursementPage() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setSubmitted(true);
-                    setMessage("");
-                  }}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700"
+                  onClick={confirmClaim}
+                  disabled={saving || claims.length === 0}
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Check size={15} />
-                  Confirm Claim
+                  {saving ? "Confirming..." : "Confirm Claim"}
                 </button>
               </div>
 
@@ -616,15 +950,15 @@ export default function ReimbursementPage() {
                     Claim Prepared Successfully
                   </p>
                   <p className="mt-1 text-[10px] leading-5 text-emerald-700">
-                    Simulasi berhasil. Data belum dikirim atau disimpan ke server.
+                    Additional Notes berhasil disimpan ke database. Pengajuan klaim tercatat dengan status PENDING.
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      setClaims([]);
                       setNotes("");
                       setSubmitted(false);
                       setView("form");
+                      setMessage("");
                     }}
                     className="mt-3 text-[11px] font-bold text-emerald-800 underline"
                   >

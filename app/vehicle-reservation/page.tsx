@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -17,43 +17,22 @@ import {
 } from "lucide-react";
 
 type Vehicle = {
-  id: number;
+  id: string;
+  vehicleCode: string;
   name: string;
-  plate: string;
-  color: string;
-  available: boolean;
+  plateNumber: string;
+  vehicleType: string | null;
+  seatCapacity: number;
+  status: "AVAILABLE" | "MAINTENANCE" | "INACTIVE";
 };
 
-const vehicles: Vehicle[] = [
-  {
-    id: 1,
-    name: "Mitsubishi Xpander",
-    plate: "BE 2521 ALG",
-    color: "White",
-    available: true,
-  },
-  {
-    id: 2,
-    name: "Toyota Avanza",
-    plate: "BE 2210 AI",
-    color: "White",
-    available: false,
-  },
-  {
-    id: 3,
-    name: "Mitsubishi Xpander",
-    plate: "BE 1345 AAD",
-    color: "Black",
-    available: false,
-  },
-  {
-    id: 4,
-    name: "Toyota Avanza",
-    plate: "BE 2642 ABA",
-    color: "White",
-    available: true,
-  },
-];
+type Driver = {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  licenseNumber: string | null;
+  status: "ACTIVE" | "INACTIVE";
+};
 
 function getTodayLocal() {
   const now = new Date();
@@ -71,14 +50,27 @@ export default function VehicleReservationPage() {
   const [destination, setDestination] = useState("");
   const [selectedDriver, setSelectedDriver] = useState("");
   const [searched, setSearched] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<number | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  // Data kendaraan dan driver dari database
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
 
+  // Status loading dan error
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
+  const [loadingDrivers, setLoadingDrivers] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
-  
+  const [usageTime, setUsageTime] = useState("08:00");
+  const [returnTime, setReturnTime] = useState("17:00");
+  const [purpose, setPurpose] = useState("");
+
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
   const availableVehicles = vehicles.filter((vehicle) => {
-    return vehicle.available;
+    return vehicle.status === "AVAILABLE";
   });
 
   const displayedVehicles = searched
@@ -101,9 +93,83 @@ export default function VehicleReservationPage() {
     setSelectedVehicle(null);
   }
 
-  function handleReservation() {
-    if (!selectedVehicleData) return;
-    setShowConfirmation(true);
+  async function handleReservation() {
+    if (!selectedVehicleData) {
+      setSubmitError("Silakan pilih kendaraan terlebih dahulu.");
+      return;
+    }
+
+    if (!usageDate || !returnDate || !usageTime || !returnTime) {
+      setSubmitError("Tanggal dan waktu reservasi wajib diisi.");
+      return;
+    }
+
+    if (!destination.trim() || !purpose.trim()) {
+      setSubmitError("Destination dan Purpose wajib diisi.");
+      return;
+    }
+
+    if (driverType === "with" && !selectedDriver) {
+      setSubmitError("Silakan pilih driver terlebih dahulu.");
+      return;
+    }
+
+    // Menggunakan zona waktu Indonesia (UTC+7)
+    const startAt = new Date(`${usageDate}T${usageTime}:00+07:00`);
+    const endAt = new Date(`${returnDate}T${returnTime}:00+07:00`);
+
+    if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
+      setSubmitError("Tanggal atau waktu tidak valid.");
+      return;
+    }
+
+    if (startAt <= new Date()) {
+      setSubmitError("Waktu penggunaan harus berada di masa depan.");
+      return;
+    }
+
+    if (endAt <= startAt) {
+      setSubmitError("Waktu pengembalian harus setelah waktu penggunaan.");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          vehicleId: selectedVehicleData.id,
+          driverId: driverType === "with" ? selectedDriver : null,
+          startAt: startAt.toISOString(),
+          endAt: endAt.toISOString(),
+          destination: destination.trim(),
+          purpose: purpose.trim(),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Gagal mengajukan reservasi kendaraan."
+        );
+      }
+
+      setShowConfirmation(true);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat mengajukan reservasi."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const inputClass =
@@ -111,6 +177,48 @@ export default function VehicleReservationPage() {
 
   const labelClass =
     "mb-1.5 block text-[11px] font-semibold text-slate-700";
+
+  useEffect(() => {
+    async function fetchReservationData() {
+      try {
+        setFetchError("");
+
+        const [vehicleResponse, driverResponse] = await Promise.all([
+          fetch("/api/vehicles"),
+          fetch("/api/drivers"),
+        ]);
+
+        const vehicleResult = await vehicleResponse.json();
+        const driverResult = await driverResponse.json();
+
+        if (!vehicleResponse.ok) {
+          throw new Error(
+            vehicleResult.message || "Gagal mengambil data kendaraan."
+          );
+        }
+
+        if (!driverResponse.ok) {
+          throw new Error(
+            driverResult.message || "Gagal mengambil data driver."
+          );
+        }
+
+        setVehicles(vehicleResult.data ?? []);
+        setDrivers(driverResult.data ?? []);
+      } catch (error) {
+        setFetchError(
+          error instanceof Error
+            ? error.message
+            : "Terjadi kesalahan saat mengambil data."
+        );
+      } finally {
+        setLoadingVehicles(false);
+        setLoadingDrivers(false);
+      }
+    }
+
+    fetchReservationData();
+  }, []);
 
   return (
     <main
@@ -204,105 +312,115 @@ export default function VehicleReservationPage() {
 
             <div className="mb-3 h-px bg-slate-400/80" />
 
-            <form onSubmit={handleSearch} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass} htmlFor="usageDate">
-                    Usage Date <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    id="usageDate"
-                    type="date"
-                    value={usageDate}
-                    min={undefined}
-                    onFocus={(e) => {
-                    e.currentTarget.min = getTodayLocal();
-                    }}
-                    onChange={(e) => setUsageDate(e.target.value)}
-                    className={inputClass}
-                    required
-                  />
-                </div>
 
-                <div>
-                  <label className={labelClass} htmlFor="returnDate">
-                    Return Date <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    id="returnDate"
-                    type="date"
-                    value={returnDate}
-                    min={usageDate || undefined}
-                    onFocus={(e) => {
-                    e.currentTarget.min = usageDate || getTodayLocal();
-                    }}
-                    onChange={(e) => setReturnDate(e.target.value)}
-                    className={inputClass}
-                    required
-                  />
-                </div>
-              </div>
+{/* Date and Time */}
+<div className="grid grid-cols-2 gap-x-3 gap-y-5">
+  <div>
+    <label className={labelClass} htmlFor="usageDate">
+      Usage Date <span className="text-red-600">*</span>
+    </label>
+    <input
+      id="usageDate"
+      type="date"
+      value={usageDate}
+      min={getTodayLocal()}
+      onChange={(e) => setUsageDate(e.target.value)}
+      className={inputClass}
+      required
+    />
+  </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <label className={labelClass} htmlFor="destination">
-                    Destination <span className="text-red-600">*</span>
-                    </label>
+  <div>
+    <label className={labelClass} htmlFor="returnDate">
+      Return Date <span className="text-red-600">*</span>
+    </label>
+    <input
+      id="returnDate"
+      type="date"
+      value={returnDate}
+      min={usageDate || getTodayLocal()}
+      onChange={(e) => setReturnDate(e.target.value)}
+      className={inputClass}
+      required
+    />
+  </div>
+</div>
 
-                    <div className="relative">
-                    <MapPin
-                        size={13}
-                        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                        id="destination"
-                        type="text"
-                        value={destination}
-                        onChange={(e) => setDestination(e.target.value)}
-                        placeholder="Enter location"
-                        className={`${inputClass} pl-7`}
-                        required
-                    />
-                    </div>
-                </div>
+{/* Destination and Driver */}
+<div className="grid grid-cols-2 gap-x-3 gap-y-5">
+  <div>
+    <label className={labelClass} htmlFor="destination">
+      Destination <span className="text-red-600">*</span>
+    </label>
 
-                {driverType === "with" && (
-                    <div>
-                    <label className={labelClass} htmlFor="driver">
-                        Select Driver <span className="text-red-600">*</span>
-                    </label>
+    <div className="relative">
+      <MapPin
+        size={13}
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+      />
+      <input
+        id="destination"
+        type="text"
+        value={destination}
+        onChange={(e) => setDestination(e.target.value)}
+        placeholder="Enter location"
+        className={`${inputClass} pl-7`}
+        required
+      />
+    </div>
+  </div>
 
-                    <div className="relative">
-                        <select
-                        id="driver"
-                        value={selectedDriver}
-                        onChange={(e) => setSelectedDriver(e.target.value)}
-                        required
-                        className={`${inputClass} appearance-none pr-7`}
-                        >
-                        <option value="">Choose driver</option>
-                        <option value="driver-1">Driver 01</option>
-                        <option value="driver-2">Driver 02</option>
-                        <option value="driver-3">Driver 03</option>
-                        </select>
+  {driverType === "with" && (
+    <div>
+      <label className={labelClass} htmlFor="driver">
+        Select Driver <span className="text-red-600">*</span>
+      </label>
 
-                        <ChevronDown
-                        size={14}
-                        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-                        />
-                    </div>
-                    </div>
-                )}
-                </div>
+      <div className="relative">
+        <select
+          id="driver"
+          value={selectedDriver}
+          onChange={(e) => setSelectedDriver(e.target.value)}
+          required
+          className={`${inputClass} appearance-none pr-7`}
+        >
+          <option value="">Choose driver</option>
 
-              <button
-                type="submit"
-                className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] active:scale-[0.99]"
-              >
-                <Search size={14} />
-                Find Available Vehicle
-              </button>
-            </form>
+          {drivers
+            .filter((driver) => driver.status === "ACTIVE")
+            .map((driver) => (
+              <option key={driver.id} value={driver.id}>
+                {driver.fullName}
+              </option>
+            ))}
+        </select>
+
+        <ChevronDown
+          size={14}
+          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+        />
+      </div>
+    </div>
+  )}
+</div>
+
+{/* Purpose */}
+<div>
+  <label className={labelClass} htmlFor="purpose">
+    Purpose <span className="text-red-600">*</span>
+  </label>
+
+  <textarea
+    id="purpose"
+    value={purpose}
+    onChange={(e) => setPurpose(e.target.value)}
+    placeholder="Enter the purpose of your trip"
+    className="min-h-20 w-full resize-none rounded-md border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100"
+    maxLength={1000}
+    required
+  />
+</div>
+
           </section>
 
           {/* Vehicle list */}
@@ -335,6 +453,18 @@ export default function VehicleReservationPage() {
 
             <div className="mb-1 h-px bg-slate-300" />
 
+            {loadingVehicles && (
+              <p className="py-6 text-center text-xs text-slate-500">
+                Loading vehicle data...
+              </p>
+            )}
+
+            {fetchError && (
+              <p className="py-4 text-center text-xs text-red-600">
+                {fetchError}
+              </p>
+            )}
+
             <div className="divide-y divide-slate-100">
               {displayedVehicles.map((vehicle) => {
                 const isSelected = selectedVehicle === vehicle.id;
@@ -343,12 +473,12 @@ export default function VehicleReservationPage() {
                   <button
                     key={vehicle.id}
                     type="button"
-                    disabled={!vehicle.available}
+                    disabled={vehicle.status !== "AVAILABLE"}
                     onClick={() => setSelectedVehicle(vehicle.id)}
                     className={`flex w-full items-center gap-3 rounded-lg px-1.5 py-3 text-left transition ${
                       isSelected
                         ? "bg-red-50 ring-1 ring-red-200"
-                        : vehicle.available
+                        : vehicle.status === "AVAILABLE"
                           ? "hover:bg-slate-50"
                           : "cursor-not-allowed opacity-70"
                     }`}
@@ -369,16 +499,15 @@ export default function VehicleReservationPage() {
                         {vehicle.name}
                       </p>
                       <p className="mt-0.5 text-[10px] text-slate-500">
-                        {vehicle.plate} · {vehicle.color}
+                        {vehicle.plateNumber} · {vehicle.vehicleType ?? "Operational Vehicle"}
                       </p>
                       <p
                         className={`mt-1 text-[9px] font-semibold ${
-                          vehicle.available
+                          vehicle.status === "AVAILABLE"
                             ? "text-emerald-600"
                             : "text-red-500"
                         }`}
                       >
-                        {vehicle.available ? "Available" : "Unavailable"}
                       </p>
                     </div>
 
@@ -386,7 +515,7 @@ export default function VehicleReservationPage() {
                       className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full ${
                         isSelected
                           ? "bg-red-600 text-white"
-                          : vehicle.available
+                          : vehicle.status === "AVAILABLE"
                             ? "border-2 border-emerald-500 bg-white"
                             : "bg-red-500"
                       }`}
@@ -430,7 +559,7 @@ export default function VehicleReservationPage() {
                     {selectedVehicleData.name}
                   </p>
                   <p className="mt-0.5 text-[10px] text-slate-500">
-                    {selectedVehicleData.plate} · {selectedVehicleData.color}
+                    {selectedVehicleData.plateNumber} · {selectedVehicleData.vehicleType ?? "Operational Vehicle"}
                   </p>
                   <p className="mt-2 text-[10px] text-slate-600">
                     {destination} · {usageDate} to {returnDate}
@@ -438,14 +567,21 @@ export default function VehicleReservationPage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleReservation}
-                className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700 active:scale-[0.99]"
-              >
-                Confirm Reservation
-                <Check size={15} />
-              </button>
+            {submitError && (
+              <p className="mb-3 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+                {submitError}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={handleReservation}
+              disabled={submitting}
+              className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-600 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "Submitting..." : "Confirm Reservation"}
+              {!submitting && <Check size={15} />}
+            </button>
             </section>
           )}
 
@@ -474,12 +610,12 @@ export default function VehicleReservationPage() {
               id="reservation-confirmation-title"
               className="mt-4 text-center text-lg font-bold text-slate-900"
             >
-              Reservation Prepared
+              Reservation Submitted
             </h2>
 
             <p className="mt-2 text-center text-xs leading-5 text-slate-500">
-              Kendaraan berhasil dipilih pada prototype. Data ini belum
-              disimpan ke database atau dikirim untuk persetujuan.
+             Reservasi kendaraan berhasil diajukan dan tersimpan.
+             Pengajuan kamu sedang menunggu persetujuan.
             </p>
 
             <div className="mt-4 space-y-3 rounded-xl bg-slate-50 p-3.5 text-xs">
@@ -492,7 +628,7 @@ export default function VehicleReservationPage() {
               <div className="flex justify-between gap-3">
                 <span className="text-slate-500">License Plate</span>
                 <span className="font-semibold text-slate-800">
-                  {selectedVehicleData.plate}
+                  {selectedVehicleData.plateNumber}
                 </span>
               </div>
               <div className="flex justify-between gap-3">
@@ -536,4 +672,3 @@ export default function VehicleReservationPage() {
     </main>
   );
 }
-

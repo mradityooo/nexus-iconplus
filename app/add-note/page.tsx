@@ -118,6 +118,7 @@ const formatDate = (value: string) => {
 
 export default function AddNotePage() {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
+  const [notesLoaded, setNotesLoaded] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<
     "Semua" | "Aktif" | "Selesai"
@@ -137,7 +138,8 @@ export default function AddNotePage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Load saved notes from browser storage
-  useEffect(() => {
+useEffect(() => {
+  const timer = window.setTimeout(() => {
     try {
       const saved = localStorage.getItem("nexus-personal-notes");
 
@@ -150,20 +152,29 @@ export default function AddNotePage() {
       }
     } catch {
       console.error("Gagal membaca catatan tersimpan.");
+    } finally {
+      setNotesLoaded(true);
     }
-  }, []);
+  }, 0);
+
+  return () => window.clearTimeout(timer);
+}, []);
+
 
   // Save notes whenever the list changes
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "nexus-personal-notes",
-        JSON.stringify(notes)
-      );
-    } catch {
-      console.error("Gagal menyimpan catatan.");
-    }
-  }, [notes]);
+useEffect(() => {
+  if (!notesLoaded) return;
+
+  try {
+    localStorage.setItem(
+      "nexus-personal-notes",
+      JSON.stringify(notes)
+    );
+  } catch {
+    console.error("Gagal menyimpan catatan.");
+  }
+}, [notes, notesLoaded]);
+
 
   const activeCount = notes.filter(
     (note) => !note.completed

@@ -19,58 +19,87 @@ export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const [name, setName] = useState("");
+  const [employeeCode, setEmployeeCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  
-async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-  e.preventDefault();
-  setError("");
 
-  if (mode === "signin") {
-    if (password !== confirmPassword) {
-      setError("Konfirmasi password tidak cocok.");
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (mode === "signin") {
+      if (password !== confirmPassword) {
+        setError("Konfirmasi password tidak cocok.");
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            employeeCode,
+            email,
+            password,
+            confirmPassword,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.message || "Registrasi gagal.");
+          return;
+        }
+
+        setSuccess(data.message || "Registrasi berhasil. Silakan login.");
+
+        setMode("login");
+        setEmployeeCode("");
+        setPassword("");
+        setConfirmPassword("");
+      } catch {
+        setError("Tidak dapat terhubung ke server. Silakan coba lagi.");
+      } finally {
+        setIsLoading(false);
+      }
+
       return;
     }
 
-    setError("Fitur registrasi belum tersedia.");
-    return;
-  }
+    try {
+      setIsLoading(true);
 
-  try {
-    setIsLoading(true);
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: "/",
+      });
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl: "/",
-    });
+      if (result?.error) {
+        setError("Email atau password salah.");
+        return;
+      }
 
-    console.log("[LOGIN RESULT]", {
-      error: result?.error ?? null,
-      status: result?.status ?? null,
-      url: result?.url ?? null,
-    });
-
-    if (result?.error) {
-      setError("Email atau password salah.");
-      return;
+      if (result?.url) {
+        window.location.href = result.url;
+      }
+    } catch {
+      setError("Terjadi kesalahan saat login. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
     }
-
-    if (result?.url) {
-      window.location.href = result.url;
-    }
-  } catch {
-    setError("Terjadi kesalahan saat login. Silakan coba lagi.");
-  } finally {
-    setIsLoading(false);
   }
-}
-
 
   return (
     
@@ -134,32 +163,33 @@ async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nama hanya muncul saat Sign In */}
-          {mode === "signin" && (
-            <div>
-              <label
-                htmlFor="name"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Full Name
-              </label>
 
-              <div className="relative">
-                <UserRound className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+        {/* Employee ID hanya muncul saat Sign In */}
+        {mode === "signin" && (
+          <div>
+            <label
+              htmlFor="employeeCode"
+              className="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Employee ID
+            </label>
 
-                <input
-                  id="name"
-                  type="text"
-                  autoComplete="name"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
-                />
-              </div>
+            <div className="relative">
+              <UserRound className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+              <input
+                id="employeeCode"
+                type="text"
+                autoComplete="off"
+                placeholder="Enter your Employee ID"
+                value={employeeCode}
+                onChange={(e) => setEmployeeCode(e.target.value.toUpperCase())}
+                required
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#0095DA] focus:ring-4 focus:ring-[#0095DA]/10"
+              />
             </div>
-          )}
+          </div>
+        )}
 
           {/* Email */}
           <div>
@@ -276,7 +306,17 @@ async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
             </div>
           )}
 
-          {/* Pesan validasi */}
+          {/* Pesan berhasil */}
+          {success && (
+            <p
+              role="status"
+              className="rounded-lg border border-green-100 bg-green-50 px-3 py-2 text-sm text-green-700"
+            >
+              {success}
+            </p>
+          )}
+
+          {/* Pesan error */}
           {error && (
             <p
               role="alert"
