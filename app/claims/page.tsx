@@ -1,6 +1,7 @@
-
 "use client";
 
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -131,6 +132,107 @@ function ClaimRequestsProgress({
 }: {
   requests: ClaimRequestProgress[];
 }) {
+
+async function downloadRequestPdf(request: ClaimRequestProgress) {
+  const doc = new jsPDF();
+
+  const formatPdfDate = (value: string) =>
+    new Date(value).toLocaleString("id-ID");
+
+  doc.setFontSize(16);
+  doc.text("RINGKASAN PENGAJUAN KLAIM", 14, 18);
+
+  doc.setFontSize(10);
+  doc.text(`Nomor pengajuan: ${request.requestNumber}`, 14, 27);
+  doc.text(`Tanggal pengajuan: ${formatPdfDate(request.createdAt)}`, 14, 33);
+  doc.text(
+    `Status: ${requestStatusLabels[request.status] ?? request.status}`,
+    14,
+    39
+  );
+  doc.text(
+    `Total: ${formatRupiah(Number(request.totalAmount))}`,
+    14,
+    45
+  );
+
+  autoTable(doc, {
+    startY: 53,
+    head: [["No.", "Kategori", "Tanggal transaksi", "Deskripsi", "Nominal"]],
+    body: request.claims.map((claim, index) => [
+      String(index + 1),
+      claim.category,
+      new Date(claim.transactionDate).toLocaleDateString("id-ID"),
+      claim.description,
+      formatRupiah(Number(claim.amount)),
+    ]),
+    styles: { fontSize: 8, cellPadding: 2.5 },
+    headStyles: { fillColor: [7, 86, 165] },
+  });
+
+  const reviewRows = reviewStages.map((stage) => {
+    const review = request.reviews.find(
+      (item) => item.stage === stage.stage
+    );
+
+    const status = review
+      ? review.decision === "APPROVED"
+        ? "Disetujui"
+        : "Ditolak"
+      : request.status === `PENDING_${stage.stage}`
+        ? "Sedang diperiksa"
+        : request.status === "REJECTED"
+          ? "Tidak dilanjutkan"
+          : "Menunggu pemeriksaan";
+
+    return [
+      stage.label,
+      status,
+      review ? formatPdfDate(review.createdAt) : "-",
+      review?.note || "-",
+    ];
+  });
+
+  reviewRows.push([
+    "Pencairan",
+    request.status === "PAID"
+      ? "Selesai / cair"
+      : request.status === "PROCESSING_PAYMENT"
+        ? "Menunggu pencairan"
+        : "-",
+    "-",
+    "-",
+  ]);
+
+  const tableEndY =
+    (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable
+      ?.finalY ?? 53;
+
+  doc.setFontSize(12);
+  doc.text("RUNDOWN PEMERIKSAAN", 14, tableEndY + 12);
+
+  autoTable(doc, {
+    startY: tableEndY + 17,
+    head: [["Tahap", "Status", "Waktu", "Catatan"]],
+    body: reviewRows,
+    styles: { fontSize: 8, cellPadding: 2.5 },
+    headStyles: { fillColor: [7, 86, 165] },
+  });
+
+  if (request.notes) {
+    const reviewEndY =
+      (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable
+        ?.finalY ?? tableEndY + 17;
+
+    doc.setFontSize(9);
+    doc.text("Catatan pengajuan:", 14, reviewEndY + 10);
+    doc.text(doc.splitTextToSize(request.notes, 180), 14, reviewEndY + 16);
+  }
+
+  const safeFileName = request.requestNumber.replace(/[^a-zA-Z0-9-_]/g, "_");
+  doc.save(`Claim-${safeFileName}.pdf`);
+}
+
   if (requests.length === 0) {
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-5">
@@ -173,9 +275,19 @@ function ClaimRequestsProgress({
               </p>
             </div>
 
-            <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-center text-[9px] font-bold text-blue-700">
-              {requestStatusLabels[request.status] ?? request.status}
-            </span>
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-center text-[9px] font-bold text-blue-700">
+                {requestStatusLabels[request.status] ?? request.status}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => void downloadRequestPdf(request)}
+                className="rounded-full bg-blue-700 px-2.5 py-1 text-center text-[9px] font-bold text-white hover:bg-blue-800"
+              >
+                Unduh PDF
+              </button>
+            </div>
           </div>
 
           <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px]">
