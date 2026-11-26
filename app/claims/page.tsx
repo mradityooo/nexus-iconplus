@@ -69,6 +69,12 @@ type ClaimRequestProgress = {
   notes: string | null;
   reviewNote: string | null;
   createdAt: string;
+
+  employee: {
+    fullName: string;
+    position: string | null;
+  };
+
   claims: {
     id: string;
     category: string;
@@ -77,11 +83,19 @@ type ClaimRequestProgress = {
     amount: string | number;
     status: string;
   }[];
+
   reviews: {
     stage: string;
     decision: string;
     note: string | null;
     createdAt: string;
+    reviewer: {
+      email: string;
+      employee: {
+        fullName: string;
+        position: string | null;
+      } | null;
+    };
   }[];
 };
 
@@ -122,9 +136,9 @@ const requestStatusLabels: Record<string, string> = {
 };
 
 const reviewStages = [
-  { stage: "GA", label: "Pemeriksaan GA" },
-  { stage: "BRANCH_HEAD", label: "Pemeriksaan Kepala Cabang" },
-  { stage: "TREASURER", label: "Pemeriksaan Bendahara" },
+  { stage: "GA", label: "GA (General Affairs)" },
+  { stage: "BRANCH_HEAD", label: "Kepala Cabang (Branch Head)" },
+  { stage: "TREASURER", label: "Finance (Bendahara)" },
 ] as const;
 
 function ClaimRequestsProgress({
@@ -132,6 +146,8 @@ function ClaimRequestsProgress({
 }: {
   requests: ClaimRequestProgress[];
 }) {
+
+
 
 async function downloadRequestPdf(request: ClaimRequestProgress) {
   const doc = new jsPDF();
@@ -170,10 +186,30 @@ async function downloadRequestPdf(request: ClaimRequestProgress) {
     headStyles: { fillColor: [7, 86, 165] },
   });
 
-  const reviewRows = reviewStages.map((stage) => {
+const reviewRows = [
+  [
+    "Pemohon",
+    `${request.employee.fullName}${
+      request.employee.position
+        ? ` (${request.employee.position})`
+        : ""
+    }`,
+    "Diajukan",
+    formatPdfDate(request.createdAt),
+    "-",
+  ],
+  ...reviewStages.map((stage) => {
     const review = request.reviews.find(
       (item) => item.stage === stage.stage
     );
+
+    const reviewerName = review
+      ? review.reviewer.employee?.fullName ?? review.reviewer.email
+      : "-";
+
+    const reviewerPosition = review?.reviewer.employee?.position
+      ? ` (${review.reviewer.employee.position})`
+      : "";
 
     const status = review
       ? review.decision === "APPROVED"
@@ -187,22 +223,24 @@ async function downloadRequestPdf(request: ClaimRequestProgress) {
 
     return [
       stage.label,
+      review ? `${reviewerName}${reviewerPosition}` : "Menunggu pemeriksaan",
       status,
       review ? formatPdfDate(review.createdAt) : "-",
       review?.note || "-",
     ];
-  });
-
-  reviewRows.push([
+  }),
+  [
     "Pencairan",
+    "-",
     request.status === "PAID"
       ? "Selesai / cair"
       : request.status === "PROCESSING_PAYMENT"
         ? "Menunggu pencairan"
-        : "-",
+        : "Belum diproses",
     "-",
     "-",
-  ]);
+  ],
+];
 
   const tableEndY =
     (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable
@@ -213,7 +251,7 @@ async function downloadRequestPdf(request: ClaimRequestProgress) {
 
   autoTable(doc, {
     startY: tableEndY + 17,
-    head: [["Tahap", "Status", "Waktu", "Catatan"]],
+    head: [["Tahap", "Nama", "Status", "Waktu", "Catatan"]],
     body: reviewRows,
     styles: { fontSize: 8, cellPadding: 2.5 },
     headStyles: { fillColor: [7, 86, 165] },
@@ -298,6 +336,23 @@ async function downloadRequestPdf(request: ClaimRequestProgress) {
           </div>
 
           <ol className="mt-4 space-y-3">
+            <li className="flex gap-3">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-[9px] font-bold text-slate-500">
+              1
+            </span>
+            <div>
+              <p className="text-[10px] font-semibold text-slate-700">
+                Pemohon
+              </p>
+              <p className="mt-0.5 text-[10px] text-slate-600">
+                {request.employee.fullName}
+                {request.employee.position
+                  ? ` (${request.employee.position})`
+                  : ""}
+              </p>
+            </div>
+          </li>
+
             {reviewStages.map((stage) => {
               const review = request.reviews.find(
                 (item) => item.stage === stage.stage
@@ -337,6 +392,22 @@ async function downloadRequestPdf(request: ClaimRequestProgress) {
                       }`}
                     >
                       {stage.label}
+                      <p className="mt-0.5 text-[9px] text-slate-500">
+                        
+                        {review
+                          ? `Nama: ${
+                              review.reviewer.employee?.fullName ??
+                              review.reviewer.email
+                            }${
+                              review.reviewer.employee?.position
+                                ? ` (${review.reviewer.employee.position})`
+                                : ""
+                            }`
+                          : isCurrent
+                            ? "Menunggu pemeriksaan"
+                            : "Belum diproses"}
+                      </p>
+
                       {isCurrent ? " — sedang diproses" : ""}
                       {isRejected ? " — ditolak" : ""}
                       {isApproved ? " — disetujui" : ""}

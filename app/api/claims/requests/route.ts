@@ -38,6 +38,14 @@ export async function GET() {
         notes: true,
         reviewNote: true,
         createdAt: true,
+
+        employee: {
+          select: {
+            fullName: true,
+            position: true,
+          },
+        },
+
         claims: {
           orderBy: { transactionDate: "asc" },
           select: {
@@ -49,6 +57,7 @@ export async function GET() {
             status: true,
           },
         },
+
         reviews: {
           orderBy: { createdAt: "asc" },
           select: {
@@ -56,6 +65,17 @@ export async function GET() {
             decision: true,
             note: true,
             createdAt: true,
+            reviewer: {
+              select: {
+                email: true,
+                employee: {
+                  select: {
+                    fullName: true,
+                    position: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
