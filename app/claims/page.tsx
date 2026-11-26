@@ -73,6 +73,12 @@ type ClaimRequestProgress = {
   employee: {
     fullName: string;
     position: string | null;
+    employeeCode: string;
+    department: string | null;
+    workLocation: string | null;
+    user: {
+      email: string | null;
+    } | null;
   };
 
   claims: {
@@ -82,6 +88,7 @@ type ClaimRequestProgress = {
     description: string;
     amount: string | number;
     status: string;
+    reference: string | null;
   }[];
 
   reviews: {
@@ -147,129 +154,299 @@ function ClaimRequestsProgress({
   requests: ClaimRequestProgress[];
 }) {
 
-
-
 async function downloadRequestPdf(request: ClaimRequestProgress) {
-  const doc = new jsPDF();
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2;
 
   const formatPdfDate = (value: string) =>
-    new Date(value).toLocaleString("id-ID");
+    new Date(value).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
 
-  doc.setFontSize(16);
-  doc.text("RINGKASAN PENGAJUAN KLAIM", 14, 18);
+  const getReview = (stage: string) =>
+    request.reviews.find((review) => review.stage === stage);
 
-  doc.setFontSize(10);
-  doc.text(`Nomor pengajuan: ${request.requestNumber}`, 14, 27);
-  doc.text(`Tanggal pengajuan: ${formatPdfDate(request.createdAt)}`, 14, 33);
-  doc.text(
-    `Status: ${requestStatusLabels[request.status] ?? request.status}`,
-    14,
-    39
-  );
-  doc.text(
-    `Total: ${formatRupiah(Number(request.totalAmount))}`,
-    14,
-    45
-  );
+  // Header PDF: logo PLN Icon Plus di kiri, tanpa judul di kanan
+  const logoResponse = await fetch("/logo-icon-plus.png");
 
-  autoTable(doc, {
-    startY: 53,
-    head: [["No.", "Kategori", "Tanggal transaksi", "Deskripsi", "Nominal"]],
-    body: request.claims.map((claim, index) => [
-      String(index + 1),
-      claim.category,
-      new Date(claim.transactionDate).toLocaleDateString("id-ID"),
-      claim.description,
-      formatRupiah(Number(claim.amount)),
-    ]),
-    styles: { fontSize: 8, cellPadding: 2.5 },
-    headStyles: { fillColor: [7, 86, 165] },
+  if (!logoResponse.ok) {
+    throw new Error("File logo PLN Icon Plus tidak ditemukan di folder public");
+  }
+
+  const logoBlob = await logoResponse.blob();
+
+  const logoDataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Gagal membaca file logo"));
+    reader.readAsDataURL(logoBlob);
   });
 
-const reviewRows = [
-  [
-    "Pemohon",
-    `${request.employee.fullName}${
-      request.employee.position
-        ? ` (${request.employee.position})`
-        : ""
-    }`,
-    "Diajukan",
-    formatPdfDate(request.createdAt),
-    "-",
-  ],
-  ...reviewStages.map((stage) => {
-    const review = request.reviews.find(
-      (item) => item.stage === stage.stage
-    );
+  doc.addImage(
+    logoDataUrl,
+    logoDataUrl.startsWith("data:image/jpeg") ? "JPEG" : "PNG",
+    margin,
+    12,
+    32,
+    14
+  );
 
-    const reviewerName = review
-      ? review.reviewer.employee?.fullName ?? review.reviewer.email
-      : "-";
+  doc.setDrawColor(80);
+  doc.line(margin, 29, pageWidth - margin, 29);
 
-    const reviewerPosition = review?.reviewer.employee?.position
-      ? ` (${review.reviewer.employee.position})`
-      : "";
+  // Informasi pengajuan dalam dua kolom, dengan garis seperti formulir cetak
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
 
-    const status = review
-      ? review.decision === "APPROVED"
-        ? "Disetujui"
-        : "Ditolak"
-      : request.status === `PENDING_${stage.stage}`
-        ? "Sedang diperiksa"
-        : request.status === "REJECTED"
-          ? "Tidak dilanjutkan"
-          : "Menunggu pemeriksaan";
+  const leftX = margin;
+  const rightX = pageWidth / 2 + 4;
+  const columnWidth = pageWidth / 2 - margin - 6;
 
-    return [
-      stage.label,
-      review ? `${reviewerName}${reviewerPosition}` : "Menunggu pemeriksaan",
-      status,
-      review ? formatPdfDate(review.createdAt) : "-",
-      review?.note || "-",
-    ];
-  }),
-  [
-    "Pencairan",
-    "-",
-    request.status === "PAID"
-      ? "Selesai / cair"
-      : request.status === "PROCESSING_PAYMENT"
-        ? "Menunggu pencairan"
-        : "Belum diproses",
-    "-",
-    "-",
-  ],
-];
+  function drawField(
+    label: string,
+    value: string,
+    x: number,
+    y: number,
+    width: number
+  ) {
+    const labelWidth = 27;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text(label, x, y);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(":", x + labelWidth - 2, y);
+
+    const valueX = x + labelWidth + 1;
+    const maxTextWidth = width - labelWidth - 2;
+    const lines = doc.splitTextToSize(value || "-", maxTextWidth);
+
+    doc.text(lines[0] ?? "-", valueX, y);
+    doc.setDrawColor(120);
+    doc.setLineWidth(0.15);
+    doc.line(valueX, y + 2, x + width, y + 2);
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("INFORMASI KARYAWAN", leftX, 37);
+  doc.text("INFORMASI REQUEST", rightX, 37);
+
+  const leftFields = [
+    ["Tanggal Request", formatPdfDate(request.createdAt)],
+    ["Nama Pemohon", request.employee.fullName],
+    ["Email Pemohon", request.employee.user?.email ?? "-"],
+    ["Lokasi Kerja", request.employee.workLocation ?? "-"],
+    ["Departemen", request.employee.department ?? "-"],
+    ["Jabatan / ID", `${request.employee.position || "-"} / ${request.employee.employeeCode}`],
+  ];
+
+  const rightFields = [
+    ["Nomor Request", request.requestNumber],
+    ["Status", requestStatusLabels[request.status] ?? request.status],
+    ["Jumlah Item", `${request.claims.length} klaim`],
+    ["Total Pengajuan", formatRupiah(Number(request.totalAmount))],
+    ["Catatan", request.notes || "-"],
+  ];
+
+  leftFields.forEach(([label, value], index) => {
+    drawField(label, value, leftX, 45 + index * 8, columnWidth);
+  });
+
+  rightFields.forEach(([label, value], index) => {
+    drawField(label, value, rightX, 45 + index * 8, columnWidth);
+  });
+
+  // Tabel klaim bergaris seperti formulir
+  const claimRows = request.claims.map((claim, index) => [
+    String(index + 1),
+    claim.category.replaceAll("_", " "),
+    `${claim.description}${claim.reference ? `\nRef: ${claim.reference}` : ""}`,
+    formatPdfDate(claim.transactionDate),
+    formatRupiah(Number(claim.amount)),
+  ]);
+
+  // Sediakan baris kosong agar tampil seperti form cetak.
+  const blankRowCount = Math.max(0, 8 - claimRows.length);
+  for (let index = 0; index < blankRowCount; index += 1) {
+    claimRows.push(["", "", "", "", ""]);
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("DAFTAR KLAIM", margin, 98);
+
+  autoTable(doc, {
+    startY: 102,
+    margin: { left: margin, right: margin },
+    head: [[
+      "No.",
+      "Kategori Klaim",
+      "Deskripsi / Referensi",
+      "Tgl. Transaksi",
+      "Nominal",
+    ]],
+    body: claimRows,
+    theme: "grid",
+    styles: {
+      font: "helvetica",
+      fontSize: 7,
+      cellPadding: 2.2,
+      overflow: "linebreak",
+      valign: "middle",
+      lineColor: [70, 70, 70],
+      lineWidth: 0.15,
+      minCellHeight: 8,
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: "bold",
+      halign: "center",
+      minCellHeight: 12,
+    },
+    columnStyles: {
+      0: { cellWidth: 10, halign: "center" },
+      1: { cellWidth: 31 },
+      2: { cellWidth: "auto" },
+      3: { cellWidth: 29, halign: "center" },
+      4: { cellWidth: 29, halign: "right" },
+    },
+  });
 
   const tableEndY =
     (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable
-      ?.finalY ?? 53;
+      ?.finalY ?? 74;
 
-  doc.setFontSize(12);
-  doc.text("RUNDOWN PEMERIKSAAN", 14, tableEndY + 12);
+  let sectionY = tableEndY + 9;
 
-  autoTable(doc, {
-    startY: tableEndY + 17,
-    head: [["Tahap", "Nama", "Status", "Waktu", "Catatan"]],
-    body: reviewRows,
-    styles: { fontSize: 8, cellPadding: 2.5 },
-    headStyles: { fillColor: [7, 86, 165] },
-  });
+  // Total
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("TOTAL PENGAJUAN", margin, sectionY);
+  doc.text(
+    formatRupiah(Number(request.totalAmount)),
+    pageWidth - margin,
+    sectionY,
+    { align: "right" }
+  );
 
-  if (request.notes) {
-    const reviewEndY =
-      (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable
-        ?.finalY ?? tableEndY + 17;
+  sectionY += 9;
 
-    doc.setFontSize(9);
-    doc.text("Catatan pengajuan:", 14, reviewEndY + 10);
-    doc.text(doc.splitTextToSize(request.notes, 180), 14, reviewEndY + 16);
+  // Notes
+  doc.setFontSize(9);
+  doc.text("Catatan:", margin, sectionY);
+  sectionY += 5;
+
+  doc.setFont("helvetica", "normal");
+  const notesText = request.notes || "-";
+  const noteLines = doc.splitTextToSize(notesText, contentWidth);
+  doc.text(noteLines, margin, sectionY);
+
+  sectionY += noteLines.length * 4 + 10;
+
+  // Kotak tanda tangan
+  const signatureStages = [
+    {
+      label: "Pemohon",
+      name: request.employee.fullName,
+      detail: request.employee.position || "Karyawan",
+      date: formatPdfDate(request.createdAt),
+    },
+    {
+      label: "GA",
+      name:
+        getReview("GA")?.reviewer.employee?.fullName ??
+        getReview("GA")?.reviewer.email ??
+        "Menunggu pemeriksaan",
+      detail: "General Affairs",
+      date: getReview("GA")
+        ? formatPdfDate(getReview("GA")!.createdAt)
+        : "Nama / tanggal / tanda tangan",
+    },
+    {
+      label: "Branch Head",
+      name:
+        getReview("BRANCH_HEAD")?.reviewer.employee?.fullName ??
+        getReview("BRANCH_HEAD")?.reviewer.email ??
+        "Menunggu pemeriksaan",
+      detail: "Kepala Cabang",
+      date: getReview("BRANCH_HEAD")
+        ? formatPdfDate(getReview("BRANCH_HEAD")!.createdAt)
+        : "Nama / tanggal / tanda tangan",
+    },
+    {
+      label: "Finance",
+      name:
+        getReview("TREASURER")?.reviewer.employee?.fullName ??
+        getReview("TREASURER")?.reviewer.email ??
+        "Menunggu pemeriksaan",
+      detail: "Finance / Bendahara",
+      date: getReview("TREASURER")
+        ? formatPdfDate(getReview("TREASURER")!.createdAt)
+        : "Nama / tanggal / tanda tangan",
+    },
+  ];
+
+  const signatureBoxHeight = 40;
+  const signatureGap = 2;
+  const signatureBoxWidth =
+    (contentWidth - signatureGap * 3) / signatureStages.length;
+
+  if (sectionY + signatureBoxHeight > pageHeight - 12) {
+    doc.addPage();
+    sectionY = 20;
   }
 
-  const safeFileName = request.requestNumber.replace(/[^a-zA-Z0-9-_]/g, "_");
+  signatureStages.forEach((stage, index) => {
+    const x = margin + index * (signatureBoxWidth + signatureGap);
+
+    doc.setDrawColor(100);
+    doc.rect(x, sectionY, signatureBoxWidth, signatureBoxHeight);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(stage.label, x + signatureBoxWidth / 2, sectionY + 5, {
+      align: "center",
+    });
+
+    // Ruang kosong untuk tanda tangan
+    doc.setDrawColor(190);
+    doc.line(x + 4, sectionY + 25, x + signatureBoxWidth - 4, sectionY + 25);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    const nameLines = doc.splitTextToSize(
+      stage.name,
+      signatureBoxWidth - 6
+    );
+    doc.text(nameLines, x + signatureBoxWidth / 2, sectionY + 30, {
+      align: "center",
+    });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.text(stage.detail, x + signatureBoxWidth / 2, sectionY + 35, {
+      align: "center",
+    });
+    doc.text(stage.date, x + signatureBoxWidth / 2, sectionY + 38, {
+      align: "center",
+    });
+  });
+
+  const safeFileName = request.requestNumber.replace(
+    /[^a-zA-Z0-9-_]/g,
+    "_"
+  );
   doc.save(`Claim-${safeFileName}.pdf`);
 }
+
 
   if (requests.length === 0) {
     return (
@@ -335,10 +512,15 @@ const reviewRows = [
             </span>
           </div>
 
-          <ol className="mt-4 space-y-3">
-            <li className="flex gap-3">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-[9px] font-bold text-slate-500">
-              1
+          <ol className="relative mt-4 space-y-3">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-2 left-[9px] top-2 w-px bg-slate-200"
+            />
+
+            <li className="relative z-10 flex gap-3">
+            <span className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500 text-white">
+              <Check size={12} strokeWidth={3} />
             </span>
             <div>
               <p className="text-[10px] font-semibold text-slate-700">
@@ -372,7 +554,7 @@ const reviewRows = [
                     : "border-slate-300 bg-white text-slate-400";
 
               return (
-                <li key={stage.stage} className="flex gap-3">
+                <li key={stage.stage} className="relative z-10 flex gap-3">
                   <span
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[9px] font-bold ${markerClass}`}
                   >
@@ -429,7 +611,7 @@ const reviewRows = [
               );
             })}
 
-            <li className="flex gap-3">
+            <li className="relative z-10 flex gap-3">
               <span
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[9px] font-bold ${
                   request.status === "PAID"

@@ -43,6 +43,14 @@ export async function GET() {
           select: {
             fullName: true,
             position: true,
+            employeeCode: true,
+            department: true,
+            workLocation: true,
+            user: {
+              select: {
+                email: true,
+              },
+            },
           },
         },
 
@@ -55,6 +63,7 @@ export async function GET() {
             description: true,
             amount: true,
             status: true,
+            reference: true,
           },
         },
 
