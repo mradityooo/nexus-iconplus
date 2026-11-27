@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -26,7 +26,9 @@ type RequestStatus =
   | "Under Review"
   | "Pending Approval"
   | "Approved"
-  | "Rejected";
+  | "Rejected"
+  | "Cancelled"
+  | "Completed";
 
 type RequestItem = {
   id: string;
@@ -46,26 +48,6 @@ type RequestItem = {
   supervisorName: string;
 };
 
-const initialRequests: RequestItem[] = [
-  {
-    id: "REQ-2026-001",
-    type: "Booking Kendaraan",
-    category: "Vehicle Reservation",
-    date: "28 Oktober 2026",
-    description: "Penggunaan kendaraan untuk kunjungan kerja",
-    amount: "-",
-    status: "Under Review",
-    submitted: true,
-    reviewed: false,
-    approved: false,
-    note: "Pengajuan sedang diperiksa oleh petugas operasional.",
-    route: "/vehicle-reservation",
-    employeeName: "Muhammad Radityo",
-    gaName: "Andi Saputra",
-    supervisorName: "Budi Santoso",
-  },
-];
-
 const filters = [
   { id: "All", label: "Semua" },
   { id: "In Progress", label: "Proses" },
@@ -79,6 +61,8 @@ const statusStyle: Record<RequestStatus, string> = {
   "Pending Approval": "bg-amber-50 text-amber-700",
   Approved: "bg-emerald-50 text-emerald-700",
   Rejected: "bg-red-50 text-red-700",
+  Cancelled: "bg-slate-100 text-slate-600",
+  Completed: "bg-emerald-50 text-emerald-700",
 };
 
 const statusLabel: Record<RequestStatus, string> = {
@@ -87,33 +71,31 @@ const statusLabel: Record<RequestStatus, string> = {
   "Pending Approval": "Menunggu Approval",
   Approved: "Disetujui",
   Rejected: "Ditolak",
+  Cancelled: "Dibatalkan",
+  Completed: "Selesai",
 };
 
 const steps = [
-  {
-    title: "Pengajuan Terkirim",
-    icon: ClipboardList,
-  },
-  {
-    title: "Pemeriksaan Data",
-    icon: FileSearch,
-  },
-  {
-    title: "Persetujuan Atasan",
-    icon: UserCheck,
-  },
-  {
-    title: "Selesai",
-    icon: CheckCircle2,
-  },
+  { title: "Pengajuan Terkirim", icon: ClipboardList },
+  { title: "Pemeriksaan GA", icon: FileSearch },
+  { title: "Status Reservasi", icon: CheckCircle2 },
 ];
 
 function getProgress(request: RequestItem) {
-  if (request.status === "Rejected") return 2;
-  if (request.status === "Approved") return 4;
-  if (request.status === "Pending Approval") return 2;
-  if (request.status === "Under Review") return 1;
-  return 0;
+  if (request.status === "Rejected" || request.status === "Cancelled") {
+    return 1;
+  }
+
+  if (request.status === "Completed") {
+    return 3;
+  }
+
+  if (request.status === "Approved") {
+    return 2;
+  }
+
+  // Request sudah terkirim, menunggu review GA.
+  return 1;
 }
 
 function getIcon(category: string) {
@@ -130,7 +112,9 @@ function getIcon(category: string) {
 }
 
 export default function MyRequestPage() {
-  const [requests] = useState<RequestItem[]>(initialRequests);
+  const [requests, setRequests] = useState<RequestItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [filter, setFilter] = useState<
     "All" | "In Progress" | "Approved" | "Rejected"
   >("All");
@@ -166,6 +150,82 @@ export default function MyRequestPage() {
 
     return item.status === filter;
   });
+
+  useEffect(() => {
+  let active = true;
+
+  async function loadReservations() {
+    try {
+      setLoading(true);
+      setLoadError("");
+
+      const response = await fetch("/api/reservations", {
+        cache: "no-store",
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal memuat reservasi.");
+      }
+
+      const statusMap: Record<string, RequestStatus> = {
+        PENDING: "Under Review",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        CANCELLED: "Cancelled",
+        COMPLETED: "Completed",
+      };
+
+      const mapped: RequestItem[] = (result.data ?? []).map(
+        (reservation: {
+          id: string;
+          status: string;
+          startAt: string;
+          destination: string;
+          purpose: string;
+          reviewNote: string | null;
+          reviewedAt: string | null;
+          employee: { fullName: string };
+          vehicle: { name: string; plateNumber: string };
+          driver: { fullName: string } | null;
+          approvedBy: { email: string } | null;
+        }) => ({
+          id: reservation.id,
+          type: "Booking Kendaraan",
+          category: "Vehicle Reservation",
+          date: new Date(reservation.startAt).toLocaleDateString("id-ID"),
+          description: `${reservation.vehicle.name} (${reservation.vehicle.plateNumber}) · ${reservation.destination} · ${reservation.purpose}`,
+          amount: "-",
+          status: statusMap[reservation.status] ?? "Under Review",
+          submitted: true,
+          reviewed: Boolean(reservation.reviewedAt),
+          approved: ["APPROVED", "COMPLETED"].includes(reservation.status),
+          note: reservation.reviewNote || reservation.purpose,
+          route: "/vehicle-reservation",
+          employeeName: reservation.employee.fullName,
+          gaName: reservation.approvedBy?.email ?? "Menunggu pemeriksaan GA",
+          supervisorName: "-",
+        })
+      );
+
+      if (active) setRequests(mapped);
+    } catch (error) {
+      if (active) {
+        setLoadError(
+          error instanceof Error ? error.message : "Gagal memuat reservasi."
+        );
+      }
+    } finally {
+      if (active) setLoading(false);
+    }
+  }
+
+  loadReservations();
+
+  return () => {
+    active = false;
+  };
+  }, []);
 
   return (
     <main className="min-h-screen bg-slate-100">
@@ -278,7 +338,17 @@ export default function MyRequestPage() {
               </span>
             </div>
 
-            {filteredRequests.length === 0 ? (
+            {loading ? (
+              <p className="py-8 text-center text-sm text-slate-500">
+                Memuat pengajuan...
+              </p>
+            ) : loadError ? (
+              <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">
+                {loadError}
+              </p>
+            ) : filteredRequests.length === 0 ? (
+              // pertahankan tampilan empty state yang sudah ada
+
               <div className="rounded-2xl border border-dashed border-slate-200 py-12 text-center">
                 <ClipboardList
                   size={34}
@@ -382,7 +452,7 @@ export default function MyRequestPage() {
                               const completed = index < progress;
                               const rejectedStep =
                                 item.status === "Rejected" &&
-                                index === 2;
+                                index === 1;
 
                               const active =
                                 !completed &&
@@ -391,30 +461,30 @@ export default function MyRequestPage() {
 
                               const actors = [
                                 {
-                                    name: item.employeeName,
-                                    role: "Karyawan",
+                                  name: item.employeeName,
+                                  role: "Pemohon",
                                 },
                                 {
-                                    name: item.gaName,
-                                    role: "General Affairs (GA)",
+                                  name:
+                                    item.status === "Under Review"
+                                      ? "Menunggu pemeriksaan"
+                                      : item.gaName,
+                                  role: "General Affairs (GA)",
                                 },
                                 {
-                                    name: item.supervisorName,
-                                    role: "Branch Head",
+                                  name:
+                                    item.status === "Completed"
+                                      ? "Penggunaan selesai"
+                                      : item.status === "Approved"
+                                        ? "Reservasi disetujui"
+                                        : item.status === "Rejected"
+                                          ? "Reservasi ditolak"
+                                          : item.status === "Cancelled"
+                                            ? "Reservasi dibatalkan"
+                                            : "Menunggu keputusan GA",
+                                  role: "Status reservasi",
                                 },
-                                {
-                                    name: item.status === "Approved"
-                                    ? item.supervisorName
-                                    : item.status === "Rejected"
-                                        ? item.supervisorName
-                                        : "-",
-                                    role: item.status === "Approved"
-                                    ? "Persetujuan selesai"
-                                    : item.status === "Rejected"
-                                        ? "Keputusan penolakan"
-                                        : "Menunggu proses",
-                                },
-                                ];
+                              ];
 
                               return (
                                 <div
