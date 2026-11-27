@@ -6,8 +6,7 @@ import { prisma } from "@/lib/prisma";
 const canManageVehicles = (role: string) =>
   role === "GA" || role === "ADMIN";
 
-// GET: Menampilkan semua kendaraan
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
 
@@ -18,14 +17,55 @@ export async function GET() {
       );
     }
 
+    const url = new URL(request.url);
+    const startAtValue = url.searchParams.get("startAt");
+    const endAtValue = url.searchParams.get("endAt");
+
+    if (Boolean(startAtValue) !== Boolean(endAtValue)) {
+      return NextResponse.json(
+        { message: "Waktu mulai dan selesai harus diisi bersama." },
+        { status: 400 }
+      );
+    }
+
+    let dateFilter = {};
+
+    if (startAtValue && endAtValue) {
+      const startAt = new Date(startAtValue);
+      const endAt = new Date(endAtValue);
+
+      if (
+        Number.isNaN(startAt.getTime()) ||
+        Number.isNaN(endAt.getTime()) ||
+        endAt <= startAt
+      ) {
+        return NextResponse.json(
+          { message: "Rentang waktu pencarian tidak valid." },
+          { status: 400 }
+        );
+      }
+
+      dateFilter = {
+        reservations: {
+          none: {
+            status: { in: ["PENDING", "APPROVED"] as const },
+            startAt: { lt: endAt },
+            endAt: { gt: startAt },
+          },
+        },
+      };
+    }
+
     const vehicles = await prisma.vehicle.findMany({
-      orderBy: {
-        createdAt: "desc",
+      where: {
+        status: "AVAILABLE",
+        ...dateFilter,
       },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({
-      message: "Data kendaraan berhasil diambil.",
+      message: "Data kendaraan tersedia berhasil diambil.",
       data: vehicles,
     });
   } catch (error) {

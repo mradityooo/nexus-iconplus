@@ -56,6 +56,9 @@ export default function VehicleReservationPage() {
   // Data kendaraan dan driver dari database
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [searchResults, setSearchResults] = useState<Vehicle[]>([]);
+  const [searching, setSearching] = useState(false);
+
 
   // Status loading dan error
   const [loadingVehicles, setLoadingVehicles] = useState(true);
@@ -69,28 +72,81 @@ export default function VehicleReservationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const availableVehicles = vehicles.filter((vehicle) => {
-    return vehicle.status === "AVAILABLE";
-  });
-
-  const displayedVehicles = searched
-    ? availableVehicles
-    : vehicles;
+  const displayedVehicles = searched ? searchResults : vehicles;
 
   const selectedVehicleData = vehicles.find(
     (vehicle) => vehicle.id === selectedVehicle
   );
 
-  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setFetchError("");
+    setSubmitError("");
+    setSelectedVehicle(null);
+    setSelectedDriver("");
 
-    if (returnDate < usageDate) {
-      alert("Return Date tidak boleh sebelum Usage Date.");
+    if (!usageDate || !returnDate || !usageTime || !returnTime) {
+      setFetchError("Tanggal dan waktu penggunaan/pengembalian wajib diisi.");
       return;
     }
 
-    setSearched(true);
-    setSelectedVehicle(null);
+    // Aplikasi menggunakan waktu lokal WIB (UTC+7).
+    const startAt = new Date(`${usageDate}T${usageTime}:00+07:00`);
+    const endAt = new Date(`${returnDate}T${returnTime}:00+07:00`);
+
+    if (
+      Number.isNaN(startAt.getTime()) ||
+      Number.isNaN(endAt.getTime()) ||
+      endAt <= startAt
+    ) {
+      setFetchError("Waktu pengembalian harus setelah waktu penggunaan.");
+      return;
+    }
+
+    if (startAt <= new Date()) {
+      setFetchError("Waktu penggunaan harus berada di masa depan.");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      startAt: startAt.toISOString(),
+      endAt: endAt.toISOString(),
+    });
+
+    setSearching(true);
+
+    try {
+      const [vehicleResponse, driverResponse] = await Promise.all([
+        fetch(`/api/vehicles?${params.toString()}`, { cache: "no-store" }),
+        fetch(`/api/drivers?${params.toString()}`, { cache: "no-store" }),
+      ]);
+
+      const [vehicleResult, driverResult] = await Promise.all([
+        vehicleResponse.json(),
+        driverResponse.json(),
+      ]);
+
+      if (!vehicleResponse.ok) {
+        throw new Error(vehicleResult.message || "Gagal mencari kendaraan.");
+      }
+
+      if (!driverResponse.ok) {
+        throw new Error(driverResult.message || "Gagal mencari driver.");
+      }
+
+      setSearchResults(vehicleResult.data ?? []);
+      setDrivers(driverResult.data ?? []);
+      setSearched(true);
+    } catch (error) {
+      setSearchResults([]);
+      setFetchError(
+        error instanceof Error
+          ? error.message
+          : "Gagal mencari ketersediaan kendaraan."
+      );
+    } finally {
+      setSearching(false);
+    }
   }
 
   async function handleReservation() {
@@ -312,114 +368,152 @@ export default function VehicleReservationPage() {
 
             <div className="mb-3 h-px bg-slate-400/80" />
 
+            <form onSubmit={handleSearch} className="space-y-3">
 
-{/* Date and Time */}
-<div className="grid grid-cols-2 gap-x-3 gap-y-5">
-  <div>
-    <label className={labelClass} htmlFor="usageDate">
-      Usage Date <span className="text-red-600">*</span>
-    </label>
-    <input
-      id="usageDate"
-      type="date"
-      value={usageDate}
-      min={getTodayLocal()}
-      onChange={(e) => setUsageDate(e.target.value)}
-      className={inputClass}
-      required
-    />
-  </div>
+            {/* Date and Time */}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+              <div>
+                <label className={labelClass} htmlFor="usageDate">
+                  Usage Date <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="usageDate"
+                  type="date"
+                  value={usageDate}
+                  min={getTodayLocal()}
+                  onChange={(e) => setUsageDate(e.target.value)}
+                  className={inputClass}
+                  required
+                />
+              </div>
 
-  <div>
-    <label className={labelClass} htmlFor="returnDate">
-      Return Date <span className="text-red-600">*</span>
-    </label>
-    <input
-      id="returnDate"
-      type="date"
-      value={returnDate}
-      min={usageDate || getTodayLocal()}
-      onChange={(e) => setReturnDate(e.target.value)}
-      className={inputClass}
-      required
-    />
-  </div>
-</div>
+              <div>
+                <label className={labelClass} htmlFor="usageTime">
+                  Usage Time <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="usageTime"
+                  type="time"
+                  value={usageTime}
+                  onChange={(e) => setUsageTime(e.target.value)}
+                  className={inputClass}
+                  required
+                />
+              </div>
 
-{/* Destination and Driver */}
-<div className="grid grid-cols-2 gap-x-3 gap-y-5">
-  <div>
-    <label className={labelClass} htmlFor="destination">
-      Destination <span className="text-red-600">*</span>
-    </label>
+              <div>
+                <label className={labelClass} htmlFor="returnDate">
+                  Return Date <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="returnDate"
+                  type="date"
+                  value={returnDate}
+                  min={usageDate || getTodayLocal()}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className={inputClass}
+                  required
+                />
+              </div>
 
-    <div className="relative">
-      <MapPin
-        size={13}
-        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-      />
-      <input
-        id="destination"
-        type="text"
-        value={destination}
-        onChange={(e) => setDestination(e.target.value)}
-        placeholder="Enter location"
-        className={`${inputClass} pl-7`}
-        required
-      />
-    </div>
-  </div>
+              <div>
+                <label className={labelClass} htmlFor="returnTime">
+                  Return Time <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="returnTime"
+                  type="time"
+                  value={returnTime}
+                  onChange={(e) => setReturnTime(e.target.value)}
+                  className={inputClass}
+                  required
+                />
+              </div>
+            </div>
 
-  {driverType === "with" && (
-    <div>
-      <label className={labelClass} htmlFor="driver">
-        Select Driver <span className="text-red-600">*</span>
-      </label>
+            {/* Destination and Driver */}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+              <div>
+                <label className={labelClass} htmlFor="destination">
+                  Destination <span className="text-red-600">*</span>
+                </label>
 
-      <div className="relative">
-        <select
-          id="driver"
-          value={selectedDriver}
-          onChange={(e) => setSelectedDriver(e.target.value)}
-          required
-          className={`${inputClass} appearance-none pr-7`}
-        >
-          <option value="">Choose driver</option>
+                <div className="relative">
+                  <MapPin
+                    size={13}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+                  <input
+                    id="destination"
+                    type="text"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="Enter location"
+                    className={`${inputClass} pl-7`}
+                    required
+                  />
+                </div>
+              </div>
 
-          {drivers
-            .filter((driver) => driver.status === "ACTIVE")
-            .map((driver) => (
-              <option key={driver.id} value={driver.id}>
-                {driver.fullName}
-              </option>
-            ))}
-        </select>
+              {driverType === "with" && (
+                <div>
+                  <label className={labelClass} htmlFor="driver">
+                    Select Driver <span className="text-red-600">*</span>
+                  </label>
 
-        <ChevronDown
-          size={14}
-          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-        />
-      </div>
-    </div>
-  )}
-</div>
+                  <div className="relative">
+                    <select
+                      id="driver"
+                      value={selectedDriver}
+                      onChange={(e) => setSelectedDriver(e.target.value)}
+                      required
+                      className={`${inputClass} appearance-none pr-7`}
+                    >
+                      <option value="">Choose driver</option>
 
-{/* Purpose */}
-<div>
-  <label className={labelClass} htmlFor="purpose">
-    Purpose <span className="text-red-600">*</span>
-  </label>
+                      {drivers
+                        .filter((driver) => driver.status === "ACTIVE")
+                        .map((driver) => (
+                          <option key={driver.id} value={driver.id}>
+                            {driver.fullName}
+                          </option>
+                        ))}
+                    </select>
 
-  <textarea
-    id="purpose"
-    value={purpose}
-    onChange={(e) => setPurpose(e.target.value)}
-    placeholder="Enter the purpose of your trip"
-    className="min-h-20 w-full resize-none rounded-md border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100"
-    maxLength={1000}
-    required
-  />
-</div>
+                    <ChevronDown
+                      size={14}
+                      className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor="purpose">
+                Purpose <span className="text-red-600">*</span>
+              </label>
+
+              <textarea
+                id="purpose"
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                placeholder="Enter the purpose of your trip"
+                className="min-h-20 w-full resize-none rounded-md border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                maxLength={1000}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={searching}
+              className="flex min-h-8 w-full items-center justify-center gap-2 rounded-md bg-[#0095DA] px-4 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#007AB8] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Search size={14} />
+              {searching ? "Searching..." : "Find Available Vehicle"}
+            </button>
+            </form>
 
           </section>
 
@@ -442,7 +536,9 @@ export default function VehicleReservationPage() {
                   type="button"
                   onClick={() => {
                     setSearched(false);
+                    setSearchResults([]);
                     setSelectedVehicle(null);
+                    setSelectedDriver("");
                   }}
                   className="text-[10px] font-semibold text-red-600 hover:text-red-700"
                 >
